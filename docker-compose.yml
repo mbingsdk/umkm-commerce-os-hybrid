@@ -4,8 +4,8 @@ services:
     container_name: umkm_os_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: embul
-      POSTGRES_PASSWORD: Virus6606
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: umkm_os
     ports:
       - "5432:5432"

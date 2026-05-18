@@ -60,6 +60,8 @@ func statusFromCode(code apperror.Code) int {
 		return http.StatusNotFound
 	case apperror.CodeConflict:
 		return http.StatusConflict
+	case apperror.CodeRateLimited:
+		return http.StatusTooManyRequests
 	case apperror.CodeServiceUnavailable:
 		return http.StatusServiceUnavailable
 	default:

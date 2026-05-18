@@ -8,6 +8,7 @@ const (
 	CodeForbidden          Code = "FORBIDDEN"
 	CodeNotFound           Code = "NOT_FOUND"
 	CodeConflict           Code = "CONFLICT"
+	CodeRateLimited        Code = "RATE_LIMITED"
 	CodeServiceUnavailable Code = "SERVICE_UNAVAILABLE"
 	CodeInternal           Code = "INTERNAL_SERVER_ERROR"
 )
