@@ -13,7 +13,7 @@ type ApiFetchOptions = RequestInit & {
 type ApiSuccessResponse<T> = {
   success: true;
   message: string;
-  data: T;
+  data?: T;
   meta?: unknown;
 };
 
@@ -71,7 +71,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     );
   }
 
-  return body.data;
+  return body.data as T;
 }
 
 async function parseJSON(response: Response) {
@@ -90,5 +90,5 @@ function isApiSuccessResponse<T>(value: unknown): value is ApiSuccessResponse<T>
   }
 
   const candidate = value as Partial<ApiSuccessResponse<T>>;
-  return candidate.success === true && typeof candidate.message === "string" && "data" in candidate;
+  return candidate.success === true && typeof candidate.message === "string";
 }
