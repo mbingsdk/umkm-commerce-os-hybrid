@@ -21,10 +21,11 @@ const (
 	CategoryUpdate Permission = "category.update"
 	CategoryDelete Permission = "category.delete"
 
-	ProductRead   Permission = "product.read"
-	ProductCreate Permission = "product.create"
-	ProductUpdate Permission = "product.update"
-	ProductDelete Permission = "product.delete"
+	ProductRead        Permission = "product.read"
+	ProductCreate      Permission = "product.create"
+	ProductUpdate      Permission = "product.update"
+	ProductDelete      Permission = "product.delete"
+	ProductUploadImage Permission = "product.upload_image"
 
 	InventoryRead            Permission = "inventory.read"
 	InventoryReadMovement    Permission = "inventory.read_movement"

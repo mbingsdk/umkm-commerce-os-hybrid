@@ -100,3 +100,13 @@ type ListFilters struct {
 	Status     *string
 	CategoryID *uuid.UUID
 }
+
+type CreateImageParams struct {
+	TenantID  uuid.UUID
+	StoreID   uuid.UUID
+	ProductID uuid.UUID
+	URL       string
+	AltText   string
+	IsPrimary bool
+	SortOrder int
+}

@@ -11,6 +11,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/storage"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 )
 
@@ -83,6 +84,8 @@ func TestCreateRejectsDuplicateSlug(t *testing.T) {
 		},
 		&fakeCategoryReader{},
 		&fakeStockWriter{},
+		&fakeImageStore{},
+		&fakeAssetStore{},
 	)
 
 	_, err := service.Create(context.Background(), uuid.New(), uuid.New(), uuid.New(), validCreateInput())
@@ -117,6 +120,8 @@ func TestCreateInitialStockCreatesSnapshotAndMovement(t *testing.T) {
 		},
 		&fakeCategoryReader{},
 		stockWriter,
+		&fakeImageStore{},
+		&fakeAssetStore{},
 	)
 
 	input := validCreateInput()
@@ -160,6 +165,8 @@ func TestCreateZeroInitialStockStillCreatesSnapshot(t *testing.T) {
 		},
 		&fakeCategoryReader{},
 		stockWriter,
+		&fakeImageStore{},
+		&fakeAssetStore{},
 	)
 
 	if _, err := service.Create(context.Background(), uuid.New(), uuid.New(), uuid.New(), validCreateInput()); err != nil {
@@ -270,4 +277,24 @@ func (f *fakeStockWriter) CreateSnapshot(_ context.Context, _ db.Queryer, params
 func (f *fakeStockWriter) CreateMovement(_ context.Context, _ db.Queryer, params inventory.CreateMovementParams) (*inventory.StockMovement, error) {
 	f.movements = append(f.movements, params)
 	return &inventory.StockMovement{}, nil
+}
+
+type fakeImageStore struct{}
+
+func (fakeImageStore) Create(context.Context, db.Queryer, CreateImageParams) (*Image, error) {
+	return nil, errors.New("unexpected Create")
+}
+
+func (fakeImageStore) Delete(context.Context, db.Queryer, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error {
+	return errors.New("unexpected Delete")
+}
+
+type fakeAssetStore struct{}
+
+func (fakeAssetStore) Store(context.Context, storage.StoreInput) (storage.Asset, error) {
+	return storage.Asset{}, errors.New("unexpected Store")
+}
+
+func (fakeAssetStore) Delete(context.Context, string) error {
+	return errors.New("unexpected Delete")
 }

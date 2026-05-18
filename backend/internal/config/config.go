@@ -20,6 +20,10 @@ type Config struct {
 	AccessTokenTTL     time.Duration
 	RefreshTokenTTL    time.Duration
 	CORSAllowedOrigins []string
+	StorageDriver      string
+	StorageLocalDir    string
+	StoragePublicURL   string
+	UploadMaxBytes     int64
 }
 
 func Load() (Config, error) {
@@ -34,6 +38,10 @@ func Load() (Config, error) {
 		AccessTokenTTL:     time.Duration(getEnvInt("ACCESS_TOKEN_TTL_MINUTES", 15)) * time.Minute,
 		RefreshTokenTTL:    time.Duration(getEnvInt("REFRESH_TOKEN_TTL_DAYS", 30)) * 24 * time.Hour,
 		CORSAllowedOrigins: splitCSV(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
+		StorageDriver:      getEnv("STORAGE_DRIVER", "local"),
+		StorageLocalDir:    getEnv("STORAGE_LOCAL_DIR", "uploads"),
+		StoragePublicURL:   strings.TrimRight(getEnv("STORAGE_PUBLIC_URL", "http://localhost:8080/uploads"), "/"),
+		UploadMaxBytes:     int64(getEnvInt("UPLOAD_MAX_BYTES", 5*1024*1024)),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -60,6 +68,18 @@ func (c Config) Validate() error {
 	}
 	if c.RefreshTokenTTL <= 0 {
 		return errors.New("REFRESH_TOKEN_TTL_DAYS must be greater than zero")
+	}
+	if c.StorageDriver != "local" {
+		return errors.New("STORAGE_DRIVER must be local for the current backend foundation")
+	}
+	if strings.TrimSpace(c.StorageLocalDir) == "" {
+		return errors.New("STORAGE_LOCAL_DIR is required")
+	}
+	if strings.TrimSpace(c.StoragePublicURL) == "" {
+		return errors.New("STORAGE_PUBLIC_URL is required")
+	}
+	if c.UploadMaxBytes <= 0 {
+		return errors.New("UPLOAD_MAX_BYTES must be greater than zero")
 	}
 
 	return nil

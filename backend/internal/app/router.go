@@ -15,6 +15,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/upload"
 )
 
 func NewRouter(deps *Dependencies) http.Handler {
@@ -55,6 +56,10 @@ func NewRouter(deps *Dependencies) http.Handler {
 		})
 	})
 
+	if deps.Config.AppEnv == "development" && deps.Config.StorageDriver == "local" {
+		r.Mount("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(deps.Config.StorageLocalDir))))
+	}
+
 	r.Route("/api/v1", func(r chi.Router) {
 		authMiddleware := sharedmw.Auth(deps.AccessTokens, deps.Logger)
 		tenantMiddleware := sharedmw.TenantResolver(deps.TenantService, deps.Logger)
@@ -70,6 +75,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 			store.RegisterRoutes(r, deps.StoreHandler, tenantMiddleware, requirePermission)
 			category.RegisterRoutes(r, deps.CategoryHandler, tenantMiddleware, requirePermission)
 			product.RegisterRoutes(r, deps.ProductHandler, tenantMiddleware, requirePermission)
+			upload.RegisterRoutes(r, deps.UploadHandler, tenantMiddleware, requirePermission)
 		})
 	})
 

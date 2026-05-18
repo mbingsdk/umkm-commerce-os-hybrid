@@ -7,6 +7,7 @@
 backend/bin/
 backend/tmp/
 backend/coverage.out
+backend/uploads/
 
 # Node / Next.js
 frontend/node_modules/

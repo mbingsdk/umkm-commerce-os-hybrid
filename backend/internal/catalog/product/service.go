@@ -43,6 +43,8 @@ type Service struct {
 	products   productStore
 	categories categoryReader
 	stocks     stockWriter
+	images     imageStore
+	assets     assetStore
 }
 
 type CreateInput struct {
@@ -91,12 +93,16 @@ func NewService(
 	products productStore,
 	categories categoryReader,
 	stocks stockWriter,
+	images imageStore,
+	assets assetStore,
 ) *Service {
 	return &Service{
 		db:         database,
 		products:   products,
 		categories: categories,
 		stocks:     stocks,
+		images:     images,
+		assets:     assets,
 	}
 }
 

@@ -11,10 +11,12 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/password"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/storage"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/token"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/upload"
 )
 
 type BuildInfo struct {
@@ -35,6 +37,7 @@ type Dependencies struct {
 	StoreHandler    *store.Handler
 	CategoryHandler *category.Handler
 	ProductHandler  *product.Handler
+	UploadHandler   *upload.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -52,7 +55,9 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	storeRepo := store.NewRepository()
 	categoryRepo := category.NewRepository()
 	productRepo := product.NewRepository()
+	productImageRepo := product.NewImageRepository()
 	inventoryRepo := inventory.NewRepository()
+	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
 	auditRepo := audit.NewRepository()
 	authService := auth.NewService(
 		database,
@@ -65,7 +70,8 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	tenantService := tenant.NewService(database, tenantRepo, userTenantRepo, storeRepo, auditRepo)
 	storeService := store.NewService(database, storeRepo, auditRepo)
 	categoryService := category.NewService(database, categoryRepo)
-	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo)
+	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo, productImageRepo, assetStore)
+	uploadService := upload.NewService(assetStore)
 
 	return &Dependencies{
 		Config:          cfg,
@@ -78,7 +84,8 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		TenantHandler:   tenant.NewHandler(tenantService, logger),
 		StoreHandler:    store.NewHandler(storeService, logger),
 		CategoryHandler: category.NewHandler(categoryService, logger),
-		ProductHandler:  product.NewHandler(productService, logger),
+		ProductHandler:  product.NewHandler(productService, logger, cfg.UploadMaxBytes),
+		UploadHandler:   upload.NewHandler(uploadService, logger, cfg.UploadMaxBytes),
 	}, nil
 }
 

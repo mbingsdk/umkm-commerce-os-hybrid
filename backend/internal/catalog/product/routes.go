@@ -21,5 +21,7 @@ func RegisterRoutes(
 		r.With(requirePermission(permission.ProductRead)).Get("/{productId}", handler.Get)
 		r.With(requirePermission(permission.ProductUpdate)).Patch("/{productId}", handler.Update)
 		r.With(requirePermission(permission.ProductDelete)).Delete("/{productId}", handler.Delete)
+		r.With(requirePermission(permission.ProductUploadImage)).Post("/{productId}/images", handler.UploadImage)
+		r.With(requirePermission(permission.ProductUpdate)).Delete("/{productId}/images/{imageId}", handler.DeleteImage)
 	})
 }

@@ -13,14 +13,16 @@ import (
 )
 
 type Handler struct {
-	service *Service
-	logger  *slog.Logger
+	service        *Service
+	logger         *slog.Logger
+	maxUploadBytes int64
 }
 
-func NewHandler(service *Service, logger *slog.Logger) *Handler {
+func NewHandler(service *Service, logger *slog.Logger, maxUploadBytes int64) *Handler {
 	return &Handler{
-		service: service,
-		logger:  logger,
+		service:        service,
+		logger:         logger,
+		maxUploadBytes: maxUploadBytes,
 	}
 }
 
