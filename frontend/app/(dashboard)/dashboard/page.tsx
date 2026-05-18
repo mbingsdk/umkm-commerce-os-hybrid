@@ -1,13 +1,32 @@
+import { EmptyState } from "@/components/feedback/empty-state";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 export default function DashboardPage() {
   return (
-    <section className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-soft">
-      <p className="text-sm font-semibold text-primary-700">Dashboard foundation</p>
-      <h1 className="mt-2 text-3xl font-bold text-neutral-950">Dashboard</h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500">
-        Shell dashboard sudah dicadangkan. Ringkasan, tenant guard, dan permission-aware navigation akan masuk pada
-        sprint lanjutan.
-      </p>
-    </section>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Dashboard</CardTitle>
+          <CardDescription>
+            Shell dashboard sudah siap. Ringkasan tenant, auth guard, dan permission-aware navigation belum
+            diimplementasikan pada foundation ini.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm leading-6 text-neutral-600">
+          Halaman dashboard sengaja belum melakukan fetch server-side karena token MVP nantinya hidup di client store.
+        </CardContent>
+      </Card>
+
+      <EmptyState
+        title="Belum ada data dashboard"
+        description="State kosong ini menjadi pola awal sebelum modul bisnis mulai mengisi ringkasan operasional."
+        action={
+          <Button variant="outline" disabled>
+            Aksi tersedia nanti
+          </Button>
+        }
+      />
+    </div>
   );
 }
-
