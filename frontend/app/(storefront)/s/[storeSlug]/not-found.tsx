@@ -1,0 +1,21 @@
+import Link from "next/link";
+
+export default function StoreNotFound() {
+  return (
+    <main className="flex min-h-screen items-center justify-center px-4">
+      <section className="max-w-md rounded-3xl border border-neutral-200 bg-white p-8 text-center shadow-soft">
+        <p className="text-sm font-semibold text-primary-700">404</p>
+        <h1 className="mt-2 text-2xl font-bold text-neutral-950">Toko tidak ditemukan</h1>
+        <p className="mt-3 text-sm leading-6 text-neutral-500">
+          Toko ini mungkin belum dipublikasikan atau sudah tidak tersedia.
+        </p>
+        <Link
+          href="/"
+          className="mt-6 inline-flex rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+        >
+          Kembali ke beranda
+        </Link>
+      </section>
+    </main>
+  );
+}
