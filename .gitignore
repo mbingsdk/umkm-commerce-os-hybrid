@@ -1,0 +1,26 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Go
+backend/bin/
+backend/tmp/
+backend/coverage.out
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/tsconfig.tsbuildinfo
+
+# Tooling / OS
+.DS_Store
+Thumbs.db
+*.log
+
+# AI
+AGENTS.md
+PLANS.md
+docs/
