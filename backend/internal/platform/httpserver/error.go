@@ -56,6 +56,8 @@ func statusFromCode(code apperror.Code) int {
 		return http.StatusUnauthorized
 	case apperror.CodeForbidden:
 		return http.StatusForbidden
+	case apperror.CodeTenantAccessDenied:
+		return http.StatusForbidden
 	case apperror.CodeNotFound:
 		return http.StatusNotFound
 	case apperror.CodeConflict:

@@ -6,6 +6,7 @@ const (
 	CodeValidation         Code = "VALIDATION_ERROR"
 	CodeUnauthorized       Code = "UNAUTHORIZED"
 	CodeForbidden          Code = "FORBIDDEN"
+	CodeTenantAccessDenied Code = "TENANT_ACCESS_DENIED"
 	CodeNotFound           Code = "NOT_FOUND"
 	CodeConflict           Code = "CONFLICT"
 	CodeRateLimited        Code = "RATE_LIMITED"
@@ -60,6 +61,10 @@ func Unauthorized(message string) *AppError {
 
 func Forbidden(message string) *AppError {
 	return New(CodeForbidden, message)
+}
+
+func TenantAccessDenied(message string) *AppError {
+	return New(CodeTenantAccessDenied, message)
 }
 
 func NotFound(message string) *AppError {

@@ -10,6 +10,9 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/httpserver"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
 )
 
 func NewRouter(deps *Dependencies) http.Handler {
@@ -51,7 +54,19 @@ func NewRouter(deps *Dependencies) http.Handler {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		auth.RegisterRoutes(r, deps.AuthHandler, sharedmw.Auth(deps.AccessTokens, deps.Logger))
+		authMiddleware := sharedmw.Auth(deps.AccessTokens, deps.Logger)
+		tenantMiddleware := sharedmw.TenantResolver(deps.TenantService, deps.Logger)
+		requirePermission := func(required permission.Permission) func(http.Handler) http.Handler {
+			return sharedmw.RequirePermission(required, deps.Logger)
+		}
+
+		auth.RegisterRoutes(r, deps.AuthHandler, authMiddleware)
+		tenant.RegisterRoutes(r, deps.TenantHandler, authMiddleware)
+
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware)
+			store.RegisterRoutes(r, deps.StoreHandler, tenantMiddleware, requirePermission)
+		})
 	})
 
 	return r
