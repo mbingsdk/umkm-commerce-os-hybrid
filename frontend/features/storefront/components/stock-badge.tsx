@@ -3,7 +3,7 @@ import type { StockStatus } from "@/features/storefront/types";
 
 const stockLabels: Record<StockStatus, string> = {
   in_stock: "Tersedia",
-  low_stock: "Stok menipis",
+  low_stock: "Stok terbatas",
   out_of_stock: "Stok habis"
 };
 

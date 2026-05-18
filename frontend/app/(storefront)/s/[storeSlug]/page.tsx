@@ -10,13 +10,16 @@ import {
   listPublicProducts
 } from "@/features/storefront/api/storefront.api";
 import { ProductCard } from "@/features/storefront/components/product-card";
+import { SafeImage } from "@/features/storefront/components/safe-image";
+import { ShareLinkButton } from "@/features/storefront/components/share-link-button";
+import { getSiteURL, toAbsoluteURL } from "@/features/storefront/seo";
 import type {
   PublicCategory,
   PublicProductListResult,
   PublicStore
 } from "@/features/storefront/types";
 
-const siteURL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteURL = getSiteURL();
 
 type StorefrontPageProps = {
   params: Promise<{ storeSlug: string }>;
@@ -36,17 +39,21 @@ export async function generateMetadata({ params }: Pick<StorefrontPageProps, "pa
       store.seo?.description ??
       store.description ??
       `Belanja produk dari ${store.name}${store.city ? ` di ${store.city}` : ""}.`;
-    const image = store.bannerUrl ?? store.logoUrl;
+    const image = toAbsoluteURL(store.bannerUrl ?? store.logoUrl);
+    const canonicalURL = `${siteURL}/s/${store.slug}`;
 
     return {
       title,
       description,
       alternates: {
-        canonical: `${siteURL}/s/${store.slug}`
+        canonical: canonicalURL
       },
       openGraph: {
         title,
         description,
+        locale: "id_ID",
+        type: "website",
+        url: canonicalURL,
         images: image ? [image] : undefined
       }
     };
@@ -84,30 +91,61 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
   }
 
   const selectedCategory = categories.find((category) => category.slug === categorySlug);
+  const whatsappHref = buildWhatsappHref(store.whatsapp);
 
   return (
     <main>
       <section className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-primary-700 via-primary-700 to-neutral-950 text-white shadow-soft">
             {store.bannerUrl ? (
-              <img alt="" className="h-48 w-full object-cover opacity-80" src={store.bannerUrl} />
+              <SafeImage
+                alt=""
+                className="h-40 w-full object-cover opacity-80 sm:h-52"
+                fallbackClassName="h-40 w-full bg-transparent sm:h-52"
+                src={store.bannerUrl}
+              />
             ) : null}
-            <div className="space-y-3 p-6 sm:p-8">
-              <p className="text-sm text-primary-100">
-                {store.city ?? "Toko lokal"}
-                {store.province ? `, ${store.province}` : ""}
-              </p>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{store.name}</h1>
-              <p className="max-w-2xl text-sm leading-7 text-primary-50">
-                {store.description ?? "Toko ini belum menambahkan deskripsi."}
-              </p>
+            <div className="grid gap-5 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+              <div className="space-y-3">
+                <p className="text-sm text-primary-100">
+                  {store.city ?? "Toko lokal"}
+                  {store.province ? `, ${store.province}` : ""}
+                </p>
+                <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">{store.name}</h1>
+                <p className="max-w-2xl text-sm leading-7 text-primary-50">
+                  {store.description ?? "Toko ini belum menambahkan deskripsi."}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <p className="max-w-sm text-sm leading-6 text-primary-50">
+                  {whatsappHref
+                    ? "Hubungi toko via WhatsApp untuk tanya stok dan pemesanan."
+                    : "Kontak WhatsApp belum tersedia. Lihat informasi toko untuk kontak lain."}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {whatsappHref ? (
+                    <a
+                      className="inline-flex h-9 items-center justify-center rounded-xl bg-white px-4 text-sm font-semibold text-primary-800 transition hover:bg-primary-50"
+                      href={whatsappHref}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Chat WhatsApp
+                    </a>
+                  ) : null}
+                  <div className="[&_button]:border-white/30 [&_button]:bg-white/10 [&_button]:text-white [&_button:hover]:bg-white/20 [&_span]:text-primary-50">
+                    <ShareLinkButton />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
+      <section className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:px-8">
         <div className="space-y-6">
           <div className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
             <div>
@@ -132,17 +170,24 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <CategoryLink active={!selectedCategory} href={buildStoreHref(store.slug, { q: query })} label="Semua" />
-              {categories.map((category) => (
-                <CategoryLink
-                  key={category.id}
-                  active={category.slug === selectedCategory?.slug}
-                  href={buildStoreHref(store.slug, { q: query, category: category.slug })}
-                  label={category.name}
-                />
-              ))}
-            </div>
+            {categories.length === 0 ? (
+              <EmptyState
+                title="Kategori belum tersedia"
+                description="Toko ini belum menambahkan kategori publik. Semua produk tetap ditampilkan."
+              />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <CategoryLink active={!selectedCategory} href={buildStoreHref(store.slug, { q: query })} label="Semua" />
+                {categories.map((category) => (
+                  <CategoryLink
+                    key={category.id}
+                    active={category.slug === selectedCategory?.slug}
+                    href={buildStoreHref(store.slug, { q: query, category: category.slug })}
+                    label={category.name}
+                  />
+                ))}
+              </div>
+            )}
 
             {products.items.length === 0 ? (
               <EmptyState
@@ -150,11 +195,11 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
                 description={
                   query || selectedCategory
                     ? "Coba ubah kata kunci atau pilih kategori lain."
-                    : "Toko ini belum menampilkan produk publik."
+                    : "Toko ini belum menampilkan produk. Hubungi toko melalui WhatsApp untuk info terbaru."
                 }
               />
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {products.items.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -168,7 +213,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
           </div>
         </div>
 
-        <aside className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
+        <aside className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft lg:sticky lg:top-6">
           <div>
             <h2 className="text-lg font-semibold text-neutral-950">Tentang toko</h2>
             <p className="mt-2 text-sm leading-6 text-neutral-600">
@@ -188,6 +233,12 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
               <span className="font-medium text-neutral-950">Telepon:</span> {store.phone ?? "Belum diisi"}
             </p>
           </div>
+
+          <p className="rounded-2xl bg-primary-50 p-4 text-sm leading-6 text-primary-900">
+            {whatsappHref
+              ? "Gunakan WhatsApp untuk menanyakan ketersediaan, varian, atau cara pemesanan langsung ke toko."
+              : "Kontak WhatsApp belum tersedia. Gunakan nomor telepon jika toko sudah mengisinya."}
+          </p>
         </aside>
       </section>
     </main>
@@ -225,4 +276,18 @@ function buildStoreHref(storeSlug: string, params: { q?: string; category?: stri
 
   const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
   return `/s/${storeSlug}${suffix}`;
+}
+
+function buildWhatsappHref(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const digits = value.replace(/\D/g, "");
+  if (!digits) {
+    return undefined;
+  }
+
+  const normalized = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
+  return `https://wa.me/${normalized}`;
 }

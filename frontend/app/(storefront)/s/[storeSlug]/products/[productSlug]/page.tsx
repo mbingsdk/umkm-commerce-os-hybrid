@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { formatRupiah } from "@/lib/format/money";
 import { getPublicProductDetail, isPublicNotFoundError } from "@/features/storefront/api/storefront.api";
 import { ProductGallery } from "@/features/storefront/components/product-gallery";
+import { ShareLinkButton } from "@/features/storefront/components/share-link-button";
 import { StockBadge } from "@/features/storefront/components/stock-badge";
+import { buildProductJsonLd, getSiteURL, serializeJsonLd, toAbsoluteURL } from "@/features/storefront/seo";
 import type { PublicProductDetail } from "@/features/storefront/types";
 
-const siteURL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteURL = getSiteURL();
 
 type ProductDetailPageProps = {
   params: Promise<{
@@ -26,17 +28,21 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
       product.seo?.description ??
       product.description ??
       `Beli ${product.name} dari ${product.store.name}${product.store.city ? ` di ${product.store.city}` : ""}.`;
-    const image = product.images[0]?.url;
+    const image = toAbsoluteURL(product.images[0]?.url);
+    const canonicalURL = `${siteURL}/s/${product.store.slug}/products/${product.slug}`;
 
     return {
       title,
       description,
       alternates: {
-        canonical: `${siteURL}/s/${product.store.slug}/products/${product.slug}`
+        canonical: canonicalURL
       },
       openGraph: {
         title,
         description,
+        locale: "id_ID",
+        type: "website",
+        url: canonicalURL,
         images: image ? [image] : undefined
       }
     };
@@ -60,8 +66,16 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     throw error;
   }
 
+  const isOutOfStock = product.stock.stockStatus === "out_of_stock";
+  const productJsonLd = buildProductJsonLd(product);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <script
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
+        type="application/ld+json"
+      />
+
       <div className="mb-6">
         <Link href={`/s/${product.store.slug}`} className="text-sm font-semibold text-primary-700 hover:text-primary-800">
           Kembali ke toko
@@ -75,7 +89,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <div className="space-y-3">
             {product.category ? <p className="text-sm font-medium text-primary-700">{product.category.name}</p> : null}
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-neutral-950">{product.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-neutral-950 sm:text-3xl">{product.name}</h1>
               <p className="mt-3 text-2xl font-bold text-primary-700">{formatRupiah(product.price)}</p>
               {product.compareAtPrice ? (
                 <p className="mt-1 text-sm text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
@@ -97,13 +111,20 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               {product.store.name}
               {product.store.city ? ` - ${product.store.city}` : ""}
             </p>
-            <button
-              className="mt-4 h-11 rounded-xl border border-neutral-300 bg-neutral-50 px-4 text-sm font-semibold text-neutral-500"
-              disabled
-              type="button"
-            >
-              Pesan via WhatsApp - segera hadir
-            </button>
+            <p className="mt-4 text-sm leading-6 text-neutral-600">
+              {isOutOfStock
+                ? "Stok sedang habis. Lihat kontak toko untuk menanyakan restok via WhatsApp bila tersedia."
+                : "Produk tersedia. Lihat kontak toko untuk tanya detail dan pemesanan via WhatsApp bila tersedia."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+                href={`/s/${product.store.slug}`}
+              >
+                Lihat kontak toko
+              </Link>
+              <ShareLinkButton label="Bagikan produk" />
+            </div>
           </div>
         </div>
       </section>

@@ -1,4 +1,5 @@
 import type { PublicProductDetail } from "@/features/storefront/types";
+import { SafeImage } from "@/features/storefront/components/safe-image";
 
 export function ProductGallery({ product }: { product: PublicProductDetail }) {
   if (product.images.length === 0) {
@@ -14,9 +15,11 @@ export function ProductGallery({ product }: { product: PublicProductDetail }) {
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-3xl bg-neutral-100">
-        <img
+        <SafeImage
           alt={primaryImage.altText ?? product.name}
           className="aspect-square h-full w-full object-cover"
+          fallbackClassName="aspect-square h-full w-full rounded-3xl"
+          fallbackLabel="Foto produk belum tersedia"
           src={primaryImage.url}
         />
       </div>
@@ -25,9 +28,11 @@ export function ProductGallery({ product }: { product: PublicProductDetail }) {
         <div className="grid grid-cols-4 gap-3">
           {secondaryImages.map((image, index) => (
             <div key={`${image.url}-${index}`} className="overflow-hidden rounded-2xl bg-neutral-100">
-              <img
+              <SafeImage
                 alt={image.altText ?? product.name}
                 className="aspect-square h-full w-full object-cover"
+                fallbackClassName="aspect-square h-full w-full rounded-2xl text-xs"
+                fallbackLabel="Foto"
                 src={image.url}
               />
             </div>
