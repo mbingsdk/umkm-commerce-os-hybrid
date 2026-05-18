@@ -5,7 +5,10 @@ import (
 	"log/slog"
 
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/config"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/password"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/token"
@@ -21,15 +24,17 @@ type BuildInfo struct {
 }
 
 type Dependencies struct {
-	Config        config.Config
-	Logger        *slog.Logger
-	DB            *db.DB
-	Build         BuildInfo
-	AccessTokens  *token.JWTService
-	AuthHandler   *auth.Handler
-	TenantService *tenant.Service
-	TenantHandler *tenant.Handler
-	StoreHandler  *store.Handler
+	Config          config.Config
+	Logger          *slog.Logger
+	DB              *db.DB
+	Build           BuildInfo
+	AccessTokens    *token.JWTService
+	AuthHandler     *auth.Handler
+	TenantService   *tenant.Service
+	TenantHandler   *tenant.Handler
+	StoreHandler    *store.Handler
+	CategoryHandler *category.Handler
+	ProductHandler  *product.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -45,6 +50,9 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	tenantRepo := tenant.NewRepository()
 	userTenantRepo := tenant.NewUserTenantRepository()
 	storeRepo := store.NewRepository()
+	categoryRepo := category.NewRepository()
+	productRepo := product.NewRepository()
+	inventoryRepo := inventory.NewRepository()
 	auditRepo := audit.NewRepository()
 	authService := auth.NewService(
 		database,
@@ -56,17 +64,21 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	)
 	tenantService := tenant.NewService(database, tenantRepo, userTenantRepo, storeRepo, auditRepo)
 	storeService := store.NewService(database, storeRepo, auditRepo)
+	categoryService := category.NewService(database, categoryRepo)
+	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo)
 
 	return &Dependencies{
-		Config:        cfg,
-		Logger:        logger,
-		DB:            database,
-		Build:         build,
-		AccessTokens:  accessTokens,
-		AuthHandler:   auth.NewHandler(authService, logger),
-		TenantService: tenantService,
-		TenantHandler: tenant.NewHandler(tenantService, logger),
-		StoreHandler:  store.NewHandler(storeService, logger),
+		Config:          cfg,
+		Logger:          logger,
+		DB:              database,
+		Build:           build,
+		AccessTokens:    accessTokens,
+		AuthHandler:     auth.NewHandler(authService, logger),
+		TenantService:   tenantService,
+		TenantHandler:   tenant.NewHandler(tenantService, logger),
+		StoreHandler:    store.NewHandler(storeService, logger),
+		CategoryHandler: category.NewHandler(categoryService, logger),
+		ProductHandler:  product.NewHandler(productService, logger),
 	}, nil
 }
 

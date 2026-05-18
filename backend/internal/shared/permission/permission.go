@@ -15,4 +15,19 @@ const (
 	StoreUpdateBusinessHours Permission = "store.update_business_hours"
 	StoreUpdateSEO           Permission = "store.update_seo"
 	StoreUpdateDiscovery     Permission = "store.update_discovery"
+
+	CategoryRead   Permission = "category.read"
+	CategoryCreate Permission = "category.create"
+	CategoryUpdate Permission = "category.update"
+	CategoryDelete Permission = "category.delete"
+
+	ProductRead   Permission = "product.read"
+	ProductCreate Permission = "product.create"
+	ProductUpdate Permission = "product.update"
+	ProductDelete Permission = "product.delete"
+
+	InventoryRead            Permission = "inventory.read"
+	InventoryReadMovement    Permission = "inventory.read_movement"
+	InventoryAdjust          Permission = "inventory.adjust"
+	InventoryUpdateThreshold Permission = "inventory.update_threshold"
 )

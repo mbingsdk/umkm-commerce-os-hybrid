@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/httpserver"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
@@ -66,6 +68,8 @@ func NewRouter(deps *Dependencies) http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware)
 			store.RegisterRoutes(r, deps.StoreHandler, tenantMiddleware, requirePermission)
+			category.RegisterRoutes(r, deps.CategoryHandler, tenantMiddleware, requirePermission)
+			product.RegisterRoutes(r, deps.ProductHandler, tenantMiddleware, requirePermission)
 		})
 	})
 
