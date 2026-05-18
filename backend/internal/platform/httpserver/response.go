@@ -9,6 +9,7 @@ type SuccessResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
+	Meta    any    `json:"meta,omitempty"`
 }
 
 func WriteJSON(w http.ResponseWriter, status int, payload any) {
@@ -22,6 +23,15 @@ func WriteOK(w http.ResponseWriter, message string, data any) {
 		Success: true,
 		Message: message,
 		Data:    data,
+	})
+}
+
+func WriteOKWithMeta(w http.ResponseWriter, message string, data any, meta any) {
+	WriteJSON(w, http.StatusOK, SuccessResponse{
+		Success: true,
+		Message: message,
+		Data:    data,
+		Meta:    meta,
 	})
 }
 

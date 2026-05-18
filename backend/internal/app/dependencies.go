@@ -35,8 +35,11 @@ type Dependencies struct {
 	TenantService   *tenant.Service
 	TenantHandler   *tenant.Handler
 	StoreHandler    *store.Handler
+	PublicStore     *store.PublicHandler
 	CategoryHandler *category.Handler
+	PublicCategory  *category.PublicHandler
 	ProductHandler  *product.Handler
+	PublicProduct   *product.PublicHandler
 	UploadHandler   *upload.Handler
 }
 
@@ -69,8 +72,11 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	)
 	tenantService := tenant.NewService(database, tenantRepo, userTenantRepo, storeRepo, auditRepo)
 	storeService := store.NewService(database, storeRepo, auditRepo)
+	publicStoreService := store.NewPublicService(database, storeRepo)
 	categoryService := category.NewService(database, categoryRepo)
+	publicCategoryService := category.NewPublicService(database, categoryRepo, publicStoreService)
 	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo, productImageRepo, assetStore)
+	publicProductService := product.NewPublicService(database, productRepo, publicStoreService)
 	uploadService := upload.NewService(assetStore)
 
 	return &Dependencies{
@@ -83,8 +89,11 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		TenantService:   tenantService,
 		TenantHandler:   tenant.NewHandler(tenantService, logger),
 		StoreHandler:    store.NewHandler(storeService, logger),
+		PublicStore:     store.NewPublicHandler(publicStoreService, logger),
 		CategoryHandler: category.NewHandler(categoryService, logger),
+		PublicCategory:  category.NewPublicHandler(publicCategoryService, logger),
 		ProductHandler:  product.NewHandler(productService, logger, cfg.UploadMaxBytes),
+		PublicProduct:   product.NewPublicHandler(publicProductService, logger),
 		UploadHandler:   upload.NewHandler(uploadService, logger, cfg.UploadMaxBytes),
 	}, nil
 }

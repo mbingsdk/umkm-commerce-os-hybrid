@@ -69,6 +69,9 @@ func NewRouter(deps *Dependencies) http.Handler {
 
 		auth.RegisterRoutes(r, deps.AuthHandler, authMiddleware)
 		tenant.RegisterRoutes(r, deps.TenantHandler, authMiddleware)
+		store.RegisterPublicRoutes(r, deps.PublicStore)
+		category.RegisterPublicRoutes(r, deps.PublicCategory)
+		product.RegisterPublicRoutes(r, deps.PublicProduct)
 
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware)

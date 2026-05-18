@@ -22,6 +22,11 @@ func NewRepository() *Repository {
 	return &Repository{}
 }
 
+type PublicStoreRecord struct {
+	Store        *Store
+	TenantStatus string
+}
+
 func (r *Repository) Create(ctx context.Context, q db.Queryer, params CreateParams) (*Store, error) {
 	const query = `
 		INSERT INTO stores (
@@ -114,6 +119,112 @@ func (r *Repository) FindCurrentByTenantID(ctx context.Context, q db.Queryer, te
 	`
 
 	return scanStore(q.QueryRow(ctx, query, tenantID))
+}
+
+func (r *Repository) FindPublicBySlug(ctx context.Context, q db.Queryer, slug string) (*PublicStoreRecord, error) {
+	const query = `
+		SELECT
+			s.id,
+			s.tenant_id,
+			s.name,
+			s.slug,
+			COALESCE(s.description, ''),
+			COALESCE(s.logo_url, ''),
+			COALESCE(s.banner_url, ''),
+			COALESCE(s.phone, ''),
+			COALESCE(s.whatsapp, ''),
+			COALESCE(s.email, ''),
+			COALESCE(s.address, ''),
+			COALESCE(s.city, ''),
+			COALESCE(s.province, ''),
+			COALESCE(s.postal_code, ''),
+			s.status,
+			s.is_discoverable,
+			s.published_at,
+			t.status
+		FROM stores s
+		JOIN tenants t
+		  ON t.id = s.tenant_id
+		 AND t.deleted_at IS NULL
+		WHERE s.slug = $1
+		  AND s.deleted_at IS NULL
+		LIMIT 1
+	`
+
+	var record PublicStoreRecord
+	var item Store
+	if err := q.QueryRow(ctx, query, slug).Scan(
+		&item.ID,
+		&item.TenantID,
+		&item.Name,
+		&item.Slug,
+		&item.Description,
+		&item.LogoURL,
+		&item.BannerURL,
+		&item.Phone,
+		&item.Whatsapp,
+		&item.Email,
+		&item.Address,
+		&item.City,
+		&item.Province,
+		&item.PostalCode,
+		&item.Status,
+		&item.IsDiscoverable,
+		&item.PublishedAt,
+		&record.TenantStatus,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrStoreNotFound
+		}
+		return nil, err
+	}
+	record.Store = &item
+
+	return &record, nil
+}
+
+func (r *Repository) ListBusinessHours(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+) ([]BusinessHour, error) {
+	const query = `
+		SELECT
+			day_of_week,
+			COALESCE(to_char(open_time, 'HH24:MI'), ''),
+			COALESCE(to_char(close_time, 'HH24:MI'), ''),
+			is_closed
+		FROM store_business_hours
+		WHERE tenant_id = $1
+		  AND store_id = $2
+		ORDER BY day_of_week ASC
+	`
+
+	rows, err := q.Query(ctx, query, tenantID, storeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]BusinessHour, 0)
+	for rows.Next() {
+		var item BusinessHour
+		if err := rows.Scan(
+			&item.DayOfWeek,
+			&item.OpenTime,
+			&item.CloseTime,
+			&item.IsClosed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
 func (r *Repository) UpdateProfile(ctx context.Context, q db.Queryer, params UpdateProfileParams) (*Store, error) {
