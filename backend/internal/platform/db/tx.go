@@ -7,10 +7,14 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type Tx interface {
+type Queryer interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+type Tx interface {
+	Queryer
 }
 
 func (d *DB) WithTx(ctx context.Context, fn func(tx Tx) error) (err error) {

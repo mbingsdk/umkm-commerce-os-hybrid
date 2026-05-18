@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/httpserver"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
@@ -47,6 +48,10 @@ func NewRouter(deps *Dependencies) http.Handler {
 			"commit":     deps.Build.Commit,
 			"build_time": deps.Build.BuildTime,
 		})
+	})
+
+	r.Route("/api/v1", func(r chi.Router) {
+		auth.RegisterRoutes(r, deps.AuthHandler, sharedmw.Auth(deps.AccessTokens, deps.Logger))
 	})
 
 	return r

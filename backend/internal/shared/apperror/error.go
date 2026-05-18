@@ -54,6 +54,22 @@ func ServiceUnavailable(message string, err error) *AppError {
 	}
 }
 
+func Unauthorized(message string) *AppError {
+	return New(CodeUnauthorized, message)
+}
+
+func Forbidden(message string) *AppError {
+	return New(CodeForbidden, message)
+}
+
+func NotFound(message string) *AppError {
+	return New(CodeNotFound, message)
+}
+
+func Conflict(message string) *AppError {
+	return New(CodeConflict, message)
+}
+
 func Internal(err error) *AppError {
 	return &AppError{
 		Code:    CodeInternal,

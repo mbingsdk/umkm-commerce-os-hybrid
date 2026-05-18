@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -15,6 +16,9 @@ type Config struct {
 	AppName            string
 	HTTPPort           string
 	DatabaseURL        string
+	JWTSecret          string
+	AccessTokenTTL     time.Duration
+	RefreshTokenTTL    time.Duration
 	CORSAllowedOrigins []string
 }
 
@@ -26,6 +30,9 @@ func Load() (Config, error) {
 		AppName:            getEnv("APP_NAME", "umkm-commerce-os"),
 		HTTPPort:           getEnv("HTTP_PORT", "8080"),
 		DatabaseURL:        strings.TrimSpace(os.Getenv("DATABASE_URL")),
+		JWTSecret:          strings.TrimSpace(os.Getenv("JWT_SECRET")),
+		AccessTokenTTL:     time.Duration(getEnvInt("ACCESS_TOKEN_TTL_MINUTES", 15)) * time.Minute,
+		RefreshTokenTTL:    time.Duration(getEnvInt("REFRESH_TOKEN_TTL_DAYS", 30)) * 24 * time.Hour,
 		CORSAllowedOrigins: splitCSV(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
 	}
 
@@ -40,10 +47,19 @@ func (c Config) Validate() error {
 	if c.DatabaseURL == "" {
 		return errors.New("DATABASE_URL is required")
 	}
+	if c.JWTSecret == "" {
+		return errors.New("JWT_SECRET is required")
+	}
 
 	port, err := strconv.Atoi(c.HTTPPort)
 	if err != nil || port < 1 || port > 65535 {
 		return fmt.Errorf("HTTP_PORT must be a valid TCP port")
+	}
+	if c.AccessTokenTTL <= 0 {
+		return errors.New("ACCESS_TOKEN_TTL_MINUTES must be greater than zero")
+	}
+	if c.RefreshTokenTTL <= 0 {
+		return errors.New("REFRESH_TOKEN_TTL_DAYS must be greater than zero")
 	}
 
 	return nil
@@ -55,6 +71,20 @@ func getEnv(key, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func getEnvInt(key string, fallback int) int {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+
+	return parsed
 }
 
 func splitCSV(value string) []string {
