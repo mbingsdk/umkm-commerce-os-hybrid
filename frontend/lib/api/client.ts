@@ -21,8 +21,9 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   const token = useAuthStore.getState().accessToken;
   const tenantId = useTenantStore.getState().selectedTenantId;
   const headers = new Headers(options.headers);
+  const isFormDataBody = typeof FormData !== "undefined" && options.body instanceof FormData;
 
-  if (options.body && !headers.has("Content-Type")) {
+  if (options.body && !headers.has("Content-Type") && !isFormDataBody) {
     headers.set("Content-Type", "application/json");
   }
 

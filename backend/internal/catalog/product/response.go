@@ -19,6 +19,7 @@ type ImageResponse struct {
 
 type ListItemResponse struct {
 	ID              uuid.UUID     `json:"id"`
+	CategoryID      *uuid.UUID    `json:"category_id"`
 	Name            string        `json:"name"`
 	Slug            string        `json:"slug"`
 	SKU             string        `json:"sku,omitempty"`
@@ -64,6 +65,7 @@ type DetailResponse struct {
 func NewListItemResponse(product *Product) ListItemResponse {
 	return ListItemResponse{
 		ID:              product.ID,
+		CategoryID:      product.CategoryID,
 		Name:            product.Name,
 		Slug:            product.Slug,
 		SKU:             product.SKU,
