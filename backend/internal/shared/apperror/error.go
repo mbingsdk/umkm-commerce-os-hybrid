@@ -3,15 +3,16 @@ package apperror
 type Code string
 
 const (
-	CodeValidation         Code = "VALIDATION_ERROR"
-	CodeUnauthorized       Code = "UNAUTHORIZED"
-	CodeForbidden          Code = "FORBIDDEN"
-	CodeTenantAccessDenied Code = "TENANT_ACCESS_DENIED"
-	CodeNotFound           Code = "NOT_FOUND"
-	CodeConflict           Code = "CONFLICT"
-	CodeRateLimited        Code = "RATE_LIMITED"
-	CodeServiceUnavailable Code = "SERVICE_UNAVAILABLE"
-	CodeInternal           Code = "INTERNAL_SERVER_ERROR"
+	CodeValidation          Code = "VALIDATION_ERROR"
+	CodeUnauthorized        Code = "UNAUTHORIZED"
+	CodeForbidden           Code = "FORBIDDEN"
+	CodeTenantAccessDenied  Code = "TENANT_ACCESS_DENIED"
+	CodeNotFound            Code = "NOT_FOUND"
+	CodeConflict            Code = "CONFLICT"
+	CodeIdempotencyConflict Code = "IDEMPOTENCY_CONFLICT"
+	CodeRateLimited         Code = "RATE_LIMITED"
+	CodeServiceUnavailable  Code = "SERVICE_UNAVAILABLE"
+	CodeInternal            Code = "INTERNAL_SERVER_ERROR"
 )
 
 type AppError struct {
@@ -73,6 +74,10 @@ func NotFound(message string) *AppError {
 
 func Conflict(message string) *AppError {
 	return New(CodeConflict, message)
+}
+
+func IdempotencyConflict(message string) *AppError {
+	return New(CodeIdempotencyConflict, message)
 }
 
 func Internal(err error) *AppError {
