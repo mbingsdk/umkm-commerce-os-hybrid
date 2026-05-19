@@ -9,6 +9,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/httpserver"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
@@ -72,6 +73,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 		store.RegisterPublicRoutes(r, deps.PublicStore)
 		category.RegisterPublicRoutes(r, deps.PublicCategory)
 		product.RegisterPublicRoutes(r, deps.PublicProduct)
+		checkout.RegisterPublicRoutes(r, deps.CheckoutHandler)
 
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware)

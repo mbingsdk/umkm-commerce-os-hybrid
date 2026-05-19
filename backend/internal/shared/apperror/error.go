@@ -10,6 +10,7 @@ const (
 	CodeNotFound            Code = "NOT_FOUND"
 	CodeConflict            Code = "CONFLICT"
 	CodeIdempotencyConflict Code = "IDEMPOTENCY_CONFLICT"
+	CodeInsufficientStock   Code = "INSUFFICIENT_STOCK"
 	CodeRateLimited         Code = "RATE_LIMITED"
 	CodeServiceUnavailable  Code = "SERVICE_UNAVAILABLE"
 	CodeInternal            Code = "INTERNAL_SERVER_ERROR"
@@ -78,6 +79,14 @@ func Conflict(message string) *AppError {
 
 func IdempotencyConflict(message string) *AppError {
 	return New(CodeIdempotencyConflict, message)
+}
+
+func InsufficientStock(message string, details any) *AppError {
+	return &AppError{
+		Code:    CodeInsufficientStock,
+		Message: message,
+		Details: details,
+	}
 }
 
 func Internal(err error) *AppError {

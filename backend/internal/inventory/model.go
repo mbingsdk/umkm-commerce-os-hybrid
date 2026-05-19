@@ -2,7 +2,10 @@ package inventory
 
 import "github.com/google/uuid"
 
-const MovementTypeInitial = "initial"
+const (
+	MovementTypeInitial  = "initial"
+	MovementTypeReserved = "reserved"
+)
 
 type StockSnapshot struct {
 	ID                uuid.UUID

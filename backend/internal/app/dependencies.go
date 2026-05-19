@@ -7,6 +7,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/config"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
@@ -14,6 +15,8 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/storage"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/token"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/idempotency"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/upload"
@@ -41,6 +44,7 @@ type Dependencies struct {
 	ProductHandler  *product.Handler
 	PublicProduct   *product.PublicHandler
 	UploadHandler   *upload.Handler
+	CheckoutHandler *checkout.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -60,6 +64,9 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	productRepo := product.NewRepository()
 	productImageRepo := product.NewImageRepository()
 	inventoryRepo := inventory.NewRepository()
+	checkoutRepo := checkout.NewRepository()
+	idempotencyRepo := idempotency.NewRepository()
+	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
 	auditRepo := audit.NewRepository()
 	authService := auth.NewService(
@@ -78,6 +85,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo, productImageRepo, assetStore)
 	publicProductService := product.NewPublicService(database, productRepo, publicStoreService)
 	uploadService := upload.NewService(assetStore)
+	checkoutService := checkout.NewService(database, publicStoreService, checkoutRepo, idempotencyRepo, outboxRepo)
 
 	return &Dependencies{
 		Config:          cfg,
@@ -95,6 +103,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		ProductHandler:  product.NewHandler(productService, logger, cfg.UploadMaxBytes),
 		PublicProduct:   product.NewPublicHandler(publicProductService, logger),
 		UploadHandler:   upload.NewHandler(uploadService, logger, cfg.UploadMaxBytes),
+		CheckoutHandler: checkout.NewHandler(checkoutService, logger),
 	}, nil
 }
 

@@ -64,6 +64,8 @@ func statusFromCode(code apperror.Code) int {
 		return http.StatusConflict
 	case apperror.CodeIdempotencyConflict:
 		return http.StatusConflict
+	case apperror.CodeInsufficientStock:
+		return http.StatusConflict
 	case apperror.CodeRateLimited:
 		return http.StatusTooManyRequests
 	case apperror.CodeServiceUnavailable:
