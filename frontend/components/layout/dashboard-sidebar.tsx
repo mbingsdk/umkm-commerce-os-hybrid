@@ -11,14 +11,14 @@ const navItems: Array<{
   permission: Permission;
   ready: boolean;
 }> = [
-  { label: "Dashboard", href: "/dashboard", permission: permissions.tenantRead, ready: true },
+  { label: "Dashboard", href: "/dashboard", permission: permissions.dashboardReadSummary, ready: true },
   { label: "Toko", permission: permissions.storeRead, ready: false },
   { label: "Produk", href: "/dashboard/products", permission: permissions.productRead, ready: true },
   { label: "Kategori", href: "/dashboard/categories", permission: permissions.categoryRead, ready: true },
   { label: "Inventori", href: "/dashboard/inventory", permission: permissions.inventoryRead, ready: true },
   { label: "Pesanan", href: "/dashboard/orders", permission: permissions.orderRead, ready: true },
   { label: "POS", href: "/dashboard/pos", permission: permissions.posReadSession, ready: true },
-  { label: "Keuangan", permission: permissions.financeReadSummary, ready: false }
+  { label: "Keuangan", href: "/dashboard/finance", permission: permissions.financeReadSummary, ready: true }
 ];
 
 export function DashboardSidebar() {
@@ -26,7 +26,7 @@ export function DashboardSidebar() {
     <aside className="hidden w-64 border-r border-neutral-200 bg-white p-5 lg:block">
       <p className="text-sm font-semibold text-primary-700">UMKM Commerce OS</p>
       <Badge className="mt-3" tone="primary">
-        Sprint 7E
+        Sprint 8E
       </Badge>
       <nav className="mt-8 space-y-2 text-sm text-neutral-600">
         {navItems.map((item) => (

@@ -1,10 +1,15 @@
 export const permissions = {
   tenantRead: "tenant.read",
   tenantCreate: "tenant.create",
+  tenantUpdate: "tenant.update",
+  tenantManageMembers: "tenant.manage_members",
+  tenantManagePlan: "tenant.manage_plan",
   storeRead: "store.read",
   storeUpdate: "store.update",
   storePublish: "store.publish",
   storeUpdateBusinessHours: "store.update_business_hours",
+  storeUpdateSEO: "store.update_seo",
+  storeUpdateDiscovery: "store.update_discovery",
   categoryRead: "category.read",
   categoryCreate: "category.create",
   categoryUpdate: "category.update",
@@ -29,7 +34,16 @@ export const permissions = {
   posCreateTransaction: "pos.create_transaction",
   posReadTransaction: "pos.read_transaction",
   posCloseSession: "pos.close_session",
-  financeReadSummary: "finance.read_summary"
+  posRefundTransaction: "pos.refund_transaction",
+  financeReadSummary: "finance.read_summary",
+  financeReadReport: "finance.read_report",
+  financeReadExpense: "finance.read_expense",
+  financeCreateExpense: "finance.create_expense",
+  financeUpdateExpense: "finance.update_expense",
+  financeDeleteExpense: "finance.delete_expense",
+  dashboardReadSummary: "dashboard.read_summary",
+  dashboardReadRecentOrders: "dashboard.read_recent_orders",
+  dashboardReadLowStock: "dashboard.read_low_stock"
 } as const;
 
 export type Permission = (typeof permissions)[keyof typeof permissions];

@@ -8,6 +8,7 @@ type ApiTenant = {
   slug: string;
   role: TenantRole;
   status: string;
+  permissions?: string[];
   store: {
     id: string;
     name: string;
@@ -23,6 +24,6 @@ export async function listTenants(): Promise<TenantMembership[]> {
 
   return tenants.map((tenant) => ({
     ...tenant,
-    permissions: permissionsForRole(tenant.role)
+    permissions: tenant.permissions && tenant.permissions.length > 0 ? tenant.permissions : permissionsForRole(tenant.role)
   }));
 }

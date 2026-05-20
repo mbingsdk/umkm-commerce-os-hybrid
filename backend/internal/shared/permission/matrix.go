@@ -141,3 +141,67 @@ func Allowed(role string, permission Permission) bool {
 
 	return permissions[permission]
 }
+
+func ListForRole(role string) []string {
+	grants, ok := rolePermissions[Role(role)]
+	if !ok {
+		return []string{}
+	}
+
+	result := make([]string, 0, len(grants))
+	for _, permission := range orderedPermissions {
+		if grants[permission] {
+			result = append(result, string(permission))
+		}
+	}
+
+	return result
+}
+
+var orderedPermissions = []Permission{
+	TenantRead,
+	TenantCreate,
+	TenantUpdate,
+	TenantManageMembers,
+	TenantManagePlan,
+	StoreRead,
+	StoreUpdate,
+	StorePublish,
+	StoreUpdateBusinessHours,
+	StoreUpdateSEO,
+	StoreUpdateDiscovery,
+	CategoryRead,
+	CategoryCreate,
+	CategoryUpdate,
+	CategoryDelete,
+	ProductRead,
+	ProductCreate,
+	ProductUpdate,
+	ProductDelete,
+	ProductUploadImage,
+	InventoryRead,
+	InventoryReadMovement,
+	InventoryAdjust,
+	InventoryUpdateThreshold,
+	FinanceReadSummary,
+	FinanceReadReport,
+	FinanceReadExpense,
+	FinanceCreateExpense,
+	FinanceUpdateExpense,
+	FinanceDeleteExpense,
+	DashboardReadSummary,
+	DashboardReadRecentOrders,
+	DashboardReadLowStock,
+	OrderRead,
+	OrderReadDetail,
+	OrderUpdateStatus,
+	OrderUpdatePaymentStatus,
+	OrderCancel,
+	POSReadProduct,
+	POSOpenSession,
+	POSReadSession,
+	POSCreateTransaction,
+	POSReadTransaction,
+	POSCloseSession,
+	POSRefundTransaction,
+}

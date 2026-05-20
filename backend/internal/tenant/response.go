@@ -1,14 +1,18 @@
 package tenant
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+)
 
 type ListItemResponse struct {
-	ID     uuid.UUID            `json:"id"`
-	Name   string               `json:"name"`
-	Slug   string               `json:"slug"`
-	Role   string               `json:"role"`
-	Status string               `json:"status"`
-	Store  StoreSummaryResponse `json:"store"`
+	ID          uuid.UUID            `json:"id"`
+	Name        string               `json:"name"`
+	Slug        string               `json:"slug"`
+	Role        string               `json:"role"`
+	Status      string               `json:"status"`
+	Store       StoreSummaryResponse `json:"store"`
+	Permissions []string             `json:"permissions"`
 }
 
 type StoreSummaryResponse struct {
@@ -49,5 +53,6 @@ func NewListItemResponse(item TenantListItem) ListItemResponse {
 			Slug:   item.Store.Slug,
 			Status: item.Store.Status,
 		},
+		Permissions: permission.ListForRole(item.Role),
 	}
 }

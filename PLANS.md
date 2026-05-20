@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 8D Outbox Worker Basic.
+Sprint 8E Dashboard + Finance UI.
 
 ## Current Goal
 
-Implement basic outbox polling worker with safe no-op handlers, retry attempts, structured logging, and graceful shutdown.
+Implement frontend dashboard summary, finance reports, and expense management UI using existing backend APIs.
 
 ## Sprint 0 Tasks
 

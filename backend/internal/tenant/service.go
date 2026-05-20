@@ -12,6 +12,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/tenantctx"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 )
@@ -184,7 +185,7 @@ func (s *Service) CreateStore(ctx context.Context, input CreateStoreInput) (*Onb
 			},
 			Membership: MembershipResponse{
 				Role:        membership.Role,
-				Permissions: []string{},
+				Permissions: permission.ListForRole(membership.Role),
 			},
 		}
 		return nil

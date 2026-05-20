@@ -55,7 +55,14 @@ export default function OrderDetailPage() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.order(tenantId, orderId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.paymentConfirmations(tenantId, orderId) }),
-      queryClient.invalidateQueries({ queryKey: ["orders", tenantId] })
+      queryClient.invalidateQueries({ queryKey: ["orders", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["dashboard-recent-orders", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["dashboard-low-stock", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["finance-summary", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["finance-daily-report", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["finance-monthly-report", tenantId] }),
+      queryClient.invalidateQueries({ queryKey: ["inventory-stocks", tenantId] })
     ]);
   };
 

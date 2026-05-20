@@ -247,3 +247,40 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   } `
   -Body $closeBody
+
+# TEST FINANCE - SUMMARY
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/finance/summary" `
+  -Method GET `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  }
+
+# TEST FINANCE - CREATE EXPENSE
+$expenseBody = @{
+  title = "Beli pita satin"
+  amount = 75000
+  expense_date = "2026-05-20"
+  payment_method = "cash"
+  note = "Bahan bouquet"
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/finance/expenses" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  } `
+  -Body $expenseBody
+
+# TEST FINANCE - SUMMARY DASHBOARD
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/dashboard/summary" `
+  -Method GET `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  }

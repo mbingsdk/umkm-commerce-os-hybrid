@@ -23,5 +23,18 @@ export const queryKeys = {
   posTransactions: (tenantId: string | null, filters?: Record<string, unknown>) =>
     ["pos-transactions", tenantId, filters ?? {}] as const,
   posTransaction: (tenantId: string | null, transactionId: string | null) =>
-    ["pos-transaction", tenantId, transactionId] as const
+    ["pos-transaction", tenantId, transactionId] as const,
+  dashboardSummary: (tenantId: string | null) => ["dashboard-summary", tenantId] as const,
+  dashboardRecentOrders: (tenantId: string | null, limit?: number) =>
+    ["dashboard-recent-orders", tenantId, limit ?? null] as const,
+  dashboardLowStock: (tenantId: string | null, limit?: number) =>
+    ["dashboard-low-stock", tenantId, limit ?? null] as const,
+  financeSummary: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["finance-summary", tenantId, filters ?? {}] as const,
+  financeDailyReport: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["finance-daily-report", tenantId, filters ?? {}] as const,
+  financeMonthlyReport: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["finance-monthly-report", tenantId, filters ?? {}] as const,
+  financeExpenses: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["finance-expenses", tenantId, filters ?? {}] as const
 };

@@ -182,6 +182,25 @@ func TestFinanceSummaryUsesPaidOnlineOrdersOnly(t *testing.T) {
 	}
 }
 
+func TestFinanceSummaryExcludesCancelledPaidOrders(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	mayRange := DateRange{
+		From: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	result, err := service.Summary(context.Background(), finTenantA, finStoreA, mayRange)
+	if err != nil {
+		t.Fatalf("Summary error = %v", err)
+	}
+	if result.OnlineSales == 500000 {
+		t.Fatalf("online_sales includes cancelled paid order: got %d", result.OnlineSales)
+	}
+	if result.OnlineSales != 100000 {
+		t.Fatalf("online_sales = %d, want only non-cancelled paid order 100000", result.OnlineSales)
+	}
+}
+
 func TestFinanceSummaryUsesCompletedPOSTransactionsOnly(t *testing.T) {
 	service, _, _, _ := newFinanceTestService()
 	mayRange := DateRange{
