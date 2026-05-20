@@ -12,5 +12,9 @@ export const queryKeys = {
   orders: (tenantId: string | null, filters?: Record<string, unknown>) => ["orders", tenantId, filters ?? {}] as const,
   order: (tenantId: string | null, orderId: string | null) => ["order", tenantId, orderId] as const,
   paymentConfirmations: (tenantId: string | null, orderId: string | null) =>
-    ["payment-confirmations", tenantId, orderId] as const
+    ["payment-confirmations", tenantId, orderId] as const,
+  inventoryStocks: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["inventory-stocks", tenantId, filters ?? {}] as const,
+  inventoryMovements: (tenantId: string | null, productId: string | null, filters?: Record<string, unknown>) =>
+    ["inventory-movements", tenantId, productId, filters ?? {}] as const
 };

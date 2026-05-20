@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 7C POS Transaction.
+Sprint 7D Inventory UI.
 
 ## Current Goal
 
-Implement tenant-scoped backend POS product search and online-first POS transaction creation/list/detail with idempotency and stock reduction.
+Implement tenant-scoped frontend inventory stock list, stock movement detail, manual stock adjustment, and low-stock threshold UI.
 
 ## Sprint 0 Tasks
 
