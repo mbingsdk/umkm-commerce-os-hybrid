@@ -175,3 +175,75 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   } `
   -Body $adjustBody
+
+# TEST POS - OPEN SESSION
+$openBody = @{
+  opening_cash_amount = 200000
+  note = "Buka kasir pagi"
+} | ConvertTo-Json
+
+$session = Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/pos/sessions/open" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  } `
+  -Body $openBody
+
+$sessionId = $session.data.id
+
+# TEST POS - SEARCH PRODUCTS
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/pos/products?q=bouquet" `
+  -Method GET `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  }
+
+# TEST POS - CREATE TRANSACTION
+$posBody = @{
+  session_id = $sessionId
+  items = @(
+    @{
+      product_id = $productId
+      quantity = 1
+    }
+  )
+  payment_method = "cash"
+  amount_paid = 100000
+  note = "Transaksi test POS"
+} | ConvertTo-Json -Depth 6
+
+$key = [guid]::NewGuid().ToString()
+
+$trx = Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/pos/transactions" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+    "Idempotency-Key" = $key
+  } `
+  -Body $posBody
+
+$trx
+
+# TEST POS - CLOSE SESSION
+$closeBody = @{
+  closing_cash_amount = 300000
+  note = "Tutup kasir"
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/pos/sessions/$sessionId/close" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  } `
+  -Body $closeBody

@@ -19,5 +19,9 @@ func RegisterRoutes(
 		r.With(requirePermission(permission.POSOpenSession)).Post("/sessions/open", handler.OpenSession)
 		r.With(requirePermission(permission.POSReadSession)).Get("/sessions/current", handler.CurrentSession)
 		r.With(requirePermission(permission.POSCloseSession)).Post("/sessions/{sessionId}/close", handler.CloseSession)
+		r.With(requirePermission(permission.POSReadProduct)).Get("/products", handler.ListProducts)
+		r.With(requirePermission(permission.POSCreateTransaction)).Post("/transactions", handler.CreateTransaction)
+		r.With(requirePermission(permission.POSReadTransaction)).Get("/transactions", handler.ListTransactions)
+		r.With(requirePermission(permission.POSReadTransaction)).Get("/transactions/{transactionId}", handler.TransactionDetail)
 	})
 }

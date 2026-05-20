@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 7B POS Session.
+Sprint 7C POS Transaction.
 
 ## Current Goal
 
-Implement the tenant-scoped backend POS cashier session lifecycle for opening, reading current, and closing cashier sessions.
+Implement tenant-scoped backend POS product search and online-first POS transaction creation/list/detail with idempotency and stock reduction.
 
 ## Sprint 0 Tasks
 

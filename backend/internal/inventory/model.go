@@ -15,6 +15,7 @@ const (
 	MovementTypeReleased      = "released"
 	MovementTypeAdjustmentIn  = "adjustment_in"
 	MovementTypeAdjustmentOut = "adjustment_out"
+	MovementTypePOSSale       = "pos_sale"
 
 	AdjustmentTypeIn  = "in"
 	AdjustmentTypeOut = "out"

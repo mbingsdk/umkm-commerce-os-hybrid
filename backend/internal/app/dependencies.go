@@ -99,7 +99,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	orderService := order.NewService(database, orderRepo, outboxRepo)
 	paymentService := payment.NewService(database, publicStoreService, paymentRepo, idempotencyRepo, outboxRepo)
 	inventoryService := inventory.NewService(database, inventoryRepo, auditRepo, outboxRepo)
-	posService := pos.NewService(database, posRepo, auditRepo, outboxRepo)
+	posService := pos.NewService(database, posRepo, auditRepo, idempotencyRepo, outboxRepo)
 
 	return &Dependencies{
 		Config:           cfg,
