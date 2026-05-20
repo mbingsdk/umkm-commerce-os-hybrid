@@ -43,6 +43,11 @@ const (
 	DashboardReadRecentOrders Permission = "dashboard.read_recent_orders"
 	DashboardReadLowStock     Permission = "dashboard.read_low_stock"
 
+	CourierReadZone   Permission = "courier.read_zone"
+	CourierCreateZone Permission = "courier.create_zone"
+	CourierUpdateZone Permission = "courier.update_zone"
+	CourierDeleteZone Permission = "courier.delete_zone"
+
 	OrderRead                Permission = "order.read"
 	OrderReadDetail          Permission = "order.read_detail"
 	OrderUpdateStatus        Permission = "order.update_status"

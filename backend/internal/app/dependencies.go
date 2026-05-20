@@ -9,6 +9,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/config"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/courier"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/dashboard"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/finance"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
@@ -56,6 +57,7 @@ type Dependencies struct {
 	POSHandler       *pos.Handler
 	FinanceHandler   *finance.Handler
 	DashboardHandler *dashboard.Handler
+	CourierHandler   *courier.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -81,6 +83,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	posRepo := pos.NewRepository()
 	financeRepo := finance.NewRepository()
 	dashboardRepo := dashboard.NewRepository()
+	courierRepo := courier.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -108,6 +111,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	posService := pos.NewService(database, posRepo, auditRepo, idempotencyRepo, outboxRepo)
 	financeService := finance.NewService(database, financeRepo, auditRepo, outboxRepo)
 	dashboardService := dashboard.NewService(database, dashboardRepo)
+	courierService := courier.NewService(database, courierRepo, publicStoreService, auditRepo)
 
 	return &Dependencies{
 		Config:           cfg,
@@ -132,6 +136,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		POSHandler:       pos.NewHandler(posService, logger),
 		FinanceHandler:   finance.NewHandler(financeService, logger),
 		DashboardHandler: dashboard.NewHandler(dashboardService, logger),
+		CourierHandler:   courier.NewHandler(courierService, logger),
 	}, nil
 }
 

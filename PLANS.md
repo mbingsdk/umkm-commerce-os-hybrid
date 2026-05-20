@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 8E Dashboard + Finance UI.
+Sprint 9A Courier Zones.
 
 ## Current Goal
 
-Implement frontend dashboard summary, finance reports, and expense management UI using existing backend APIs.
+Implement backend courier zone management and public active courier zone listing for checkout.
 
 ## Sprint 0 Tasks
 
