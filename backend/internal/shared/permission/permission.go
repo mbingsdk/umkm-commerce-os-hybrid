@@ -31,4 +31,8 @@ const (
 	InventoryReadMovement    Permission = "inventory.read_movement"
 	InventoryAdjust          Permission = "inventory.adjust"
 	InventoryUpdateThreshold Permission = "inventory.update_threshold"
+
+	OrderRead         Permission = "order.read"
+	OrderReadDetail   Permission = "order.read_detail"
+	OrderUpdateStatus Permission = "order.update_status"
 )

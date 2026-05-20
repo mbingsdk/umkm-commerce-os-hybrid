@@ -10,6 +10,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/order"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/httpserver"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
@@ -81,6 +82,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 			category.RegisterRoutes(r, deps.CategoryHandler, tenantMiddleware, requirePermission)
 			product.RegisterRoutes(r, deps.ProductHandler, tenantMiddleware, requirePermission)
 			upload.RegisterRoutes(r, deps.UploadHandler, tenantMiddleware, requirePermission)
+			order.RegisterRoutes(r, deps.OrderHandler, tenantMiddleware, requirePermission)
 		})
 	})
 

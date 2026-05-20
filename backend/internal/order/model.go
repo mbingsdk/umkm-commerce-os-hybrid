@@ -1,10 +1,15 @@
 package order
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var errInvalidCursor = errors.New("invalid cursor")
 
 const (
 	SourceStorefront = "storefront"
@@ -25,6 +30,9 @@ const (
 	PaymentStatusPaid                = "paid"
 	PaymentStatusFailed              = "failed"
 	PaymentStatusRefunded            = "refunded"
+
+	EventOrderStatusUpdated = "OrderStatusUpdated"
+	AggregateOrder          = "order"
 )
 
 type Order struct {
@@ -82,4 +90,75 @@ type StatusLog struct {
 	Note       string
 	CreatedBy  *uuid.UUID
 	CreatedAt  time.Time
+}
+
+type ReservationSummary struct {
+	Status   string
+	Quantity int
+	Count    int
+}
+
+type ListFilters struct {
+	Status        *string
+	PaymentStatus *string
+	Source        *string
+	Query         string
+	DateFrom      *time.Time
+	DateTo        *time.Time
+	Limit         int
+	Cursor        *Cursor
+}
+
+type Cursor struct {
+	CreatedAt time.Time `json:"created_at"`
+	ID        uuid.UUID `json:"id"`
+}
+
+type ListParams struct {
+	TenantID uuid.UUID
+	StoreID  uuid.UUID
+	Filters  ListFilters
+}
+
+type UpdateStatusParams struct {
+	TenantID uuid.UUID
+	StoreID  uuid.UUID
+	OrderID  uuid.UUID
+	Status   string
+}
+
+type CreateStatusLogParams struct {
+	TenantID   uuid.UUID
+	OrderID    uuid.UUID
+	FromStatus string
+	ToStatus   string
+	Note       string
+	CreatedBy  uuid.UUID
+}
+
+func EncodeCursor(order Order) (string, error) {
+	payload, err := json.Marshal(Cursor{
+		CreatedAt: order.CreatedAt,
+		ID:        order.ID,
+	})
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(payload), nil
+}
+
+func DecodeCursor(raw string) (*Cursor, error) {
+	decoded, err := base64.RawURLEncoding.DecodeString(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	var cursor Cursor
+	if err := json.Unmarshal(decoded, &cursor); err != nil {
+		return nil, err
+	}
+	if cursor.ID == uuid.Nil || cursor.CreatedAt.IsZero() {
+		return nil, errInvalidCursor
+	}
+	return &cursor, nil
 }
