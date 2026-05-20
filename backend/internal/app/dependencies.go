@@ -9,6 +9,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/config"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/finance"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/order"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/payment"
@@ -52,6 +53,7 @@ type Dependencies struct {
 	PaymentHandler   *payment.Handler
 	InventoryHandler *inventory.Handler
 	POSHandler       *pos.Handler
+	FinanceHandler   *finance.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -75,6 +77,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	orderRepo := order.NewRepository()
 	paymentRepo := payment.NewRepository()
 	posRepo := pos.NewRepository()
+	financeRepo := finance.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -100,6 +103,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	paymentService := payment.NewService(database, publicStoreService, paymentRepo, idempotencyRepo, outboxRepo)
 	inventoryService := inventory.NewService(database, inventoryRepo, auditRepo, outboxRepo)
 	posService := pos.NewService(database, posRepo, auditRepo, idempotencyRepo, outboxRepo)
+	financeService := finance.NewService(database, financeRepo, auditRepo, outboxRepo)
 
 	return &Dependencies{
 		Config:           cfg,
@@ -122,6 +126,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		PaymentHandler:   payment.NewHandler(paymentService, logger),
 		InventoryHandler: inventory.NewHandler(inventoryService, logger),
 		POSHandler:       pos.NewHandler(posService, logger),
+		FinanceHandler:   finance.NewHandler(financeService, logger),
 	}, nil
 }
 

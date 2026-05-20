@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 7E POS UI.
+Sprint 8A Finance Expense Backend.
 
 ## Current Goal
 
-Implement tenant-scoped frontend online-first POS session, product search, cart, transaction, receipt, close-session, and POS history UI.
+Implement tenant-scoped finance expense backend foundation with expense schema, CRUD API, audit logging, and outbox event emission.
 
 ## Sprint 0 Tasks
 

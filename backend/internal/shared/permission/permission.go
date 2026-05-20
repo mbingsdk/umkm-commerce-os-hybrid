@@ -32,6 +32,13 @@ const (
 	InventoryAdjust          Permission = "inventory.adjust"
 	InventoryUpdateThreshold Permission = "inventory.update_threshold"
 
+	FinanceReadSummary   Permission = "finance.read_summary"
+	FinanceReadReport    Permission = "finance.read_report"
+	FinanceReadExpense   Permission = "finance.read_expense"
+	FinanceCreateExpense Permission = "finance.create_expense"
+	FinanceUpdateExpense Permission = "finance.update_expense"
+	FinanceDeleteExpense Permission = "finance.delete_expense"
+
 	OrderRead                Permission = "order.read"
 	OrderReadDetail          Permission = "order.read_detail"
 	OrderUpdateStatus        Permission = "order.update_status"
