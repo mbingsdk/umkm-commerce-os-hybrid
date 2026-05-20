@@ -10,6 +10,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/dashboard"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/finance"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/order"
@@ -90,6 +91,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 			inventory.RegisterRoutes(r, deps.InventoryHandler, tenantMiddleware, requirePermission)
 			pos.RegisterRoutes(r, deps.POSHandler, tenantMiddleware, requirePermission)
 			finance.RegisterRoutes(r, deps.FinanceHandler, tenantMiddleware, requirePermission)
+			dashboard.RegisterRoutes(r, deps.DashboardHandler, tenantMiddleware, requirePermission)
 			order.RegisterRoutes(r, deps.OrderHandler, tenantMiddleware, requirePermission)
 			payment.RegisterRoutes(r, deps.PaymentHandler, tenantMiddleware, requirePermission)
 		})

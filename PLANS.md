@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 8B Finance Summary + Reports.
+Sprint 8C Dashboard Summary Backend.
 
 ## Current Goal
 
-Implement tenant-scoped finance summary and basic daily/monthly reports from paid online orders, completed POS transactions, and non-deleted expenses.
+Implement tenant-scoped dashboard summary, recent orders, and low-stock backend APIs with role-aware metric visibility.
 
 ## Sprint 0 Tasks
 

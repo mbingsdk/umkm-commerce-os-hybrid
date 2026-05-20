@@ -39,6 +39,10 @@ const (
 	FinanceUpdateExpense Permission = "finance.update_expense"
 	FinanceDeleteExpense Permission = "finance.delete_expense"
 
+	DashboardReadSummary      Permission = "dashboard.read_summary"
+	DashboardReadRecentOrders Permission = "dashboard.read_recent_orders"
+	DashboardReadLowStock     Permission = "dashboard.read_low_stock"
+
 	OrderRead                Permission = "order.read"
 	OrderReadDetail          Permission = "order.read_detail"
 	OrderUpdateStatus        Permission = "order.update_status"
