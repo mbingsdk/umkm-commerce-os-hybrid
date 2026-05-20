@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 6D Order Dashboard UI.
+Sprint 7A Inventory API.
 
 ## Current Goal
 
-Implement the tenant dashboard order management UI for listing, detail, status updates, payment review, and cancellation.
+Implement the tenant-scoped backend inventory API for stock listing, stock movements, manual adjustments, and low-stock threshold updates.
 
 ## Sprint 0 Tasks
 

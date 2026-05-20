@@ -27,8 +27,6 @@ $login = Invoke-RestMethod `
 $token = $login.data.access_token
 
 # CEK SESSION
-$token = $res.data.access_token
-
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/auth/me" `
   -Method GET `
@@ -116,8 +114,9 @@ $res1 = Invoke-RestMethod `
 $res1
 
 # GET ORDER DETAIL + CANCEL ORDER
+$orderId = $res1.data.order_id
 Invoke-RestMethod `
-  -Uri "http://localhost:8080/api/v1/orders/6c5ee079-872a-451c-aad6-37307a2c0804" `
+  -Uri "http://localhost:8080/api/v1/orders/$orderId" `
   -Method GET `
   -Headers @{
     Authorization = "Bearer $token"
@@ -130,7 +129,7 @@ Invoke-RestMethod `
 } | ConvertTo-Json
 
 Invoke-RestMethod `
-  -Uri "http://localhost:8080/api/v1/orders/6c5ee079-872a-451c-aad6-37307a2c0804/cancel" `
+  -Uri "http://localhost:8080/api/v1/orders/$orderId/cancel" `
   -Method POST `
   -ContentType "application/json" `
   -Headers @{
@@ -138,3 +137,41 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   } `
   -Body $cancelBody
+
+# CEK STATUS ORDER
+$res2 = Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/orders/$orderId" `
+  -Method GET `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  }
+$res2
+
+# TEST INVENTORY - STOCKS
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/inventory/stocks" `
+  -Method GET `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  }
+
+# TEST INVENTORY - ADJUSTMENT
+$adjustBody = @{
+  adjustment_type = "in"
+  quantity = 5
+  reason = "stock_opname"
+  note = "Tambah stok dari hasil opname."
+} | ConvertTo-Json
+
+$productId = "a75eb8a3-cabf-41d5-a0e5-00f27120df99"
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/inventory/products/$productId/adjust" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  } `
+  -Body $adjustBody

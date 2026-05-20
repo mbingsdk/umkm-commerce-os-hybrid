@@ -31,24 +31,25 @@ type BuildInfo struct {
 }
 
 type Dependencies struct {
-	Config          config.Config
-	Logger          *slog.Logger
-	DB              *db.DB
-	Build           BuildInfo
-	AccessTokens    *token.JWTService
-	AuthHandler     *auth.Handler
-	TenantService   *tenant.Service
-	TenantHandler   *tenant.Handler
-	StoreHandler    *store.Handler
-	PublicStore     *store.PublicHandler
-	CategoryHandler *category.Handler
-	PublicCategory  *category.PublicHandler
-	ProductHandler  *product.Handler
-	PublicProduct   *product.PublicHandler
-	UploadHandler   *upload.Handler
-	CheckoutHandler *checkout.Handler
-	OrderHandler    *order.Handler
-	PaymentHandler  *payment.Handler
+	Config           config.Config
+	Logger           *slog.Logger
+	DB               *db.DB
+	Build            BuildInfo
+	AccessTokens     *token.JWTService
+	AuthHandler      *auth.Handler
+	TenantService    *tenant.Service
+	TenantHandler    *tenant.Handler
+	StoreHandler     *store.Handler
+	PublicStore      *store.PublicHandler
+	CategoryHandler  *category.Handler
+	PublicCategory   *category.PublicHandler
+	ProductHandler   *product.Handler
+	PublicProduct    *product.PublicHandler
+	UploadHandler    *upload.Handler
+	CheckoutHandler  *checkout.Handler
+	OrderHandler     *order.Handler
+	PaymentHandler   *payment.Handler
+	InventoryHandler *inventory.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -94,26 +95,28 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	checkoutService := checkout.NewService(database, publicStoreService, checkoutRepo, idempotencyRepo, outboxRepo)
 	orderService := order.NewService(database, orderRepo, outboxRepo)
 	paymentService := payment.NewService(database, publicStoreService, paymentRepo, idempotencyRepo, outboxRepo)
+	inventoryService := inventory.NewService(database, inventoryRepo, auditRepo, outboxRepo)
 
 	return &Dependencies{
-		Config:          cfg,
-		Logger:          logger,
-		DB:              database,
-		Build:           build,
-		AccessTokens:    accessTokens,
-		AuthHandler:     auth.NewHandler(authService, logger),
-		TenantService:   tenantService,
-		TenantHandler:   tenant.NewHandler(tenantService, logger),
-		StoreHandler:    store.NewHandler(storeService, logger),
-		PublicStore:     store.NewPublicHandler(publicStoreService, logger),
-		CategoryHandler: category.NewHandler(categoryService, logger),
-		PublicCategory:  category.NewPublicHandler(publicCategoryService, logger),
-		ProductHandler:  product.NewHandler(productService, logger, cfg.UploadMaxBytes),
-		PublicProduct:   product.NewPublicHandler(publicProductService, logger),
-		UploadHandler:   upload.NewHandler(uploadService, logger, cfg.UploadMaxBytes),
-		CheckoutHandler: checkout.NewHandler(checkoutService, logger),
-		OrderHandler:    order.NewHandler(orderService, logger),
-		PaymentHandler:  payment.NewHandler(paymentService, logger),
+		Config:           cfg,
+		Logger:           logger,
+		DB:               database,
+		Build:            build,
+		AccessTokens:     accessTokens,
+		AuthHandler:      auth.NewHandler(authService, logger),
+		TenantService:    tenantService,
+		TenantHandler:    tenant.NewHandler(tenantService, logger),
+		StoreHandler:     store.NewHandler(storeService, logger),
+		PublicStore:      store.NewPublicHandler(publicStoreService, logger),
+		CategoryHandler:  category.NewHandler(categoryService, logger),
+		PublicCategory:   category.NewPublicHandler(publicCategoryService, logger),
+		ProductHandler:   product.NewHandler(productService, logger, cfg.UploadMaxBytes),
+		PublicProduct:    product.NewPublicHandler(publicProductService, logger),
+		UploadHandler:    upload.NewHandler(uploadService, logger, cfg.UploadMaxBytes),
+		CheckoutHandler:  checkout.NewHandler(checkoutService, logger),
+		OrderHandler:     order.NewHandler(orderService, logger),
+		PaymentHandler:   payment.NewHandler(paymentService, logger),
+		InventoryHandler: inventory.NewHandler(inventoryService, logger),
 	}, nil
 }
 
