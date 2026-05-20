@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 7D Inventory UI.
+Sprint 7E POS UI.
 
 ## Current Goal
 
-Implement tenant-scoped frontend inventory stock list, stock movement detail, manual stock adjustment, and low-stock threshold UI.
+Implement tenant-scoped frontend online-first POS session, product search, cart, transaction, receipt, close-session, and POS history UI.
 
 ## Sprint 0 Tasks
 

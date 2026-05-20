@@ -17,7 +17,7 @@ const navItems: Array<{
   { label: "Kategori", href: "/dashboard/categories", permission: permissions.categoryRead, ready: true },
   { label: "Inventori", href: "/dashboard/inventory", permission: permissions.inventoryRead, ready: true },
   { label: "Pesanan", href: "/dashboard/orders", permission: permissions.orderRead, ready: true },
-  { label: "POS", permission: permissions.posCreateTransaction, ready: false },
+  { label: "POS", href: "/dashboard/pos", permission: permissions.posReadSession, ready: true },
   { label: "Keuangan", permission: permissions.financeReadSummary, ready: false }
 ];
 
@@ -26,7 +26,7 @@ export function DashboardSidebar() {
     <aside className="hidden w-64 border-r border-neutral-200 bg-white p-5 lg:block">
       <p className="text-sm font-semibold text-primary-700">UMKM Commerce OS</p>
       <Badge className="mt-3" tone="primary">
-        Sprint 7D
+        Sprint 7E
       </Badge>
       <nav className="mt-8 space-y-2 text-sm text-neutral-600">
         {navItems.map((item) => (

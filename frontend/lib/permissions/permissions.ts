@@ -23,7 +23,12 @@ export const permissions = {
   orderUpdateStatus: "order.update_status",
   orderUpdatePaymentStatus: "order.update_payment_status",
   orderCancel: "order.cancel",
+  posReadProduct: "pos.read_product",
+  posOpenSession: "pos.open_session",
+  posReadSession: "pos.read_session",
   posCreateTransaction: "pos.create_transaction",
+  posReadTransaction: "pos.read_transaction",
+  posCloseSession: "pos.close_session",
   financeReadSummary: "finance.read_summary"
 } as const;
 

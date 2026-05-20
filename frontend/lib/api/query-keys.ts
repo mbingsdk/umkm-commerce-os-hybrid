@@ -16,5 +16,12 @@ export const queryKeys = {
   inventoryStocks: (tenantId: string | null, filters?: Record<string, unknown>) =>
     ["inventory-stocks", tenantId, filters ?? {}] as const,
   inventoryMovements: (tenantId: string | null, productId: string | null, filters?: Record<string, unknown>) =>
-    ["inventory-movements", tenantId, productId, filters ?? {}] as const
+    ["inventory-movements", tenantId, productId, filters ?? {}] as const,
+  posCurrentSession: (tenantId: string | null) => ["pos-current-session", tenantId] as const,
+  posProducts: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["pos-products", tenantId, filters ?? {}] as const,
+  posTransactions: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["pos-transactions", tenantId, filters ?? {}] as const,
+  posTransaction: (tenantId: string | null, transactionId: string | null) =>
+    ["pos-transaction", tenantId, transactionId] as const
 };
