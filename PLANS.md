@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 6A Order Management Backend.
+Sprint 6B Payment Confirmation.
 
 ## Current Goal
 
-Implement the Sprint 6A backend order management endpoints.
+Implement the Sprint 6B manual payment confirmation backend.
 
 ## Sprint 0 Tasks
 

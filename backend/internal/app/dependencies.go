@@ -11,6 +11,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/config"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/order"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/payment"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/password"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/storage"
@@ -47,6 +48,7 @@ type Dependencies struct {
 	UploadHandler   *upload.Handler
 	CheckoutHandler *checkout.Handler
 	OrderHandler    *order.Handler
+	PaymentHandler  *payment.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -68,6 +70,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	inventoryRepo := inventory.NewRepository()
 	checkoutRepo := checkout.NewRepository()
 	orderRepo := order.NewRepository()
+	paymentRepo := payment.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -90,6 +93,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	uploadService := upload.NewService(assetStore)
 	checkoutService := checkout.NewService(database, publicStoreService, checkoutRepo, idempotencyRepo, outboxRepo)
 	orderService := order.NewService(database, orderRepo, outboxRepo)
+	paymentService := payment.NewService(database, publicStoreService, paymentRepo, idempotencyRepo, outboxRepo)
 
 	return &Dependencies{
 		Config:          cfg,
@@ -109,6 +113,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		UploadHandler:   upload.NewHandler(uploadService, logger, cfg.UploadMaxBytes),
 		CheckoutHandler: checkout.NewHandler(checkoutService, logger),
 		OrderHandler:    order.NewHandler(orderService, logger),
+		PaymentHandler:  payment.NewHandler(paymentService, logger),
 	}, nil
 }
 

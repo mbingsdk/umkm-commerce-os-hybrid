@@ -4,9 +4,9 @@ Initial monorepo foundation for **UMKM Commerce OS Hybrid**, a multi-tenant SaaS
 
 This repository currently contains only the Sprint 0 foundation:
 
-- `backend/` — Go modular-monolith scaffold
-- `frontend/` — Next.js App Router scaffold
-- `docker-compose.yml` — local PostgreSQL development service
+- `backend/` -> Go modular-monolith scaffold
+- `frontend/` -> Next.js App Router scaffold
+- `docker-compose.yml` -> local PostgreSQL development service
 - root tooling for common local commands
 
 Business features such as auth, checkout, POS, payment confirmation, finance, discovery, and admin are intentionally **not implemented yet**.

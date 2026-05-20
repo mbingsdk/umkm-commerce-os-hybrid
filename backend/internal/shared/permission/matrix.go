@@ -28,6 +28,7 @@ var rolePermissions = map[Role]map[Permission]bool{
 		OrderRead:                true,
 		OrderReadDetail:          true,
 		OrderUpdateStatus:        true,
+		OrderUpdatePaymentStatus: true,
 	},
 	RoleManager: {
 		TenantRead:               true,
@@ -50,6 +51,7 @@ var rolePermissions = map[Role]map[Permission]bool{
 		OrderRead:                true,
 		OrderReadDetail:          true,
 		OrderUpdateStatus:        true,
+		OrderUpdatePaymentStatus: true,
 	},
 	RoleStaff: {
 		TenantRead:        true,
