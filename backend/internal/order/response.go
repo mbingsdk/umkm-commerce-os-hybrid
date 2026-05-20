@@ -117,6 +117,14 @@ type UpdateStatusResponse struct {
 	Status      string    `json:"status"`
 }
 
+type CancelResponse struct {
+	ID                   uuid.UUID `json:"id"`
+	OrderNumber          string    `json:"order_number"`
+	Status               string    `json:"status"`
+	ReleasedReservations int       `json:"released_reservations"`
+	ReleasedQuantity     int       `json:"released_quantity"`
+}
+
 func NewListItemResponse(order Order, itemCount int) ListItemResponse {
 	return ListItemResponse{
 		ID:             order.ID,
@@ -242,6 +250,16 @@ func NewUpdateStatusResponse(order Order) UpdateStatusResponse {
 		ID:          order.ID,
 		OrderNumber: order.OrderNumber,
 		Status:      order.Status,
+	}
+}
+
+func NewCancelResponse(order Order, releasedReservations int, releasedQuantity int) CancelResponse {
+	return CancelResponse{
+		ID:                   order.ID,
+		OrderNumber:          order.OrderNumber,
+		Status:               order.Status,
+		ReleasedReservations: releasedReservations,
+		ReleasedQuantity:     releasedQuantity,
 	}
 }
 

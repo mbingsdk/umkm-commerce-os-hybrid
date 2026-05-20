@@ -31,8 +31,15 @@ const (
 	PaymentStatusFailed              = "failed"
 	PaymentStatusRefunded            = "refunded"
 
-	EventOrderStatusUpdated = "OrderStatusUpdated"
-	AggregateOrder          = "order"
+	EventOrderStatusUpdated       = "OrderStatusUpdated"
+	EventOrderCancelled           = "OrderCancelled"
+	EventStockReservationReleased = "StockReservationReleased"
+	EventNotificationRequested    = "NotificationRequested"
+	AggregateOrder                = "order"
+
+	ReservationStatusActive    = "active"
+	ReservationStatusConfirmed = "confirmed"
+	ReservationStatusReleased  = "released"
 )
 
 type Order struct {
@@ -98,6 +105,27 @@ type ReservationSummary struct {
 	Count    int
 }
 
+type StockReservation struct {
+	ID        uuid.UUID
+	TenantID  uuid.UUID
+	StoreID   uuid.UUID
+	ProductID uuid.UUID
+	OrderID   uuid.UUID
+	Quantity  int
+	Status    string
+	CreatedAt time.Time
+}
+
+type StockSnapshot struct {
+	ID                uuid.UUID
+	TenantID          uuid.UUID
+	StoreID           uuid.UUID
+	ProductID         uuid.UUID
+	QuantityOnHand    int
+	QuantityReserved  int
+	QuantityAvailable int
+}
+
 type ListFilters struct {
 	Status        *string
 	PaymentStatus *string
@@ -134,6 +162,34 @@ type CreateStatusLogParams struct {
 	ToStatus   string
 	Note       string
 	CreatedBy  uuid.UUID
+}
+
+type UpdateStockSnapshotParams struct {
+	TenantID          uuid.UUID
+	StoreID           uuid.UUID
+	ProductID         uuid.UUID
+	QuantityReserved  int
+	QuantityAvailable int
+}
+
+type ReleaseReservationsParams struct {
+	TenantID       uuid.UUID
+	StoreID        uuid.UUID
+	ReservationIDs []uuid.UUID
+	Status         string
+}
+
+type CreateStockMovementParams struct {
+	TenantID      uuid.UUID
+	StoreID       uuid.UUID
+	ProductID     uuid.UUID
+	MovementType  string
+	Quantity      int
+	BalanceAfter  int
+	ReferenceType string
+	ReferenceID   uuid.UUID
+	Note          string
+	CreatedBy     uuid.UUID
 }
 
 func EncodeCursor(order Order) (string, error) {

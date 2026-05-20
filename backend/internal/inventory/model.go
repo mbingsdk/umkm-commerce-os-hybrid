@@ -5,6 +5,7 @@ import "github.com/google/uuid"
 const (
 	MovementTypeInitial  = "initial"
 	MovementTypeReserved = "reserved"
+	MovementTypeReleased = "released"
 )
 
 type StockSnapshot struct {

@@ -16,13 +16,16 @@ import (
 )
 
 var (
-	tenantA = uuid.MustParse("11111111-1111-1111-1111-111111111111")
-	storeA  = uuid.MustParse("22222222-2222-2222-2222-222222222222")
-	tenantB = uuid.MustParse("33333333-3333-3333-3333-333333333333")
-	storeB  = uuid.MustParse("44444444-4444-4444-4444-444444444444")
-	orderA  = uuid.MustParse("55555555-5555-5555-5555-555555555555")
-	orderB  = uuid.MustParse("66666666-6666-6666-6666-666666666666")
-	actorID = uuid.MustParse("77777777-7777-7777-7777-777777777777")
+	tenantA  = uuid.MustParse("11111111-1111-1111-1111-111111111111")
+	storeA   = uuid.MustParse("22222222-2222-2222-2222-222222222222")
+	tenantB  = uuid.MustParse("33333333-3333-3333-3333-333333333333")
+	storeB   = uuid.MustParse("44444444-4444-4444-4444-444444444444")
+	orderA   = uuid.MustParse("55555555-5555-5555-5555-555555555555")
+	orderB   = uuid.MustParse("66666666-6666-6666-6666-666666666666")
+	actorID  = uuid.MustParse("77777777-7777-7777-7777-777777777777")
+	productA = uuid.MustParse("88888888-8888-8888-8888-888888888888")
+	productB = uuid.MustParse("99999999-9999-9999-9999-999999999999")
+	reserveA = uuid.MustParse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 )
 
 func TestDetailRejectsOtherTenantOrder(t *testing.T) {
@@ -94,12 +97,185 @@ func TestValidStatusTransitionCreatesStatusLogAndOutboxEvent(t *testing.T) {
 	}
 }
 
+func TestCancelPendingOrderReleasesReservedStock(t *testing.T) {
+	service, repo, outboxRepo := newOrderTestService()
+
+	result, err := service.Cancel(context.Background(), tenantA, storeA, orderA, CancelInput{
+		ActorUserID: actorID,
+		Reason:      "Customer requested cancellation",
+		Note:        "Belum dikirim",
+	})
+	if err != nil {
+		t.Fatalf("Cancel error = %v", err)
+	}
+
+	if result.Status != StatusCancelled {
+		t.Fatalf("status = %s, want %s", result.Status, StatusCancelled)
+	}
+	if result.ReleasedReservations != 1 || result.ReleasedQuantity != 2 {
+		t.Fatalf("release result = %#v, want 1 reservation and quantity 2", result)
+	}
+
+	snapshot := repo.snapshots[productA]
+	if snapshot.QuantityReserved != 0 || snapshot.QuantityAvailable != 10 {
+		t.Fatalf("snapshot = %#v, want reserved 0 available 10", snapshot)
+	}
+	if repo.reservations[reserveA].Status != ReservationStatusReleased {
+		t.Fatalf("reservation status = %s, want released", repo.reservations[reserveA].Status)
+	}
+	if len(repo.movements) != 1 {
+		t.Fatalf("movements = %d, want 1", len(repo.movements))
+	}
+	if repo.movements[0].MovementType != "released" || repo.movements[0].Quantity != 2 || repo.movements[0].BalanceAfter != 10 {
+		t.Fatalf("movement = %#v", repo.movements[0])
+	}
+	if len(repo.logs) != 1 || repo.logs[0].FromStatus != StatusPending || repo.logs[0].ToStatus != StatusCancelled {
+		t.Fatalf("status logs = %#v", repo.logs)
+	}
+	if len(outboxRepo.events) != 3 {
+		t.Fatalf("outbox events = %d, want 3", len(outboxRepo.events))
+	}
+	eventTypes := []string{outboxRepo.events[0].EventType, outboxRepo.events[1].EventType, outboxRepo.events[2].EventType}
+	if eventTypes[0] != EventOrderCancelled || eventTypes[1] != EventStockReservationReleased || eventTypes[2] != EventNotificationRequested {
+		t.Fatalf("event types = %#v", eventTypes)
+	}
+}
+
+func TestCancelPaidOrderReleasesReservedStock(t *testing.T) {
+	service, repo, _ := newOrderTestService()
+	orderRecord := repo.orders[orderA]
+	orderRecord.Status = StatusConfirmed
+	orderRecord.PaymentStatus = PaymentStatusPaid
+	repo.orders[orderA] = orderRecord
+
+	result, err := service.Cancel(context.Background(), tenantA, storeA, orderA, CancelInput{
+		ActorUserID: actorID,
+		Reason:      "Pesanan dibatalkan sebelum dikirim",
+	})
+	if err != nil {
+		t.Fatalf("Cancel error = %v", err)
+	}
+
+	if result.Status != StatusCancelled || result.ReleasedQuantity != 2 {
+		t.Fatalf("cancel result = %#v", result)
+	}
+	if repo.snapshots[productA].QuantityReserved != 0 || repo.snapshots[productA].QuantityAvailable != 10 {
+		t.Fatalf("snapshot = %#v", repo.snapshots[productA])
+	}
+}
+
+func TestCancelShippedOrCompletedRejected(t *testing.T) {
+	tests := []string{StatusShipped, StatusCompleted}
+
+	for _, status := range tests {
+		status := status
+		t.Run(status, func(t *testing.T) {
+			service, repo, outboxRepo := newOrderTestService()
+			orderRecord := repo.orders[orderA]
+			orderRecord.Status = status
+			repo.orders[orderA] = orderRecord
+
+			_, err := service.Cancel(context.Background(), tenantA, storeA, orderA, CancelInput{
+				ActorUserID: actorID,
+				Reason:      "Tidak bisa dibatalkan",
+			})
+			assertAppErrorCode(t, err, apperror.CodeInvalidOrderStatus)
+			if len(repo.movements) != 0 {
+				t.Fatalf("movements = %d, want 0", len(repo.movements))
+			}
+			if len(outboxRepo.events) != 0 {
+				t.Fatalf("outbox events = %d, want 0", len(outboxRepo.events))
+			}
+		})
+	}
+}
+
+func TestDoubleCancelDoesNotDoubleReleaseStock(t *testing.T) {
+	service, repo, outboxRepo := newOrderTestService()
+
+	first, err := service.Cancel(context.Background(), tenantA, storeA, orderA, CancelInput{
+		ActorUserID: actorID,
+		Reason:      "Customer requested cancellation",
+	})
+	if err != nil {
+		t.Fatalf("first Cancel error = %v", err)
+	}
+	second, err := service.Cancel(context.Background(), tenantA, storeA, orderA, CancelInput{
+		ActorUserID: actorID,
+		Reason:      "Customer requested cancellation",
+	})
+	if err != nil {
+		t.Fatalf("second Cancel error = %v", err)
+	}
+
+	if first.ReleasedQuantity != 2 || second.ReleasedQuantity != 0 {
+		t.Fatalf("release quantities first=%d second=%d, want 2 then 0", first.ReleasedQuantity, second.ReleasedQuantity)
+	}
+	if len(repo.movements) != 1 {
+		t.Fatalf("movements = %d, want 1", len(repo.movements))
+	}
+	if repo.snapshots[productA].QuantityReserved != 0 || repo.snapshots[productA].QuantityAvailable != 10 {
+		t.Fatalf("snapshot = %#v", repo.snapshots[productA])
+	}
+	if len(outboxRepo.events) != 3 {
+		t.Fatalf("outbox events = %d, want only first cancel events", len(outboxRepo.events))
+	}
+}
+
+func TestCancelRejectsOtherTenantOrder(t *testing.T) {
+	service, repo, outboxRepo := newOrderTestService()
+
+	_, err := service.Cancel(context.Background(), tenantA, storeA, orderB, CancelInput{
+		ActorUserID: actorID,
+		Reason:      "Wrong tenant",
+	})
+	assertAppErrorCode(t, err, apperror.CodeNotFound)
+	if len(repo.movements) != 0 {
+		t.Fatalf("movements = %d, want 0", len(repo.movements))
+	}
+	if len(outboxRepo.events) != 0 {
+		t.Fatalf("outbox events = %d, want 0", len(outboxRepo.events))
+	}
+}
+
 func newOrderTestService() (*Service, *fakeOrderRepository, *fakeOutboxRepository) {
 	now := time.Date(2026, 5, 20, 10, 0, 0, 0, time.UTC)
 	repo := &fakeOrderRepository{
 		orders: map[uuid.UUID]Order{
 			orderA: testOrder(orderA, tenantA, storeA, StatusPending, now),
 			orderB: testOrder(orderB, tenantB, storeB, StatusPending, now.Add(-time.Hour)),
+		},
+		reservations: map[uuid.UUID]StockReservation{
+			reserveA: {
+				ID:        reserveA,
+				TenantID:  tenantA,
+				StoreID:   storeA,
+				ProductID: productA,
+				OrderID:   orderA,
+				Quantity:  2,
+				Status:    ReservationStatusActive,
+				CreatedAt: now,
+			},
+		},
+		snapshots: map[uuid.UUID]StockSnapshot{
+			productA: {
+				ID:                uuid.MustParse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+				TenantID:          tenantA,
+				StoreID:           storeA,
+				ProductID:         productA,
+				QuantityOnHand:    10,
+				QuantityReserved:  2,
+				QuantityAvailable: 8,
+			},
+			productB: {
+				ID:                uuid.MustParse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+				TenantID:          tenantB,
+				StoreID:           storeB,
+				ProductID:         productB,
+				QuantityOnHand:    5,
+				QuantityReserved:  0,
+				QuantityAvailable: 5,
+			},
 		},
 	}
 	outboxRepo := &fakeOutboxRepository{}
@@ -157,8 +333,11 @@ func (fakeOrderDB) QueryRow(context.Context, string, ...any) pgx.Row {
 }
 
 type fakeOrderRepository struct {
-	orders map[uuid.UUID]Order
-	logs   []CreateStatusLogParams
+	orders       map[uuid.UUID]Order
+	reservations map[uuid.UUID]StockReservation
+	snapshots    map[uuid.UUID]StockSnapshot
+	logs         []CreateStatusLogParams
+	movements    []CreateStockMovementParams
 }
 
 func (f *fakeOrderRepository) List(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, filters ListFilters) ([]Order, []int, error) {
@@ -201,6 +380,32 @@ func (f *fakeOrderRepository) ListReservationSummary(context.Context, db.Queryer
 	return nil, nil
 }
 
+func (f *fakeOrderRepository) LockActiveReservationsByOrder(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, orderID uuid.UUID) ([]StockReservation, error) {
+	items := make([]StockReservation, 0)
+	for _, item := range f.reservations {
+		if item.TenantID != tenantID || item.StoreID != storeID || item.OrderID != orderID {
+			continue
+		}
+		if item.Status != ReservationStatusActive && item.Status != ReservationStatusConfirmed {
+			continue
+		}
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+func (f *fakeOrderRepository) LockStockSnapshots(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, productIDs []uuid.UUID) ([]StockSnapshot, error) {
+	items := make([]StockSnapshot, 0, len(productIDs))
+	for _, productID := range productIDs {
+		item, ok := f.snapshots[productID]
+		if !ok || item.TenantID != tenantID || item.StoreID != storeID {
+			continue
+		}
+		items = append(items, item)
+	}
+	return items, nil
+}
+
 func (f *fakeOrderRepository) UpdateStatus(_ context.Context, _ db.Queryer, params UpdateStatusParams) (*Order, error) {
 	item, ok := f.orders[params.OrderID]
 	if !ok || item.TenantID != params.TenantID || item.StoreID != params.StoreID {
@@ -210,6 +415,37 @@ func (f *fakeOrderRepository) UpdateStatus(_ context.Context, _ db.Queryer, para
 	item.UpdatedAt = item.UpdatedAt.Add(time.Minute)
 	f.orders[params.OrderID] = item
 	return &item, nil
+}
+
+func (f *fakeOrderRepository) UpdateStockSnapshot(_ context.Context, _ db.Queryer, params UpdateStockSnapshotParams) error {
+	item, ok := f.snapshots[params.ProductID]
+	if !ok || item.TenantID != params.TenantID || item.StoreID != params.StoreID {
+		return ErrStockSnapshotNotFound
+	}
+	item.QuantityReserved = params.QuantityReserved
+	item.QuantityAvailable = params.QuantityAvailable
+	f.snapshots[params.ProductID] = item
+	return nil
+}
+
+func (f *fakeOrderRepository) ReleaseReservations(_ context.Context, _ db.Queryer, params ReleaseReservationsParams) error {
+	for _, reservationID := range params.ReservationIDs {
+		item, ok := f.reservations[reservationID]
+		if !ok || item.TenantID != params.TenantID || item.StoreID != params.StoreID {
+			continue
+		}
+		if item.Status != ReservationStatusActive && item.Status != ReservationStatusConfirmed {
+			continue
+		}
+		item.Status = params.Status
+		f.reservations[reservationID] = item
+	}
+	return nil
+}
+
+func (f *fakeOrderRepository) CreateStockMovement(_ context.Context, _ db.Queryer, params CreateStockMovementParams) error {
+	f.movements = append(f.movements, params)
+	return nil
 }
 
 func (f *fakeOrderRepository) CreateStatusLog(_ context.Context, _ db.Queryer, params CreateStatusLogParams) (*StatusLog, error) {

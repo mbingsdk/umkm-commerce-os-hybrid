@@ -19,5 +19,6 @@ func RegisterRoutes(
 		r.With(requirePermission(permission.OrderRead)).Get("/", handler.List)
 		r.With(requirePermission(permission.OrderReadDetail)).Get("/{orderId}", handler.Detail)
 		r.With(requirePermission(permission.OrderUpdateStatus)).Patch("/{orderId}/status", handler.UpdateStatus)
+		r.With(requirePermission(permission.OrderCancel)).Post("/{orderId}/cancel", handler.Cancel)
 	})
 }

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 6B Payment Confirmation.
+Sprint 6C Cancel Flow + Stock Release.
 
 ## Current Goal
 
-Implement the Sprint 6B manual payment confirmation backend.
+Implement dashboard order cancellation with safe stock reservation release.
 
 ## Sprint 0 Tasks
 

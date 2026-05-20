@@ -36,4 +36,5 @@ const (
 	OrderReadDetail          Permission = "order.read_detail"
 	OrderUpdateStatus        Permission = "order.update_status"
 	OrderUpdatePaymentStatus Permission = "order.update_payment_status"
+	OrderCancel              Permission = "order.cancel"
 )

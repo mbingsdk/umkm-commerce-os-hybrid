@@ -102,6 +102,38 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	httpserver.WriteOK(w, "Order status updated", result)
 }
 
+func (h *Handler) Cancel(w http.ResponseWriter, r *http.Request) {
+	currentTenant, ok := tenantctx.FromContext(r.Context())
+	if !ok {
+		httpserver.WriteError(w, r, h.logger, apperror.Forbidden("Tenant context is required"))
+		return
+	}
+
+	orderID, err := parseOrderID(r)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	var req CancelRequest
+	if err := httpserver.DecodeJSON(r, &req); err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	result, err := h.service.Cancel(r.Context(), currentTenant.TenantID, currentTenant.StoreID, orderID, CancelInput{
+		ActorUserID: currentTenant.UserID,
+		Reason:      req.Reason,
+		Note:        req.Note,
+	})
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteOK(w, "Order cancelled", result)
+}
+
 func filtersFromRequest(r *http.Request) (ListFilters, error) {
 	query := r.URL.Query()
 	filters := ListFilters{

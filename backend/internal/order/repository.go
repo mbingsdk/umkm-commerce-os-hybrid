@@ -11,6 +11,7 @@ import (
 )
 
 var ErrOrderNotFound = errors.New("order not found")
+var ErrStockSnapshotNotFound = errors.New("stock snapshot not found")
 
 type Repository struct{}
 
@@ -296,6 +297,117 @@ func (r *Repository) ListReservationSummary(
 	return items, nil
 }
 
+func (r *Repository) LockActiveReservationsByOrder(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	orderID uuid.UUID,
+) ([]StockReservation, error) {
+	const query = `
+		SELECT
+			id,
+			tenant_id,
+			store_id,
+			product_id,
+			order_id,
+			quantity,
+			status,
+			created_at
+		FROM stock_reservations
+		WHERE tenant_id = $1
+		  AND store_id = $2
+		  AND order_id = $3
+		  AND status IN ('active', 'confirmed')
+		ORDER BY product_id ASC, id ASC
+		FOR UPDATE
+	`
+
+	rows, err := q.Query(ctx, query, tenantID, storeID, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]StockReservation, 0)
+	for rows.Next() {
+		var item StockReservation
+		if err := rows.Scan(
+			&item.ID,
+			&item.TenantID,
+			&item.StoreID,
+			&item.ProductID,
+			&item.OrderID,
+			&item.Quantity,
+			&item.Status,
+			&item.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func (r *Repository) LockStockSnapshots(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	productIDs []uuid.UUID,
+) ([]StockSnapshot, error) {
+	if len(productIDs) == 0 {
+		return nil, nil
+	}
+
+	const query = `
+		SELECT
+			id,
+			tenant_id,
+			store_id,
+			product_id,
+			quantity_on_hand,
+			quantity_reserved,
+			quantity_available
+		FROM product_stock_snapshots
+		WHERE tenant_id = $1
+		  AND store_id = $2
+		  AND product_id = ANY($3::uuid[])
+		ORDER BY product_id ASC
+		FOR UPDATE
+	`
+
+	rows, err := q.Query(ctx, query, tenantID, storeID, productIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]StockSnapshot, 0, len(productIDs))
+	for rows.Next() {
+		var item StockSnapshot
+		if err := rows.Scan(
+			&item.ID,
+			&item.TenantID,
+			&item.StoreID,
+			&item.ProductID,
+			&item.QuantityOnHand,
+			&item.QuantityReserved,
+			&item.QuantityAvailable,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 func (r *Repository) UpdateStatus(ctx context.Context, q db.Queryer, params UpdateStatusParams) (*Order, error) {
 	const query = `
 		UPDATE orders
@@ -340,6 +452,95 @@ func (r *Repository) UpdateStatus(ctx context.Context, q db.Queryer, params Upda
 	`
 
 	return scanOrder(q.QueryRow(ctx, query, params.TenantID, params.StoreID, params.OrderID, params.Status))
+}
+
+func (r *Repository) UpdateStockSnapshot(ctx context.Context, q db.Queryer, params UpdateStockSnapshotParams) error {
+	const query = `
+		UPDATE product_stock_snapshots
+		SET quantity_reserved = $4,
+		    quantity_available = $5,
+		    updated_at = now()
+		WHERE tenant_id = $1
+		  AND store_id = $2
+		  AND product_id = $3
+	`
+
+	tag, err := q.Exec(
+		ctx,
+		query,
+		params.TenantID,
+		params.StoreID,
+		params.ProductID,
+		params.QuantityReserved,
+		params.QuantityAvailable,
+	)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrStockSnapshotNotFound
+	}
+	return nil
+}
+
+func (r *Repository) ReleaseReservations(ctx context.Context, q db.Queryer, params ReleaseReservationsParams) error {
+	if len(params.ReservationIDs) == 0 {
+		return nil
+	}
+
+	const query = `
+		UPDATE stock_reservations
+		SET status = $4,
+		    released_at = COALESCE(released_at, now())
+		WHERE tenant_id = $1
+		  AND store_id = $2
+		  AND id = ANY($3::uuid[])
+		  AND status IN ('active', 'confirmed')
+	`
+
+	_, err := q.Exec(
+		ctx,
+		query,
+		params.TenantID,
+		params.StoreID,
+		params.ReservationIDs,
+		params.Status,
+	)
+	return err
+}
+
+func (r *Repository) CreateStockMovement(ctx context.Context, q db.Queryer, params CreateStockMovementParams) error {
+	const query = `
+		INSERT INTO stock_movements (
+			tenant_id,
+			store_id,
+			product_id,
+			movement_type,
+			quantity,
+			balance_after,
+			reference_type,
+			reference_id,
+			note,
+			created_by
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, ''), $8, NULLIF($9, ''), $10)
+	`
+
+	_, err := q.Exec(
+		ctx,
+		query,
+		params.TenantID,
+		params.StoreID,
+		params.ProductID,
+		params.MovementType,
+		params.Quantity,
+		params.BalanceAfter,
+		params.ReferenceType,
+		params.ReferenceID,
+		params.Note,
+		params.CreatedBy,
+	)
+	return err
 }
 
 func (r *Repository) CreateStatusLog(ctx context.Context, q db.Queryer, params CreateStatusLogParams) (*StatusLog, error) {
