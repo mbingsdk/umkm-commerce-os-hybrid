@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { SafeImage } from "@/features/storefront/components/safe-image";
+import { StorefrontCartLink } from "@/features/storefront/components/storefront-cart-link";
 
 type StorefrontHeaderProps = {
   storeSlug: string;
@@ -30,7 +31,12 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
             <p className="text-xs text-neutral-500">{city ?? "Storefront publik"}</p>
           </div>
         </div>
-        <Badge tone="neutral">Publik</Badge>
+        <div className="flex items-center gap-2">
+          <StorefrontCartLink storeSlug={storeSlug} />
+          <Badge className="hidden sm:inline-flex" tone="neutral">
+            Publik
+          </Badge>
+        </div>
       </div>
     </header>
   );

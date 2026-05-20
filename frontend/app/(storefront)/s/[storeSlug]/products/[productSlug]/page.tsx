@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatRupiah } from "@/lib/format/money";
 import { getPublicProductDetail, isPublicNotFoundError } from "@/features/storefront/api/storefront.api";
+import { AddToCartButton } from "@/features/storefront/components/add-to-cart-button";
 import { ProductGallery } from "@/features/storefront/components/product-gallery";
 import { ShareLinkButton } from "@/features/storefront/components/share-link-button";
 import { StockBadge } from "@/features/storefront/components/stock-badge";
@@ -96,6 +97,30 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               ) : null}
             </div>
             <StockBadge status={product.stock.stockStatus} />
+          </div>
+
+          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-950">Belanja produk ini</h2>
+                <p className="mt-1 text-sm leading-6 text-neutral-600">
+                  Total akhir akan dihitung ulang oleh toko saat checkout.
+                </p>
+              </div>
+              <AddToCartButton
+                disabled={isOutOfStock}
+                item={{
+                  productId: product.id,
+                  storeSlug: product.store.slug,
+                  name: product.name,
+                  slug: product.slug,
+                  imageUrl: product.images[0]?.url,
+                  displayPrice: product.price,
+                  quantity: 1
+                }}
+                size="lg"
+              />
+            </div>
           </div>
 
           <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
