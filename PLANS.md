@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 7A Inventory API.
+Sprint 7B POS Session.
 
 ## Current Goal
 
-Implement the tenant-scoped backend inventory API for stock listing, stock movements, manual adjustments, and low-stock threshold updates.
+Implement the tenant-scoped backend POS cashier session lifecycle for opening, reading current, and closing cashier sessions.
 
 ## Sprint 0 Tasks
 

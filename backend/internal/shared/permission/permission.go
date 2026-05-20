@@ -37,4 +37,12 @@ const (
 	OrderUpdateStatus        Permission = "order.update_status"
 	OrderUpdatePaymentStatus Permission = "order.update_payment_status"
 	OrderCancel              Permission = "order.cancel"
+
+	POSReadProduct       Permission = "pos.read_product"
+	POSOpenSession       Permission = "pos.open_session"
+	POSReadSession       Permission = "pos.read_session"
+	POSCreateTransaction Permission = "pos.create_transaction"
+	POSReadTransaction   Permission = "pos.read_transaction"
+	POSCloseSession      Permission = "pos.close_session"
+	POSRefundTransaction Permission = "pos.refund_transaction"
 )

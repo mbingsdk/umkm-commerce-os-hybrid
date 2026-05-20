@@ -16,6 +16,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/password"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/storage"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/token"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/pos"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/idempotency"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
@@ -50,6 +51,7 @@ type Dependencies struct {
 	OrderHandler     *order.Handler
 	PaymentHandler   *payment.Handler
 	InventoryHandler *inventory.Handler
+	POSHandler       *pos.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -72,6 +74,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	checkoutRepo := checkout.NewRepository()
 	orderRepo := order.NewRepository()
 	paymentRepo := payment.NewRepository()
+	posRepo := pos.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -96,6 +99,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	orderService := order.NewService(database, orderRepo, outboxRepo)
 	paymentService := payment.NewService(database, publicStoreService, paymentRepo, idempotencyRepo, outboxRepo)
 	inventoryService := inventory.NewService(database, inventoryRepo, auditRepo, outboxRepo)
+	posService := pos.NewService(database, posRepo, auditRepo, outboxRepo)
 
 	return &Dependencies{
 		Config:           cfg,
@@ -117,6 +121,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		OrderHandler:     order.NewHandler(orderService, logger),
 		PaymentHandler:   payment.NewHandler(paymentService, logger),
 		InventoryHandler: inventory.NewHandler(inventoryService, logger),
+		POSHandler:       pos.NewHandler(posService, logger),
 	}, nil
 }
 

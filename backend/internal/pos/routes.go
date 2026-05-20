@@ -1,0 +1,23 @@
+package pos
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+)
+
+func RegisterRoutes(
+	r chi.Router,
+	handler *Handler,
+	tenantMiddleware func(http.Handler) http.Handler,
+	requirePermission func(permission.Permission) func(http.Handler) http.Handler,
+) {
+	r.Route("/pos", func(r chi.Router) {
+		r.Use(tenantMiddleware)
+
+		r.With(requirePermission(permission.POSOpenSession)).Post("/sessions/open", handler.OpenSession)
+		r.With(requirePermission(permission.POSReadSession)).Get("/sessions/current", handler.CurrentSession)
+		r.With(requirePermission(permission.POSCloseSession)).Post("/sessions/{sessionId}/close", handler.CloseSession)
+	})
+}
