@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 )
 
@@ -49,8 +50,7 @@ func (r *Repository) Insert(ctx context.Context, q db.Queryer, params InsertEven
 			created_at
 	`
 
-	var event Event
-	if err := q.QueryRow(
+	return scanEvent(q.QueryRow(
 		ctx,
 		query,
 		params.TenantID,
@@ -59,7 +59,113 @@ func (r *Repository) Insert(ctx context.Context, q db.Queryer, params InsertEven
 		params.AggregateID,
 		string(payload),
 		availableAt,
-	).Scan(
+	))
+}
+
+func (r *Repository) FetchPending(ctx context.Context, q db.Queryer, limit int, maxAttempts int) ([]Event, error) {
+	const query = `
+		WITH picked AS (
+			SELECT id
+			FROM outbox_events
+			WHERE status = 'pending'
+			  AND attempts < $2
+			  AND available_at <= now()
+			ORDER BY available_at ASC, created_at ASC
+			LIMIT $1
+			FOR UPDATE SKIP LOCKED
+		)
+		UPDATE outbox_events e
+		SET status = 'processing'
+		FROM picked
+		WHERE e.id = picked.id
+		RETURNING
+			e.id,
+			e.tenant_id,
+			e.event_type,
+			e.aggregate_type,
+			e.aggregate_id,
+			e.payload,
+			e.status,
+			e.attempts,
+			e.available_at,
+			e.processed_at,
+			e.created_at
+	`
+
+	rows, err := q.Query(ctx, query, limit, maxAttempts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanEvents(rows)
+}
+
+func (r *Repository) MarkSucceeded(ctx context.Context, q db.Queryer, eventID uuid.UUID) (*Event, error) {
+	const query = `
+		UPDATE outbox_events
+		SET status = 'processed',
+		    processed_at = now()
+		WHERE id = $1
+		RETURNING
+			id,
+			tenant_id,
+			event_type,
+			aggregate_type,
+			aggregate_id,
+			payload,
+			status,
+			attempts,
+			available_at,
+			processed_at,
+			created_at
+	`
+
+	return scanEvent(q.QueryRow(ctx, query, eventID))
+}
+
+func (r *Repository) MarkFailed(
+	ctx context.Context,
+	q db.Queryer,
+	eventID uuid.UUID,
+	maxAttempts int,
+	retryAt time.Time,
+) (*Event, error) {
+	const query = `
+		UPDATE outbox_events
+		SET attempts = attempts + 1,
+		    status = CASE
+				WHEN attempts + 1 >= $2 THEN 'failed'
+				ELSE 'pending'
+		    END,
+		    available_at = CASE
+				WHEN attempts + 1 >= $2 THEN available_at
+				ELSE $3
+		    END,
+		    processed_at = NULL
+		WHERE id = $1
+		RETURNING
+			id,
+			tenant_id,
+			event_type,
+			aggregate_type,
+			aggregate_id,
+			payload,
+			status,
+			attempts,
+			available_at,
+			processed_at,
+			created_at
+	`
+
+	return scanEvent(q.QueryRow(ctx, query, eventID, maxAttempts, retryAt))
+}
+
+func scanEvent(row interface {
+	Scan(dest ...any) error
+}) (*Event, error) {
+	var event Event
+	if err := row.Scan(
 		&event.ID,
 		&event.TenantID,
 		&event.EventType,
@@ -74,6 +180,24 @@ func (r *Repository) Insert(ctx context.Context, q db.Queryer, params InsertEven
 	); err != nil {
 		return nil, err
 	}
-
 	return &event, nil
+}
+
+func scanEvents(rows interface {
+	Next() bool
+	Scan(dest ...any) error
+	Err() error
+}) ([]Event, error) {
+	events := make([]Event, 0)
+	for rows.Next() {
+		event, err := scanEvent(rows)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, *event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return events, nil
 }

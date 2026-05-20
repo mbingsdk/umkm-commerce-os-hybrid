@@ -1,4 +1,4 @@
-.PHONY: db-up db-down db-logs backend-fmt backend-test backend-build backend-run backend-migrate frontend-install frontend-dev frontend-build frontend-lint frontend-typecheck
+.PHONY: db-up db-down db-logs backend-fmt backend-test backend-build backend-run backend-worker backend-migrate frontend-install frontend-dev frontend-build frontend-lint frontend-typecheck
 
 db-up:
 	docker compose up -d postgres
@@ -20,6 +20,9 @@ backend-build:
 
 backend-run:
 	cd backend && go run ./cmd/api
+
+backend-worker:
+	cd backend && go run ./cmd/worker
 
 backend-migrate:
 	cd backend && go run ./cmd/migrate up

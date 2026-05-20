@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 8C Dashboard Summary Backend.
+Sprint 8D Outbox Worker Basic.
 
 ## Current Goal
 
-Implement tenant-scoped dashboard summary, recent orders, and low-stock backend APIs with role-aware metric visibility.
+Implement basic outbox polling worker with safe no-op handlers, retry attempts, structured logging, and graceful shutdown.
 
 ## Sprint 0 Tasks
 

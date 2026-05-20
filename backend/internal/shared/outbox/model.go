@@ -14,6 +14,11 @@ const (
 	StatusFailed     = "failed"
 )
 
+const (
+	EventNotificationRequested       = "NotificationRequested"
+	EventFinanceSummaryUpdateRequest = "FinanceSummaryUpdateRequested"
+)
+
 type Event struct {
 	ID            uuid.UUID
 	TenantID      uuid.UUID

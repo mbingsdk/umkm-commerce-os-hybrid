@@ -24,6 +24,10 @@ type Config struct {
 	StorageLocalDir    string
 	StoragePublicURL   string
 	UploadMaxBytes     int64
+	WorkerPollInterval time.Duration
+	WorkerBatchSize    int
+	WorkerMaxAttempts  int
+	WorkerRetryDelay   time.Duration
 }
 
 func Load() (Config, error) {
@@ -42,6 +46,10 @@ func Load() (Config, error) {
 		StorageLocalDir:    getEnv("STORAGE_LOCAL_DIR", "uploads"),
 		StoragePublicURL:   strings.TrimRight(getEnv("STORAGE_PUBLIC_URL", "http://localhost:8080/uploads"), "/"),
 		UploadMaxBytes:     int64(getEnvInt("UPLOAD_MAX_BYTES", 5*1024*1024)),
+		WorkerPollInterval: time.Duration(getEnvInt("OUTBOX_POLL_INTERVAL_SECONDS", 5)) * time.Second,
+		WorkerBatchSize:    getEnvInt("OUTBOX_BATCH_SIZE", 10),
+		WorkerMaxAttempts:  getEnvInt("OUTBOX_MAX_ATTEMPTS", 5),
+		WorkerRetryDelay:   time.Duration(getEnvInt("OUTBOX_RETRY_DELAY_SECONDS", 30)) * time.Second,
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -80,6 +88,18 @@ func (c Config) Validate() error {
 	}
 	if c.UploadMaxBytes <= 0 {
 		return errors.New("UPLOAD_MAX_BYTES must be greater than zero")
+	}
+	if c.WorkerPollInterval <= 0 {
+		return errors.New("OUTBOX_POLL_INTERVAL_SECONDS must be greater than zero")
+	}
+	if c.WorkerBatchSize <= 0 {
+		return errors.New("OUTBOX_BATCH_SIZE must be greater than zero")
+	}
+	if c.WorkerMaxAttempts <= 0 {
+		return errors.New("OUTBOX_MAX_ATTEMPTS must be greater than zero")
+	}
+	if c.WorkerRetryDelay <= 0 {
+		return errors.New("OUTBOX_RETRY_DELAY_SECONDS must be greater than zero")
 	}
 
 	return nil
