@@ -8,5 +8,9 @@ export const queryKeys = {
     tenantId: string | null,
     filters?: { query?: string; status?: string; categoryId?: string }
   ) => ["products", tenantId, filters ?? {}] as const,
-  product: (tenantId: string | null, productId: string | null) => ["product", tenantId, productId] as const
+  product: (tenantId: string | null, productId: string | null) => ["product", tenantId, productId] as const,
+  orders: (tenantId: string | null, filters?: Record<string, unknown>) => ["orders", tenantId, filters ?? {}] as const,
+  order: (tenantId: string | null, orderId: string | null) => ["order", tenantId, orderId] as const,
+  paymentConfirmations: (tenantId: string | null, orderId: string | null) =>
+    ["payment-confirmations", tenantId, orderId] as const
 };

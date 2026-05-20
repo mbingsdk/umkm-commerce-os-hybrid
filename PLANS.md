@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 6C Cancel Flow + Stock Release.
+Sprint 6D Order Dashboard UI.
 
 ## Current Goal
 
-Implement dashboard order cancellation with safe stock reservation release.
+Implement the tenant dashboard order management UI for listing, detail, status updates, payment review, and cancellation.
 
 ## Sprint 0 Tasks
 

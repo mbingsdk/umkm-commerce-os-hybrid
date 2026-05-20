@@ -17,11 +17,11 @@ func RegisterRoutes(
 	tenantMiddleware func(http.Handler) http.Handler,
 	requirePermission func(permission.Permission) func(http.Handler) http.Handler,
 ) {
-	r.Route("/orders/{orderId}", func(r chi.Router) {
+	r.Group(func(r chi.Router) {
 		r.Use(tenantMiddleware)
 
-		r.With(requirePermission(permission.OrderReadDetail)).Get("/payment-confirmations", handler.ListConfirmations)
-		r.With(requirePermission(permission.OrderUpdatePaymentStatus)).Post("/confirm-payment", handler.ConfirmPayment)
-		r.With(requirePermission(permission.OrderUpdatePaymentStatus)).Post("/reject-payment", handler.RejectPayment)
+		r.With(requirePermission(permission.OrderReadDetail)).Get("/orders/{orderId}/payment-confirmations", handler.ListConfirmations)
+		r.With(requirePermission(permission.OrderUpdatePaymentStatus)).Post("/orders/{orderId}/confirm-payment", handler.ConfirmPayment)
+		r.With(requirePermission(permission.OrderUpdatePaymentStatus)).Post("/orders/{orderId}/reject-payment", handler.RejectPayment)
 	})
 }

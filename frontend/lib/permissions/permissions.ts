@@ -16,6 +16,10 @@ export const permissions = {
   productUploadImage: "product.upload_image",
   inventoryRead: "inventory.read",
   orderRead: "order.read",
+  orderReadDetail: "order.read_detail",
+  orderUpdateStatus: "order.update_status",
+  orderUpdatePaymentStatus: "order.update_payment_status",
+  orderCancel: "order.cancel",
   posCreateTransaction: "pos.create_transaction",
   financeReadSummary: "finance.read_summary"
 } as const;

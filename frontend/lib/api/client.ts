@@ -10,14 +10,27 @@ type ApiFetchOptions = RequestInit & {
   tenantScoped?: boolean;
 };
 
-type ApiSuccessResponse<T> = {
+export type ApiSuccessResponse<T, M = unknown> = {
   success: true;
   message: string;
   data?: T;
-  meta?: unknown;
+  meta?: M;
+};
+
+export type ApiFetchResult<T, M = unknown> = {
+  data: T;
+  meta?: M;
 };
 
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+  const result = await apiFetchWithMeta<T>(path, options);
+  return result.data;
+}
+
+export async function apiFetchWithMeta<T, M = unknown>(
+  path: string,
+  options: ApiFetchOptions = {}
+): Promise<ApiFetchResult<T, M>> {
   const token = useAuthStore.getState().accessToken;
   const tenantId = useTenantStore.getState().selectedTenantId;
   const headers = new Headers(options.headers);
@@ -59,7 +72,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     );
   }
 
-  if (!isApiSuccessResponse<T>(body)) {
+  if (!isApiSuccessResponse<T, M>(body)) {
     throw toApiError(
       {
         success: false,
@@ -72,7 +85,10 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     );
   }
 
-  return body.data as T;
+  return {
+    data: body.data as T,
+    meta: body.meta as M | undefined
+  };
 }
 
 async function parseJSON(response: Response) {
@@ -85,7 +101,7 @@ async function parseJSON(response: Response) {
   return response.json() as Promise<unknown>;
 }
 
-function isApiSuccessResponse<T>(value: unknown): value is ApiSuccessResponse<T> {
+function isApiSuccessResponse<T, M = unknown>(value: unknown): value is ApiSuccessResponse<T, M> {
   if (!value || typeof value !== "object") {
     return false;
   }
