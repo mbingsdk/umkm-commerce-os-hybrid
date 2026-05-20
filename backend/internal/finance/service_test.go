@@ -163,6 +163,123 @@ func TestDeleteExpenseSoftDeletesWithAuditAndOutbox(t *testing.T) {
 	}
 }
 
+func TestFinanceSummaryUsesPaidOnlineOrdersOnly(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	mayRange := DateRange{
+		From: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	result, err := service.Summary(context.Background(), finTenantA, finStoreA, mayRange)
+	if err != nil {
+		t.Fatalf("Summary error = %v", err)
+	}
+	if result.OnlineSales != 100000 {
+		t.Fatalf("online_sales = %d, want 100000", result.OnlineSales)
+	}
+	if result.OrderCount != 1 {
+		t.Fatalf("order_count = %d, want 1", result.OrderCount)
+	}
+}
+
+func TestFinanceSummaryUsesCompletedPOSTransactionsOnly(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	mayRange := DateRange{
+		From: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	result, err := service.Summary(context.Background(), finTenantA, finStoreA, mayRange)
+	if err != nil {
+		t.Fatalf("Summary error = %v", err)
+	}
+	if result.POSSales != 50000 {
+		t.Fatalf("pos_sales = %d, want 50000", result.POSSales)
+	}
+	if result.POSTransactionCount != 1 {
+		t.Fatalf("pos_transaction_count = %d, want 1", result.POSTransactionCount)
+	}
+}
+
+func TestFinanceSummaryExpensesReduceNetEstimate(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	mayRange := DateRange{
+		From: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	result, err := service.Summary(context.Background(), finTenantA, finStoreA, mayRange)
+	if err != nil {
+		t.Fatalf("Summary error = %v", err)
+	}
+	if result.GrossSales != 150000 || result.TotalExpenses != 150000 || result.NetEstimate != 0 {
+		t.Fatalf("summary = %#v, want gross 150000 expenses 150000 net 0", result)
+	}
+	if result.Note == "" {
+		t.Fatalf("summary note is empty")
+	}
+}
+
+func TestFinanceSummaryIsTenantScoped(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	mayRange := DateRange{
+		From: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	result, err := service.Summary(context.Background(), finTenantA, finStoreA, mayRange)
+	if err != nil {
+		t.Fatalf("Summary error = %v", err)
+	}
+	if result.GrossSales == 1050000 || result.TotalExpenses == 350000 {
+		t.Fatalf("tenant A summary appears to include tenant B data: %#v", result)
+	}
+	if result.GrossSales != 150000 {
+		t.Fatalf("gross_sales = %d, want tenant A only 150000", result.GrossSales)
+	}
+}
+
+func TestFinanceSummaryDateRangeFiltersWork(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	nextDayRange := DateRange{
+		From: time.Date(2026, 5, 21, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 5, 22, 0, 0, 0, 0, time.UTC),
+	}
+
+	result, err := service.Summary(context.Background(), finTenantA, finStoreA, nextDayRange)
+	if err != nil {
+		t.Fatalf("Summary error = %v", err)
+	}
+	if result.GrossSales != 0 || result.TotalExpenses != 0 {
+		t.Fatalf("summary for empty range = %#v, want zero totals", result)
+	}
+}
+
+func TestFinanceDailyAndMonthlyReports(t *testing.T) {
+	service, _, _, _ := newFinanceTestService()
+	dateRange := DateRange{
+		From: time.Date(2026, 5, 20, 0, 0, 0, 0, time.UTC),
+		To:   time.Date(2026, 5, 21, 0, 0, 0, 0, time.UTC),
+	}
+
+	daily, err := service.DailyReport(context.Background(), finTenantA, finStoreA, dateRange)
+	if err != nil {
+		t.Fatalf("DailyReport error = %v", err)
+	}
+	if len(daily.Days) != 1 || daily.Summary.GrossSales != 150000 || daily.Summary.TotalExpenses != 150000 {
+		t.Fatalf("daily report = %#v", daily)
+	}
+
+	month := 5
+	monthly, err := service.MonthlyReport(context.Background(), finTenantA, finStoreA, MonthlyReportFilter{Year: 2026, Month: &month})
+	if err != nil {
+		t.Fatalf("MonthlyReport error = %v", err)
+	}
+	if len(monthly.Months) != 1 || monthly.Summary.GrossSales != 150000 || monthly.Summary.TotalExpenses != 150000 {
+		t.Fatalf("monthly report = %#v", monthly)
+	}
+}
+
 func newFinanceTestService() (*Service, *fakeFinanceRepository, *fakeFinanceAuditRepository, *fakeFinanceOutboxRepository) {
 	now := time.Date(2026, 5, 20, 8, 0, 0, 0, time.UTC)
 	repo := &fakeFinanceRepository{
@@ -201,6 +318,76 @@ func newFinanceTestService() (*Service, *fakeFinanceRepository, *fakeFinanceAudi
 				ExpenseDate: now,
 				CreatedAt:   now,
 				UpdatedAt:   now,
+			},
+		},
+		onlineOrders: []fakeFinanceOrder{
+			{
+				TenantID:      finTenantA,
+				StoreID:       finStoreA,
+				Source:        "storefront",
+				Status:        "completed",
+				PaymentStatus: "paid",
+				GrandTotal:    100000,
+				PaidAt:        now,
+			},
+			{
+				TenantID:      finTenantA,
+				StoreID:       finStoreA,
+				Source:        "storefront",
+				Status:        "pending",
+				PaymentStatus: "unpaid",
+				GrandTotal:    300000,
+				PaidAt:        now,
+			},
+			{
+				TenantID:      finTenantA,
+				StoreID:       finStoreA,
+				Source:        "storefront",
+				Status:        "cancelled",
+				PaymentStatus: "paid",
+				GrandTotal:    400000,
+				PaidAt:        now,
+			},
+			{
+				TenantID:      finTenantA,
+				StoreID:       finStoreA,
+				Source:        "storefront",
+				Status:        "completed",
+				PaymentStatus: "paid",
+				GrandTotal:    250000,
+				PaidAt:        now.AddDate(0, 0, -30),
+			},
+			{
+				TenantID:      finTenantB,
+				StoreID:       finStoreB,
+				Source:        "storefront",
+				Status:        "completed",
+				PaymentStatus: "paid",
+				GrandTotal:    900000,
+				PaidAt:        now,
+			},
+		},
+		posTransactions: []fakeFinancePOSTransaction{
+			{
+				TenantID:   finTenantA,
+				StoreID:    finStoreA,
+				Status:     "completed",
+				GrandTotal: 50000,
+				CreatedAt:  now,
+			},
+			{
+				TenantID:   finTenantA,
+				StoreID:    finStoreA,
+				Status:     "cancelled",
+				GrandTotal: 70000,
+				CreatedAt:  now,
+			},
+			{
+				TenantID:   finTenantB,
+				StoreID:    finStoreB,
+				Status:     "completed",
+				GrandTotal: 150000,
+				CreatedAt:  now,
 			},
 		},
 		now: now,
@@ -253,9 +440,92 @@ func (fakeFinanceDB) QueryRow(context.Context, string, ...any) pgx.Row {
 }
 
 type fakeFinanceRepository struct {
-	categories map[uuid.UUID]ExpenseCategory
-	expenses   map[uuid.UUID]Expense
-	now        time.Time
+	categories      map[uuid.UUID]ExpenseCategory
+	expenses        map[uuid.UUID]Expense
+	onlineOrders    []fakeFinanceOrder
+	posTransactions []fakeFinancePOSTransaction
+	now             time.Time
+}
+
+type fakeFinanceOrder struct {
+	TenantID      uuid.UUID
+	StoreID       uuid.UUID
+	Source        string
+	Status        string
+	PaymentStatus string
+	GrandTotal    int64
+	PaidAt        time.Time
+}
+
+type fakeFinancePOSTransaction struct {
+	TenantID   uuid.UUID
+	StoreID    uuid.UUID
+	Status     string
+	GrandTotal int64
+	CreatedAt  time.Time
+}
+
+func (f *fakeFinanceRepository) Summary(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, dateRange DateRange) (FinanceTotals, error) {
+	return f.totalsForRange(tenantID, storeID, dateRange), nil
+}
+
+func (f *fakeFinanceRepository) DailyReport(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, dateRange DateRange) ([]DailyFinanceRow, error) {
+	rows := make([]DailyFinanceRow, 0)
+	for day := dateRange.From; day.Before(dateRange.To); day = day.AddDate(0, 0, 1) {
+		rows = append(rows, DailyFinanceRow{
+			Date:          day,
+			FinanceTotals: f.totalsForRange(tenantID, storeID, DateRange{From: day, To: day.AddDate(0, 0, 1)}),
+		})
+	}
+	return rows, nil
+}
+
+func (f *fakeFinanceRepository) MonthlyReport(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, dateRange DateRange) ([]MonthlyFinanceRow, error) {
+	rows := make([]MonthlyFinanceRow, 0)
+	for month := dateRange.From; month.Before(dateRange.To); month = month.AddDate(0, 1, 0) {
+		rows = append(rows, MonthlyFinanceRow{
+			MonthStart:    month,
+			FinanceTotals: f.totalsForRange(tenantID, storeID, DateRange{From: month, To: month.AddDate(0, 1, 0)}),
+		})
+	}
+	return rows, nil
+}
+
+func (f *fakeFinanceRepository) totalsForRange(tenantID uuid.UUID, storeID uuid.UUID, dateRange DateRange) FinanceTotals {
+	var totals FinanceTotals
+	for _, order := range f.onlineOrders {
+		if order.TenantID != tenantID || order.StoreID != storeID {
+			continue
+		}
+		if order.Source == "pos" || order.PaymentStatus != "paid" || !financeOrderStatusCounts(order.Status) {
+			continue
+		}
+		if !timeInRange(order.PaidAt, dateRange) {
+			continue
+		}
+		totals.OnlineSales += order.GrandTotal
+		totals.OrderCount++
+	}
+	for _, transaction := range f.posTransactions {
+		if transaction.TenantID != tenantID || transaction.StoreID != storeID || transaction.Status != "completed" {
+			continue
+		}
+		if !timeInRange(transaction.CreatedAt, dateRange) {
+			continue
+		}
+		totals.POSSales += transaction.GrandTotal
+		totals.POSTransactionCount++
+	}
+	for _, expense := range f.expenses {
+		if expense.TenantID != tenantID || expense.StoreID != storeID || expense.DeletedAt != nil {
+			continue
+		}
+		if !dateInRange(expense.ExpenseDate, dateRange) {
+			continue
+		}
+		totals.TotalExpenses += expense.Amount
+	}
+	return totals
 }
 
 func (f *fakeFinanceRepository) ListExpenses(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, filters ListExpenseFilters) ([]Expense, error) {
@@ -373,6 +643,24 @@ func categoryAllowed(category ExpenseCategory, tenantID uuid.UUID, storeID uuid.
 func cloneExpense(expense Expense) *Expense {
 	clone := expense
 	return &clone
+}
+
+func financeOrderStatusCounts(status string) bool {
+	switch status {
+	case "cancelled", "returned", "refunded":
+		return false
+	default:
+		return true
+	}
+}
+
+func timeInRange(value time.Time, dateRange DateRange) bool {
+	return !value.Before(dateRange.From) && value.Before(dateRange.To)
+}
+
+func dateInRange(value time.Time, dateRange DateRange) bool {
+	day := normalizeDate(value)
+	return !day.Before(dateRange.From) && day.Before(dateRange.To)
 }
 
 type fakeFinanceAuditRepository struct {

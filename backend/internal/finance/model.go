@@ -70,6 +70,34 @@ type ListExpenseFilters struct {
 	Cursor       *Cursor
 }
 
+type DateRange struct {
+	From time.Time
+	To   time.Time
+}
+
+type MonthlyReportFilter struct {
+	Year  int
+	Month *int
+}
+
+type FinanceTotals struct {
+	OnlineSales         int64
+	POSSales            int64
+	TotalExpenses       int64
+	OrderCount          int64
+	POSTransactionCount int64
+}
+
+type DailyFinanceRow struct {
+	Date time.Time
+	FinanceTotals
+}
+
+type MonthlyFinanceRow struct {
+	MonthStart time.Time
+	FinanceTotals
+}
+
 type Cursor struct {
 	ExpenseDate time.Time `json:"expense_date"`
 	CreatedAt   time.Time `json:"created_at"`

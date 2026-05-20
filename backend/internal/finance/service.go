@@ -27,6 +27,9 @@ type database interface {
 }
 
 type expenseStore interface {
+	Summary(context.Context, db.Queryer, uuid.UUID, uuid.UUID, DateRange) (FinanceTotals, error)
+	DailyReport(context.Context, db.Queryer, uuid.UUID, uuid.UUID, DateRange) ([]DailyFinanceRow, error)
+	MonthlyReport(context.Context, db.Queryer, uuid.UUID, uuid.UUID, DateRange) ([]MonthlyFinanceRow, error)
 	ListExpenses(context.Context, db.Queryer, uuid.UUID, uuid.UUID, ListExpenseFilters) ([]Expense, error)
 	FindExpenseByID(context.Context, db.Queryer, uuid.UUID, uuid.UUID, uuid.UUID) (*Expense, error)
 	FindCategoryByID(context.Context, db.Queryer, uuid.UUID, uuid.UUID, uuid.UUID) (*ExpenseCategory, error)
@@ -49,6 +52,7 @@ type Service struct {
 	expenses  expenseStore
 	auditLogs auditStore
 	outbox    outboxStore
+	now       func() time.Time
 }
 
 type CreateExpenseInput struct {
@@ -91,7 +95,62 @@ func NewService(database database, expenseRepo expenseStore, auditLogs auditStor
 		expenses:  expenseRepo,
 		auditLogs: auditLogs,
 		outbox:    outboxRepo,
+		now:       time.Now,
 	}
+}
+
+func (s *Service) Summary(ctx context.Context, tenantID uuid.UUID, storeID uuid.UUID, dateRange DateRange) (FinanceSummaryResponse, error) {
+	if err := validateScope(tenantID, storeID); err != nil {
+		return FinanceSummaryResponse{}, err
+	}
+
+	normalized, err := s.normalizeSummaryRange(dateRange)
+	if err != nil {
+		return FinanceSummaryResponse{}, err
+	}
+
+	totals, err := s.expenses.Summary(ctx, s.db, tenantID, storeID, normalized)
+	if err != nil {
+		return FinanceSummaryResponse{}, apperror.Internal(err)
+	}
+
+	return NewFinanceSummaryResponse(normalized, totals), nil
+}
+
+func (s *Service) DailyReport(ctx context.Context, tenantID uuid.UUID, storeID uuid.UUID, dateRange DateRange) (DailyReportResponse, error) {
+	if err := validateScope(tenantID, storeID); err != nil {
+		return DailyReportResponse{}, err
+	}
+
+	normalized, err := s.normalizeDailyRange(dateRange)
+	if err != nil {
+		return DailyReportResponse{}, err
+	}
+
+	rows, err := s.expenses.DailyReport(ctx, s.db, tenantID, storeID, normalized)
+	if err != nil {
+		return DailyReportResponse{}, apperror.Internal(err)
+	}
+
+	return NewDailyReportResponse(normalized, rows), nil
+}
+
+func (s *Service) MonthlyReport(ctx context.Context, tenantID uuid.UUID, storeID uuid.UUID, filter MonthlyReportFilter) (MonthlyReportResponse, error) {
+	if err := validateScope(tenantID, storeID); err != nil {
+		return MonthlyReportResponse{}, err
+	}
+
+	normalizedFilter, dateRange, err := s.normalizeMonthlyFilter(filter)
+	if err != nil {
+		return MonthlyReportResponse{}, err
+	}
+
+	rows, err := s.expenses.MonthlyReport(ctx, s.db, tenantID, storeID, dateRange)
+	if err != nil {
+		return MonthlyReportResponse{}, apperror.Internal(err)
+	}
+
+	return NewMonthlyReportResponse(normalizedFilter, rows), nil
 }
 
 func (s *Service) ListExpenses(ctx context.Context, tenantID uuid.UUID, storeID uuid.UUID, filters ListExpenseFilters) ([]ExpenseResponse, PaginationMeta, error) {
@@ -416,6 +475,81 @@ func uuidPtrString(value *uuid.UUID) any {
 		return nil
 	}
 	return value.String()
+}
+
+func (s *Service) normalizeSummaryRange(dateRange DateRange) (DateRange, error) {
+	now := normalizeDate(s.now().UTC())
+	if dateRange.From.IsZero() && dateRange.To.IsZero() {
+		start := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		return DateRange{From: start, To: start.AddDate(0, 1, 0)}, nil
+	}
+
+	if dateRange.From.IsZero() {
+		to := normalizeDate(dateRange.To)
+		dateRange.From = time.Date(to.Year(), to.Month(), 1, 0, 0, 0, 0, time.UTC)
+	}
+	if dateRange.To.IsZero() {
+		from := normalizeDate(dateRange.From)
+		dateRange.To = from.AddDate(0, 1, 0)
+	}
+	return validateDateRange(dateRange)
+}
+
+func (s *Service) normalizeDailyRange(dateRange DateRange) (DateRange, error) {
+	now := normalizeDate(s.now().UTC())
+	if dateRange.From.IsZero() && dateRange.To.IsZero() {
+		return DateRange{From: now, To: now.AddDate(0, 0, 1)}, nil
+	}
+	if dateRange.From.IsZero() {
+		to := normalizeDate(dateRange.To)
+		dateRange.From = to.AddDate(0, 0, -1)
+	}
+	if dateRange.To.IsZero() {
+		from := normalizeDate(dateRange.From)
+		dateRange.To = from.AddDate(0, 0, 1)
+	}
+	return validateDateRange(dateRange)
+}
+
+func (s *Service) normalizeMonthlyFilter(filter MonthlyReportFilter) (MonthlyReportFilter, DateRange, error) {
+	now := s.now().UTC()
+	if filter.Year == 0 {
+		filter.Year = now.Year()
+	}
+	if filter.Year < 2000 || filter.Year > 2200 {
+		return MonthlyReportFilter{}, DateRange{}, invalidField("year", "year must be between 2000 and 2200")
+	}
+
+	if filter.Month != nil {
+		if *filter.Month < 1 || *filter.Month > 12 {
+			return MonthlyReportFilter{}, DateRange{}, invalidField("month", "month must be between 1 and 12")
+		}
+		start := time.Date(filter.Year, time.Month(*filter.Month), 1, 0, 0, 0, 0, time.UTC)
+		return filter, DateRange{From: start, To: start.AddDate(0, 1, 0)}, nil
+	}
+
+	start := time.Date(filter.Year, time.January, 1, 0, 0, 0, 0, time.UTC)
+	return filter, DateRange{From: start, To: start.AddDate(1, 0, 0)}, nil
+}
+
+func validateDateRange(dateRange DateRange) (DateRange, error) {
+	dateRange.From = normalizeDate(dateRange.From)
+	dateRange.To = normalizeDate(dateRange.To)
+	if dateRange.From.IsZero() || dateRange.To.IsZero() {
+		return DateRange{}, invalidField("date_range", "date range is required")
+	}
+	if !dateRange.From.Before(dateRange.To) {
+		return DateRange{}, invalidField("date_to", "date_to must be after date_from")
+	}
+	return dateRange, nil
+}
+
+func normalizeDate(value time.Time) time.Time {
+	if value.IsZero() {
+		return value
+	}
+	utc := value.UTC()
+	return time.Date(utc.Year(), utc.Month(), utc.Day(), 0, 0, 0, 0, time.UTC)
 }
 
 func normalizeListFilters(filters ListExpenseFilters) ListExpenseFilters {

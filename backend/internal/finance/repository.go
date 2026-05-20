@@ -17,6 +17,247 @@ func NewRepository() *Repository {
 	return &Repository{}
 }
 
+func (r *Repository) Summary(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	dateRange DateRange,
+) (FinanceTotals, error) {
+	const query = `
+		WITH online AS (
+			SELECT
+				COALESCE(SUM(grand_total), 0)::bigint AS total,
+				COUNT(*)::bigint AS count
+			FROM orders
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND source <> 'pos'
+			  AND payment_status = 'paid'
+			  AND status NOT IN ('cancelled', 'returned', 'refunded')
+			  AND COALESCE(paid_at, updated_at, created_at) >= $3
+			  AND COALESCE(paid_at, updated_at, created_at) < $4
+		),
+		pos AS (
+			SELECT
+				COALESCE(SUM(grand_total), 0)::bigint AS total,
+				COUNT(*)::bigint AS count
+			FROM pos_transactions
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND status = 'completed'
+			  AND created_at >= $3
+			  AND created_at < $4
+		),
+		expense AS (
+			SELECT COALESCE(SUM(amount), 0)::bigint AS total
+			FROM expenses
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND deleted_at IS NULL
+			  AND expense_date >= $3::date
+			  AND expense_date < $4::date
+		)
+		SELECT
+			online.total,
+			pos.total,
+			expense.total,
+			online.count,
+			pos.count
+		FROM online, pos, expense
+	`
+
+	return scanFinanceTotals(q.QueryRow(ctx, query, tenantID, storeID, dateRange.From, dateRange.To))
+}
+
+func (r *Repository) DailyReport(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	dateRange DateRange,
+) ([]DailyFinanceRow, error) {
+	const query = `
+		WITH days AS (
+			SELECT generate_series($3::date, ($4::date - INTERVAL '1 day'), INTERVAL '1 day')::date AS day
+		),
+		online AS (
+			SELECT
+				COALESCE(paid_at, updated_at, created_at)::date AS day,
+				COALESCE(SUM(grand_total), 0)::bigint AS total,
+				COUNT(*)::bigint AS count
+			FROM orders
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND source <> 'pos'
+			  AND payment_status = 'paid'
+			  AND status NOT IN ('cancelled', 'returned', 'refunded')
+			  AND COALESCE(paid_at, updated_at, created_at) >= $3
+			  AND COALESCE(paid_at, updated_at, created_at) < $4
+			GROUP BY COALESCE(paid_at, updated_at, created_at)::date
+		),
+		pos AS (
+			SELECT
+				created_at::date AS day,
+				COALESCE(SUM(grand_total), 0)::bigint AS total,
+				COUNT(*)::bigint AS count
+			FROM pos_transactions
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND status = 'completed'
+			  AND created_at >= $3
+			  AND created_at < $4
+			GROUP BY created_at::date
+		),
+		expense AS (
+			SELECT
+				expense_date AS day,
+				COALESCE(SUM(amount), 0)::bigint AS total
+			FROM expenses
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND deleted_at IS NULL
+			  AND expense_date >= $3::date
+			  AND expense_date < $4::date
+			GROUP BY expense_date
+		)
+		SELECT
+			days.day,
+			COALESCE(online.total, 0)::bigint,
+			COALESCE(pos.total, 0)::bigint,
+			COALESCE(expense.total, 0)::bigint,
+			COALESCE(online.count, 0)::bigint,
+			COALESCE(pos.count, 0)::bigint
+		FROM days
+		LEFT JOIN online ON online.day = days.day
+		LEFT JOIN pos ON pos.day = days.day
+		LEFT JOIN expense ON expense.day = days.day
+		ORDER BY days.day ASC
+	`
+
+	rows, err := q.Query(ctx, query, tenantID, storeID, dateRange.From, dateRange.To)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]DailyFinanceRow, 0)
+	for rows.Next() {
+		var item DailyFinanceRow
+		if err := rows.Scan(
+			&item.Date,
+			&item.OnlineSales,
+			&item.POSSales,
+			&item.TotalExpenses,
+			&item.OrderCount,
+			&item.POSTransactionCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func (r *Repository) MonthlyReport(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	dateRange DateRange,
+) ([]MonthlyFinanceRow, error) {
+	const query = `
+		WITH months AS (
+			SELECT generate_series(
+				date_trunc('month', $3::date),
+				date_trunc('month', ($4::date - INTERVAL '1 day')),
+				INTERVAL '1 month'
+			)::date AS month_start
+		),
+		online AS (
+			SELECT
+				date_trunc('month', COALESCE(paid_at, updated_at, created_at))::date AS month_start,
+				COALESCE(SUM(grand_total), 0)::bigint AS total,
+				COUNT(*)::bigint AS count
+			FROM orders
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND source <> 'pos'
+			  AND payment_status = 'paid'
+			  AND status NOT IN ('cancelled', 'returned', 'refunded')
+			  AND COALESCE(paid_at, updated_at, created_at) >= $3
+			  AND COALESCE(paid_at, updated_at, created_at) < $4
+			GROUP BY date_trunc('month', COALESCE(paid_at, updated_at, created_at))::date
+		),
+		pos AS (
+			SELECT
+				date_trunc('month', created_at)::date AS month_start,
+				COALESCE(SUM(grand_total), 0)::bigint AS total,
+				COUNT(*)::bigint AS count
+			FROM pos_transactions
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND status = 'completed'
+			  AND created_at >= $3
+			  AND created_at < $4
+			GROUP BY date_trunc('month', created_at)::date
+		),
+		expense AS (
+			SELECT
+				date_trunc('month', expense_date)::date AS month_start,
+				COALESCE(SUM(amount), 0)::bigint AS total
+			FROM expenses
+			WHERE tenant_id = $1
+			  AND store_id = $2
+			  AND deleted_at IS NULL
+			  AND expense_date >= $3::date
+			  AND expense_date < $4::date
+			GROUP BY date_trunc('month', expense_date)::date
+		)
+		SELECT
+			months.month_start,
+			COALESCE(online.total, 0)::bigint,
+			COALESCE(pos.total, 0)::bigint,
+			COALESCE(expense.total, 0)::bigint,
+			COALESCE(online.count, 0)::bigint,
+			COALESCE(pos.count, 0)::bigint
+		FROM months
+		LEFT JOIN online ON online.month_start = months.month_start
+		LEFT JOIN pos ON pos.month_start = months.month_start
+		LEFT JOIN expense ON expense.month_start = months.month_start
+		ORDER BY months.month_start ASC
+	`
+
+	rows, err := q.Query(ctx, query, tenantID, storeID, dateRange.From, dateRange.To)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]MonthlyFinanceRow, 0)
+	for rows.Next() {
+		var item MonthlyFinanceRow
+		if err := rows.Scan(
+			&item.MonthStart,
+			&item.OnlineSales,
+			&item.POSSales,
+			&item.TotalExpenses,
+			&item.OrderCount,
+			&item.POSTransactionCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 func (r *Repository) ListExpenses(
 	ctx context.Context,
 	q db.Queryer,
@@ -385,6 +626,20 @@ func (r *Repository) SoftDeleteExpense(
 	`
 
 	return scanExpense(q.QueryRow(ctx, query, tenantID, storeID, expenseID, actorUserID))
+}
+
+func scanFinanceTotals(row pgx.Row) (FinanceTotals, error) {
+	var totals FinanceTotals
+	if err := row.Scan(
+		&totals.OnlineSales,
+		&totals.POSSales,
+		&totals.TotalExpenses,
+		&totals.OrderCount,
+		&totals.POSTransactionCount,
+	); err != nil {
+		return FinanceTotals{}, err
+	}
+	return totals, nil
 }
 
 func scanExpense(row pgx.Row) (*Expense, error) {

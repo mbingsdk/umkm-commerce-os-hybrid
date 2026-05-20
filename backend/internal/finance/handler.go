@@ -23,6 +23,72 @@ func NewHandler(service *Service, logger *slog.Logger) *Handler {
 	return &Handler{service: service, logger: logger}
 }
 
+func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
+	currentTenant, ok := tenantctx.FromContext(r.Context())
+	if !ok {
+		httpserver.WriteError(w, r, h.logger, apperror.Forbidden("Tenant context is required"))
+		return
+	}
+
+	dateRange, err := dateRangeFromRequest(r)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	result, err := h.service.Summary(r.Context(), currentTenant.TenantID, currentTenant.StoreID, dateRange)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteOK(w, "OK", result)
+}
+
+func (h *Handler) DailyReport(w http.ResponseWriter, r *http.Request) {
+	currentTenant, ok := tenantctx.FromContext(r.Context())
+	if !ok {
+		httpserver.WriteError(w, r, h.logger, apperror.Forbidden("Tenant context is required"))
+		return
+	}
+
+	dateRange, err := dailyReportRangeFromRequest(r)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	result, err := h.service.DailyReport(r.Context(), currentTenant.TenantID, currentTenant.StoreID, dateRange)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteOK(w, "OK", result)
+}
+
+func (h *Handler) MonthlyReport(w http.ResponseWriter, r *http.Request) {
+	currentTenant, ok := tenantctx.FromContext(r.Context())
+	if !ok {
+		httpserver.WriteError(w, r, h.logger, apperror.Forbidden("Tenant context is required"))
+		return
+	}
+
+	filter, err := monthlyReportFilterFromRequest(r)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	result, err := h.service.MonthlyReport(r.Context(), currentTenant.TenantID, currentTenant.StoreID, filter)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteOK(w, "OK", result)
+}
+
 func (h *Handler) ListExpenses(w http.ResponseWriter, r *http.Request) {
 	currentTenant, ok := tenantctx.FromContext(r.Context())
 	if !ok {
@@ -135,6 +201,58 @@ func (h *Handler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpserver.WriteOK(w, "Expense deleted", result)
+}
+
+func dateRangeFromRequest(r *http.Request) (DateRange, error) {
+	query := r.URL.Query()
+	var dateRange DateRange
+	if raw := strings.TrimSpace(query.Get("date_from")); raw != "" {
+		parsed, err := parseDateParam(raw, false)
+		if err != nil {
+			return DateRange{}, invalidField("date_from", "date_from must be YYYY-MM-DD or RFC3339")
+		}
+		dateRange.From = parsed
+	}
+	if raw := strings.TrimSpace(query.Get("date_to")); raw != "" {
+		parsed, err := parseDateParam(raw, true)
+		if err != nil {
+			return DateRange{}, invalidField("date_to", "date_to must be YYYY-MM-DD or RFC3339")
+		}
+		dateRange.To = parsed
+	}
+	return dateRange, nil
+}
+
+func dailyReportRangeFromRequest(r *http.Request) (DateRange, error) {
+	query := r.URL.Query()
+	if rawDate := strings.TrimSpace(query.Get("date")); rawDate != "" {
+		parsed, err := parseDateParam(rawDate, false)
+		if err != nil {
+			return DateRange{}, invalidField("date", "date must be YYYY-MM-DD or RFC3339")
+		}
+		return DateRange{From: parsed, To: parsed.AddDate(0, 0, 1)}, nil
+	}
+	return dateRangeFromRequest(r)
+}
+
+func monthlyReportFilterFromRequest(r *http.Request) (MonthlyReportFilter, error) {
+	query := r.URL.Query()
+	var filter MonthlyReportFilter
+	if raw := strings.TrimSpace(query.Get("year")); raw != "" {
+		year, err := strconv.Atoi(raw)
+		if err != nil {
+			return MonthlyReportFilter{}, invalidField("year", "year must be a number")
+		}
+		filter.Year = year
+	}
+	if raw := strings.TrimSpace(query.Get("month")); raw != "" {
+		month, err := strconv.Atoi(raw)
+		if err != nil {
+			return MonthlyReportFilter{}, invalidField("month", "month must be a number")
+		}
+		filter.Month = &month
+	}
+	return filter, nil
 }
 
 func expenseFiltersFromRequest(r *http.Request) (ListExpenseFilters, error) {

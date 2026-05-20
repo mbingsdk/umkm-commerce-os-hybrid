@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 8A Finance Expense Backend.
+Sprint 8B Finance Summary + Reports.
 
 ## Current Goal
 
-Implement tenant-scoped finance expense backend foundation with expense schema, CRUD API, audit logging, and outbox event emission.
+Implement tenant-scoped finance summary and basic daily/monthly reports from paid online orders, completed POS transactions, and non-deleted expenses.
 
 ## Sprint 0 Tasks
 
