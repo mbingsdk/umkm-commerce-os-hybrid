@@ -36,6 +36,31 @@ func TestPublicResolveRejectsUnpublishedStore(t *testing.T) {
 	}
 }
 
+func TestPublicResolveRejectsSuspendedTenant(t *testing.T) {
+	t.Parallel()
+
+	service := NewPublicService(publicNoopQueryer{}, &fakePublicStoreReader{
+		record: &PublicStoreRecord{
+			Store: &Store{
+				ID:       uuid.New(),
+				TenantID: uuid.New(),
+				Slug:     "toko-bunga-ayu",
+				Status:   StatusPublished,
+			},
+			TenantStatus: "suspended",
+		},
+	})
+
+	_, err := service.Resolve(context.Background(), "toko-bunga-ayu")
+	appErr, ok := err.(*apperror.AppError)
+	if !ok {
+		t.Fatalf("Resolve error type = %T, want *apperror.AppError", err)
+	}
+	if appErr.Code != apperror.CodeNotFound {
+		t.Fatalf("Resolve code = %s, want %s", appErr.Code, apperror.CodeNotFound)
+	}
+}
+
 func TestPublicResolveReturnsPublishedStore(t *testing.T) {
 	t.Parallel()
 

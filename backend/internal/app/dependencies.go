@@ -124,7 +124,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	courierService := courier.NewService(database, courierRepo, publicStoreService, auditRepo)
 	shipmentService := shipment.NewService(database, shipmentRepo, publicStoreService, outboxRepo)
 	discoveryService := discovery.NewService(database, discoveryRepo)
-	adminService := admin.NewService(database, adminRepo)
+	adminService := admin.NewService(database, adminRepo, outboxRepo)
 
 	return &Dependencies{
 		Config:           cfg,

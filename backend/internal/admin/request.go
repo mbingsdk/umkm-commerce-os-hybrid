@@ -6,6 +6,16 @@ import (
 	"strings"
 )
 
+type UpdateTenantStatusRequest struct {
+	Status string `json:"status"`
+	Reason string `json:"reason,omitempty"`
+}
+
+type UpdateTenantPlanRequest struct {
+	PlanID string `json:"plan_id"`
+	Reason string `json:"reason,omitempty"`
+}
+
 type AuditInput struct {
 	ActorUserID string
 	Action      string

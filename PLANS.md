@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 10A Super Admin Foundation.
+Sprint 10B Admin Tenant Management.
 
 ## Current Goal
 
-Implement backend super admin guard, admin audit foundation, and GET /api/v1/admin/me.
+Implement backend super admin tenant list/detail/status/plan endpoints with admin audit and outbox events.
 
 ## Sprint 0 Tasks
 
