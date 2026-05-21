@@ -72,9 +72,10 @@ type AdminPlanResponse struct {
 	ID                 string `json:"id"`
 	Code               string `json:"code"`
 	Name               string `json:"name"`
+	Description        string `json:"description,omitempty"`
 	PriceMonthly       int64  `json:"price_monthly"`
-	ProductLimit       int    `json:"product_limit"`
-	StaffLimit         int    `json:"staff_limit"`
+	ProductLimit       *int   `json:"product_limit"`
+	StaffLimit         *int   `json:"staff_limit"`
 	CanUsePOS          bool   `json:"can_use_pos"`
 	CanUseDiscovery    bool   `json:"can_use_discovery"`
 	CanUseCourier      bool   `json:"can_use_courier"`
@@ -163,6 +164,21 @@ func NewTenantMutationResponse(tenant Tenant, plan *Plan) AdminTenantMutationRes
 	}
 }
 
+func NewPlanResponses(items []Plan) []AdminPlanResponse {
+	response := make([]AdminPlanResponse, 0, len(items))
+	for idx := range items {
+		item := newPlanResponse(&items[idx])
+		if item != nil {
+			response = append(response, *item)
+		}
+	}
+	return response
+}
+
+func NewPlanMutationResponse(plan Plan) AdminPlanResponse {
+	return *newPlanResponse(&plan)
+}
+
 func newTenantBasicResponse(tenant Tenant) AdminTenantBasicResponse {
 	return AdminTenantBasicResponse{
 		ID:        tenant.ID.String(),
@@ -182,6 +198,7 @@ func newPlanResponse(plan *Plan) *AdminPlanResponse {
 		ID:                 plan.ID.String(),
 		Code:               plan.Code,
 		Name:               plan.Name,
+		Description:        plan.Description,
 		PriceMonthly:       plan.PriceMonthly,
 		ProductLimit:       plan.ProductLimit,
 		StaffLimit:         plan.StaffLimit,

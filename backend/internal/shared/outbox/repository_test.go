@@ -189,6 +189,12 @@ func (r fakeOutboxRow) Scan(dest ...any) error {
 		switch target := dest[i].(type) {
 		case *uuid.UUID:
 			*target = r.values[i].(uuid.UUID)
+		case *uuid.NullUUID:
+			if r.values[i] == nil {
+				*target = uuid.NullUUID{}
+			} else {
+				*target = uuid.NullUUID{UUID: r.values[i].(uuid.UUID), Valid: true}
+			}
 		case *string:
 			*target = r.values[i].(string)
 		case *json.RawMessage:

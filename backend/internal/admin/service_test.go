@@ -142,6 +142,28 @@ func TestAdminTenantListRequiresSuperAdmin(t *testing.T) {
 	}
 }
 
+func TestAdminPlanManagementRequiresSuperAdmin(t *testing.T) {
+	router, tokens, _ := newAdminTestRouter(t, map[uuid.UUID]User{
+		testOwnerID: {
+			ID:           testOwnerID,
+			Name:         "Tenant Owner",
+			Email:        "owner@example.test",
+			PlatformRole: auth.PlatformRoleUser,
+			Status:       auth.UserStatusActive,
+		},
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/plans", nil)
+	req.Header.Set("Authorization", "Bearer "+mustAccessToken(t, tokens, testOwnerID, auth.PlatformRoleUser))
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+
+	if res.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusForbidden)
+	}
+}
+
 func TestAdminTenantListAllowsSuperAdminWithoutTenantHeader(t *testing.T) {
 	tenantID := uuid.New()
 	repo := &fakeAdminRepository{
@@ -235,6 +257,63 @@ func TestRecordAuditCreatesAdminAuditLog(t *testing.T) {
 	}
 	if log.Action != "admin.tenant.update_status" || log.TargetID == nil || *log.TargetID != testTargetID {
 		t.Fatalf("unexpected audit log: %#v", log)
+	}
+}
+
+func TestCreatePlanRejectsDuplicateCode(t *testing.T) {
+	repo := &fakeAdminRepository{
+		users: map[uuid.UUID]User{},
+		plans: map[uuid.UUID]Plan{
+			testPlanID: {ID: testPlanID, Code: "starter", Name: "Starter", IsActive: true},
+		},
+	}
+	service := NewService(fakeTxDatabase{}, repo, &fakeOutboxRepository{})
+
+	_, err := service.CreatePlan(context.Background(), CreatePlanInput{
+		ActorUserID:  testSuperAdminID,
+		Code:         "starter",
+		Name:         "Starter Baru",
+		PriceMonthly: 0,
+	})
+	assertAppErrorCode(t, err, apperror.CodeValidation)
+}
+
+func TestCreatePlanCreatesAdminAuditLogAndOutbox(t *testing.T) {
+	repo := &fakeAdminRepository{
+		users: map[uuid.UUID]User{},
+		plans: map[uuid.UUID]Plan{},
+	}
+	outboxRepo := &fakeOutboxRepository{}
+	service := NewService(fakeTxDatabase{}, repo, outboxRepo)
+	productLimit := 100
+	staffLimit := 3
+
+	result, err := service.CreatePlan(context.Background(), CreatePlanInput{
+		ActorUserID:     testSuperAdminID,
+		Code:            "growth",
+		Name:            "Growth",
+		Description:     "Untuk UMKM bertumbuh",
+		PriceMonthly:    99000,
+		ProductLimit:    &productLimit,
+		StaffLimit:      &staffLimit,
+		CanUsePOS:       boolPtr(true),
+		CanUseDiscovery: boolPtr(true),
+		CanUseCourier:   boolPtr(true),
+		IsActive:        boolPtr(true),
+		IPAddress:       "127.0.0.1",
+		UserAgent:       "admin-test",
+	})
+	if err != nil {
+		t.Fatalf("CreatePlan error = %v", err)
+	}
+	if result.Code != "growth" || result.ProductLimit == nil || *result.ProductLimit != productLimit {
+		t.Fatalf("unexpected plan result: %#v", result)
+	}
+	if len(repo.auditLogs) != 1 || repo.auditLogs[0].Action != AuditActionPlanCreated {
+		t.Fatalf("audit logs = %#v", repo.auditLogs)
+	}
+	if len(outboxRepo.events) != 1 || outboxRepo.events[0].EventType != EventPlanChanged {
+		t.Fatalf("outbox events = %#v", outboxRepo.events)
 	}
 }
 
@@ -483,6 +562,80 @@ func (f *fakeAdminRepository) UpdateTenantPlan(_ context.Context, _ db.Queryer, 
 	tenant.UpdatedAt = time.Date(2026, 5, 21, 11, 0, 0, 0, time.UTC)
 	f.tenants[tenantID] = tenant
 	return &tenant, nil
+}
+
+func (f *fakeAdminRepository) ListPlans(context.Context, db.Queryer) ([]Plan, error) {
+	items := make([]Plan, 0, len(f.plans))
+	for _, item := range f.plans {
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+func (f *fakeAdminRepository) FindPlanByIDForUpdate(_ context.Context, _ db.Queryer, planID uuid.UUID) (*Plan, error) {
+	plan, ok := f.plans[planID]
+	if !ok {
+		return nil, ErrPlanNotFound
+	}
+	return &plan, nil
+}
+
+func (f *fakeAdminRepository) CreatePlan(_ context.Context, _ db.Queryer, params CreatePlanParams) (*Plan, error) {
+	for _, existing := range f.plans {
+		if existing.Code == params.Code {
+			return nil, ErrPlanCodeAlreadyInUse
+		}
+	}
+	plan := Plan{
+		ID:                 uuid.New(),
+		Code:               params.Code,
+		Name:               params.Name,
+		Description:        params.Description,
+		PriceMonthly:       params.PriceMonthly,
+		ProductLimit:       params.ProductLimit,
+		StaffLimit:         params.StaffLimit,
+		CanUsePOS:          params.CanUsePOS,
+		CanUseDiscovery:    params.CanUseDiscovery,
+		CanUseCourier:      params.CanUseCourier,
+		CanUseCustomDomain: params.CanUseCustomDomain,
+		IsActive:           params.IsActive,
+	}
+	if f.plans == nil {
+		f.plans = map[uuid.UUID]Plan{}
+	}
+	f.plans[plan.ID] = plan
+	return &plan, nil
+}
+
+func (f *fakeAdminRepository) UpdatePlan(_ context.Context, _ db.Queryer, params UpdatePlanParams) (*Plan, error) {
+	if _, ok := f.plans[params.PlanID]; !ok {
+		return nil, ErrPlanNotFound
+	}
+	for id, existing := range f.plans {
+		if id != params.PlanID && existing.Code == params.Code {
+			return nil, ErrPlanCodeAlreadyInUse
+		}
+	}
+	plan := Plan{
+		ID:                 params.PlanID,
+		Code:               params.Code,
+		Name:               params.Name,
+		Description:        params.Description,
+		PriceMonthly:       params.PriceMonthly,
+		ProductLimit:       params.ProductLimit,
+		StaffLimit:         params.StaffLimit,
+		CanUsePOS:          params.CanUsePOS,
+		CanUseDiscovery:    params.CanUseDiscovery,
+		CanUseCourier:      params.CanUseCourier,
+		CanUseCustomDomain: params.CanUseCustomDomain,
+		IsActive:           params.IsActive,
+	}
+	f.plans[params.PlanID] = plan
+	return &plan, nil
+}
+
+func boolPtr(value bool) *bool {
+	return &value
 }
 
 type fakeOutboxRepository struct {

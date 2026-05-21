@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"regexp"
 	"strings"
 	"time"
 
@@ -18,7 +19,11 @@ const (
 	defaultTenantListLimit = 20
 	maxTenantListLimit     = 100
 	maxAdminReasonLength   = 500
+	maxPlanNameLength      = 120
+	maxPlanDescriptionLen  = 1000
 )
+
+var planCodePattern = regexp.MustCompile(`^[a-z0-9]+(?:[-_][a-z0-9]+)*$`)
 
 type database interface {
 	db.Queryer
@@ -34,6 +39,10 @@ type store interface {
 	UpdateTenantStatus(ctx context.Context, q db.Queryer, tenantID uuid.UUID, status string) (*Tenant, error)
 	FindActivePlanByID(ctx context.Context, q db.Queryer, planID uuid.UUID) (*Plan, error)
 	UpdateTenantPlan(ctx context.Context, q db.Queryer, tenantID uuid.UUID, planID uuid.UUID) (*Tenant, error)
+	ListPlans(ctx context.Context, q db.Queryer) ([]Plan, error)
+	FindPlanByIDForUpdate(ctx context.Context, q db.Queryer, planID uuid.UUID) (*Plan, error)
+	CreatePlan(ctx context.Context, q db.Queryer, params CreatePlanParams) (*Plan, error)
+	UpdatePlan(ctx context.Context, q db.Queryer, params UpdatePlanParams) (*Plan, error)
 }
 
 type outboxStore interface {
@@ -118,6 +127,41 @@ type UpdateTenantPlanInput struct {
 	Reason      string
 	IPAddress   string
 	UserAgent   string
+}
+
+type CreatePlanInput struct {
+	ActorUserID     uuid.UUID
+	Code            string
+	Name            string
+	Description     string
+	PriceMonthly    int64
+	ProductLimit    *int
+	StaffLimit      *int
+	CanUsePOS       *bool
+	CanUseDiscovery *bool
+	CanUseCourier   *bool
+	IsActive        *bool
+	IPAddress       string
+	UserAgent       string
+}
+
+type UpdatePlanInput struct {
+	ActorUserID     uuid.UUID
+	PlanID          uuid.UUID
+	Code            *string
+	Name            *string
+	Description     *string
+	PriceMonthly    *int64
+	ProductLimit    *int
+	ProductLimitSet bool
+	StaffLimit      *int
+	StaffLimitSet   bool
+	CanUsePOS       *bool
+	CanUseDiscovery *bool
+	CanUseCourier   *bool
+	IsActive        *bool
+	IPAddress       string
+	UserAgent       string
 }
 
 func (s *Service) ListTenants(ctx context.Context, filters TenantListFilters) ([]AdminTenantListResponse, PaginationMeta, error) {
@@ -308,6 +352,172 @@ func (s *Service) UpdateTenantPlan(ctx context.Context, input UpdateTenantPlanIn
 	return NewTenantMutationResponse(*updated, plan), nil
 }
 
+func (s *Service) ListPlans(ctx context.Context) ([]AdminPlanResponse, error) {
+	items, err := s.repo.ListPlans(ctx, s.db)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	return NewPlanResponses(items), nil
+}
+
+func (s *Service) CreatePlan(ctx context.Context, input CreatePlanInput) (AdminPlanResponse, error) {
+	normalized, err := normalizeCreatePlanInput(input)
+	if err != nil {
+		return AdminPlanResponse{}, err
+	}
+
+	var created *Plan
+	err = s.db.WithTx(ctx, func(tx db.Tx) error {
+		plan, err := s.repo.CreatePlan(ctx, tx, CreatePlanParams{
+			Code:               normalized.Code,
+			Name:               normalized.Name,
+			Description:        normalized.Description,
+			PriceMonthly:       normalized.PriceMonthly,
+			ProductLimit:       normalized.ProductLimit,
+			StaffLimit:         normalized.StaffLimit,
+			CanUsePOS:          boolValue(normalized.CanUsePOS, true),
+			CanUseDiscovery:    boolValue(normalized.CanUseDiscovery, true),
+			CanUseCourier:      boolValue(normalized.CanUseCourier, false),
+			CanUseCustomDomain: false,
+			IsActive:           boolValue(normalized.IsActive, true),
+		})
+		if err != nil {
+			if errors.Is(err, ErrPlanCodeAlreadyInUse) {
+				return invalidField("code", "Plan code is already in use")
+			}
+			return apperror.Internal(err)
+		}
+
+		if _, err := s.repo.CreateAuditLog(ctx, tx, AuditEntry{
+			ActorUserID: normalized.ActorUserID,
+			Action:      AuditActionPlanCreated,
+			TargetType:  AggregatePlan,
+			TargetID:    &plan.ID,
+			AfterData:   planAuditSnapshot(plan),
+			IPAddress:   normalized.IPAddress,
+			UserAgent:   normalized.UserAgent,
+		}); err != nil {
+			return apperror.Internal(err)
+		}
+		if err := s.insertPlanEvent(ctx, tx, EventPlanChanged, plan, normalized.ActorUserID, "created"); err != nil {
+			return err
+		}
+
+		created = plan
+		return nil
+	})
+	if err != nil {
+		return AdminPlanResponse{}, err
+	}
+	if created == nil {
+		return AdminPlanResponse{}, apperror.Internal(errors.New("created plan is nil"))
+	}
+	return NewPlanMutationResponse(*created), nil
+}
+
+func (s *Service) UpdatePlan(ctx context.Context, input UpdatePlanInput) (AdminPlanResponse, error) {
+	normalized, err := normalizeUpdatePlanInput(input)
+	if err != nil {
+		return AdminPlanResponse{}, err
+	}
+
+	var updated *Plan
+	err = s.db.WithTx(ctx, func(tx db.Tx) error {
+		current, err := s.repo.FindPlanByIDForUpdate(ctx, tx, normalized.PlanID)
+		if err != nil {
+			if errors.Is(err, ErrPlanNotFound) {
+				return apperror.NotFound("Plan not found")
+			}
+			return apperror.Internal(err)
+		}
+
+		merged := *current
+		if normalized.Code != nil {
+			merged.Code = *normalized.Code
+		}
+		if normalized.Name != nil {
+			merged.Name = *normalized.Name
+		}
+		if normalized.Description != nil {
+			merged.Description = *normalized.Description
+		}
+		if normalized.PriceMonthly != nil {
+			merged.PriceMonthly = *normalized.PriceMonthly
+		}
+		if normalized.ProductLimitSet {
+			merged.ProductLimit = normalized.ProductLimit
+		}
+		if normalized.StaffLimitSet {
+			merged.StaffLimit = normalized.StaffLimit
+		}
+		if normalized.CanUsePOS != nil {
+			merged.CanUsePOS = *normalized.CanUsePOS
+		}
+		if normalized.CanUseDiscovery != nil {
+			merged.CanUseDiscovery = *normalized.CanUseDiscovery
+		}
+		if normalized.CanUseCourier != nil {
+			merged.CanUseCourier = *normalized.CanUseCourier
+		}
+		if normalized.IsActive != nil {
+			merged.IsActive = *normalized.IsActive
+		}
+		if err := validatePlanFields(merged.Code, merged.Name, merged.Description, merged.PriceMonthly, merged.ProductLimit, merged.StaffLimit); err != nil {
+			return err
+		}
+
+		plan, err := s.repo.UpdatePlan(ctx, tx, UpdatePlanParams{
+			PlanID:             normalized.PlanID,
+			Code:               merged.Code,
+			Name:               merged.Name,
+			Description:        merged.Description,
+			PriceMonthly:       merged.PriceMonthly,
+			ProductLimit:       merged.ProductLimit,
+			StaffLimit:         merged.StaffLimit,
+			CanUsePOS:          merged.CanUsePOS,
+			CanUseDiscovery:    merged.CanUseDiscovery,
+			CanUseCourier:      merged.CanUseCourier,
+			CanUseCustomDomain: merged.CanUseCustomDomain,
+			IsActive:           merged.IsActive,
+		})
+		if err != nil {
+			if errors.Is(err, ErrPlanCodeAlreadyInUse) {
+				return invalidField("code", "Plan code is already in use")
+			}
+			if errors.Is(err, ErrPlanNotFound) {
+				return apperror.NotFound("Plan not found")
+			}
+			return apperror.Internal(err)
+		}
+
+		if _, err := s.repo.CreateAuditLog(ctx, tx, AuditEntry{
+			ActorUserID: normalized.ActorUserID,
+			Action:      AuditActionPlanUpdated,
+			TargetType:  AggregatePlan,
+			TargetID:    &normalized.PlanID,
+			BeforeData:  planAuditSnapshot(current),
+			AfterData:   planAuditSnapshot(plan),
+			IPAddress:   normalized.IPAddress,
+			UserAgent:   normalized.UserAgent,
+		}); err != nil {
+			return apperror.Internal(err)
+		}
+		if err := s.insertPlanEvent(ctx, tx, EventPlanChanged, plan, normalized.ActorUserID, "updated"); err != nil {
+			return err
+		}
+
+		updated = plan
+		return nil
+	})
+	if err != nil {
+		return AdminPlanResponse{}, err
+	}
+	if updated == nil {
+		return AdminPlanResponse{}, apperror.Internal(errors.New("updated plan is nil"))
+	}
+	return NewPlanMutationResponse(*updated), nil
+}
+
 func (s *Service) insertTenantEvent(ctx context.Context, tx db.Tx, tenantID uuid.UUID, eventType string, payload map[string]any) error {
 	if s.outbox == nil {
 		return nil
@@ -323,6 +533,33 @@ func (s *Service) insertTenantEvent(ctx context.Context, tx db.Tx, tenantID uuid
 		EventType:     eventType,
 		AggregateType: AggregateTenant,
 		AggregateID:   tenantID,
+		Payload:       rawPayload,
+	}); err != nil {
+		return apperror.Internal(err)
+	}
+	return nil
+}
+
+func (s *Service) insertPlanEvent(ctx context.Context, tx db.Tx, eventType string, plan *Plan, actorUserID uuid.UUID, action string) error {
+	if s.outbox == nil || plan == nil {
+		return nil
+	}
+
+	rawPayload, err := json.Marshal(map[string]any{
+		"plan_id":       plan.ID.String(),
+		"plan_code":     plan.Code,
+		"actor_user_id": actorUserID.String(),
+		"action":        action,
+	})
+	if err != nil {
+		return apperror.Internal(err)
+	}
+
+	if _, err := s.outbox.Insert(ctx, tx, outbox.InsertEventParams{
+		TenantID:      uuid.Nil,
+		EventType:     eventType,
+		AggregateType: AggregatePlan,
+		AggregateID:   plan.ID,
 		Payload:       rawPayload,
 	}); err != nil {
 		return apperror.Internal(err)
@@ -394,6 +631,114 @@ func normalizeTenantPlanInput(input UpdateTenantPlanInput) (UpdateTenantPlanInpu
 	return input, nil
 }
 
+func normalizeCreatePlanInput(input CreatePlanInput) (CreatePlanInput, error) {
+	input.Code = strings.ToLower(strings.TrimSpace(input.Code))
+	input.Name = strings.TrimSpace(input.Name)
+	input.Description = strings.TrimSpace(input.Description)
+	input.IPAddress = strings.TrimSpace(input.IPAddress)
+	input.UserAgent = strings.TrimSpace(input.UserAgent)
+
+	var details []map[string]string
+	if input.ActorUserID == uuid.Nil {
+		details = append(details, map[string]string{"field": "actor_user_id", "message": "Actor is required"})
+	}
+	details = append(details, planFieldErrors(input.Code, input.Name, input.Description, input.PriceMonthly, input.ProductLimit, input.StaffLimit)...)
+	if len(details) > 0 {
+		return CreatePlanInput{}, apperror.Validation("Validation failed", details)
+	}
+	return input, nil
+}
+
+func normalizeUpdatePlanInput(input UpdatePlanInput) (UpdatePlanInput, error) {
+	input.IPAddress = strings.TrimSpace(input.IPAddress)
+	input.UserAgent = strings.TrimSpace(input.UserAgent)
+	if input.Code != nil {
+		value := strings.ToLower(strings.TrimSpace(*input.Code))
+		input.Code = &value
+	}
+	if input.Name != nil {
+		value := strings.TrimSpace(*input.Name)
+		input.Name = &value
+	}
+	if input.Description != nil {
+		value := strings.TrimSpace(*input.Description)
+		input.Description = &value
+	}
+
+	var details []map[string]string
+	if input.ActorUserID == uuid.Nil {
+		details = append(details, map[string]string{"field": "actor_user_id", "message": "Actor is required"})
+	}
+	if input.PlanID == uuid.Nil {
+		details = append(details, map[string]string{"field": "plan_id", "message": "plan_id must be a valid UUID"})
+	}
+	if input.Code != nil && !planCodePattern.MatchString(*input.Code) {
+		details = append(details, map[string]string{"field": "code", "message": "code is invalid"})
+	}
+	if input.Name != nil && *input.Name == "" {
+		details = append(details, map[string]string{"field": "name", "message": "name is required"})
+	}
+	if input.Name != nil && len(*input.Name) > maxPlanNameLength {
+		details = append(details, map[string]string{"field": "name", "message": "name must be 120 characters or fewer"})
+	}
+	if input.Description != nil && len(*input.Description) > maxPlanDescriptionLen {
+		details = append(details, map[string]string{"field": "description", "message": "description must be 1000 characters or fewer"})
+	}
+	if input.PriceMonthly != nil && *input.PriceMonthly < 0 {
+		details = append(details, map[string]string{"field": "price_monthly", "message": "price_monthly must be zero or greater"})
+	}
+	if input.ProductLimitSet && input.ProductLimit != nil && *input.ProductLimit < 0 {
+		details = append(details, map[string]string{"field": "product_limit", "message": "product_limit must be zero or greater"})
+	}
+	if input.StaffLimitSet && input.StaffLimit != nil && *input.StaffLimit < 0 {
+		details = append(details, map[string]string{"field": "staff_limit", "message": "staff_limit must be zero or greater"})
+	}
+	if len(details) > 0 {
+		return UpdatePlanInput{}, apperror.Validation("Validation failed", details)
+	}
+	return input, nil
+}
+
+func validatePlanFields(code string, name string, description string, priceMonthly int64, productLimit *int, staffLimit *int) error {
+	if details := planFieldErrors(code, name, description, priceMonthly, productLimit, staffLimit); len(details) > 0 {
+		return apperror.Validation("Validation failed", details)
+	}
+	return nil
+}
+
+func planFieldErrors(code string, name string, description string, priceMonthly int64, productLimit *int, staffLimit *int) []map[string]string {
+	var details []map[string]string
+	if !planCodePattern.MatchString(code) {
+		details = append(details, map[string]string{"field": "code", "message": "code is invalid"})
+	}
+	if name == "" {
+		details = append(details, map[string]string{"field": "name", "message": "name is required"})
+	}
+	if len(name) > maxPlanNameLength {
+		details = append(details, map[string]string{"field": "name", "message": "name must be 120 characters or fewer"})
+	}
+	if len(description) > maxPlanDescriptionLen {
+		details = append(details, map[string]string{"field": "description", "message": "description must be 1000 characters or fewer"})
+	}
+	if priceMonthly < 0 {
+		details = append(details, map[string]string{"field": "price_monthly", "message": "price_monthly must be zero or greater"})
+	}
+	if productLimit != nil && *productLimit < 0 {
+		details = append(details, map[string]string{"field": "product_limit", "message": "product_limit must be zero or greater"})
+	}
+	if staffLimit != nil && *staffLimit < 0 {
+		details = append(details, map[string]string{"field": "staff_limit", "message": "staff_limit must be zero or greater"})
+	}
+	return details
+}
+
+func boolValue(value *bool, fallback bool) bool {
+	if value == nil {
+		return fallback
+	}
+	return *value
+}
+
 func allowedTenantStatus(status string) bool {
 	switch status {
 	case TenantStatusActive, TenantStatusTrialing, TenantStatusSuspended, TenantStatusCancelled:
@@ -422,6 +767,25 @@ func tenantPlanAuditSnapshot(tenant *Tenant) map[string]any {
 	return map[string]any{
 		"id":      tenant.ID.String(),
 		"plan_id": uuidPtrString(tenant.PlanID),
+	}
+}
+
+func planAuditSnapshot(plan *Plan) map[string]any {
+	if plan == nil {
+		return nil
+	}
+	return map[string]any{
+		"id":                plan.ID.String(),
+		"code":              plan.Code,
+		"name":              plan.Name,
+		"description":       plan.Description,
+		"price_monthly":     plan.PriceMonthly,
+		"product_limit":     plan.ProductLimit,
+		"staff_limit":       plan.StaffLimit,
+		"can_use_pos":       plan.CanUsePOS,
+		"can_use_discovery": plan.CanUseDiscovery,
+		"can_use_courier":   plan.CanUseCourier,
+		"is_active":         plan.IsActive,
 	}
 }
 

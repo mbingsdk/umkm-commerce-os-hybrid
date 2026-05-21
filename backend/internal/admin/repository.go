@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 )
 
@@ -153,9 +155,10 @@ func (r *Repository) ListTenants(ctx context.Context, q db.Queryer, filters Tena
 			COALESCE(p.id, '00000000-0000-0000-0000-000000000000'::uuid),
 			COALESCE(p.code, ''),
 			COALESCE(p.name, ''),
+			COALESCE(p.description, ''),
 			COALESCE(p.price_monthly, 0)::bigint,
-			COALESCE(p.product_limit, 0),
-			COALESCE(p.staff_limit, 0),
+			p.product_limit,
+			p.staff_limit,
 			COALESCE(p.can_use_pos, false),
 			COALESCE(p.can_use_discovery, false),
 			COALESCE(p.can_use_courier, false),
@@ -256,9 +259,10 @@ func (r *Repository) GetTenantDetail(ctx context.Context, q db.Queryer, tenantID
 			COALESCE(p.id, '00000000-0000-0000-0000-000000000000'::uuid),
 			COALESCE(p.code, ''),
 			COALESCE(p.name, ''),
+			COALESCE(p.description, ''),
 			COALESCE(p.price_monthly, 0)::bigint,
-			COALESCE(p.product_limit, 0),
-			COALESCE(p.staff_limit, 0),
+			p.product_limit,
+			p.staff_limit,
 			COALESCE(p.can_use_pos, false),
 			COALESCE(p.can_use_discovery, false),
 			COALESCE(p.can_use_courier, false),
@@ -346,6 +350,7 @@ func (r *Repository) FindActivePlanByID(ctx context.Context, q db.Queryer, planI
 			id,
 			code,
 			name,
+			COALESCE(description, ''),
 			price_monthly,
 			product_limit,
 			staff_limit,
@@ -360,6 +365,184 @@ func (r *Repository) FindActivePlanByID(ctx context.Context, q db.Queryer, planI
 		LIMIT 1
 	`
 	return scanPlan(q.QueryRow(ctx, query, planID))
+}
+
+func (r *Repository) ListPlans(ctx context.Context, q db.Queryer) ([]Plan, error) {
+	const query = `
+		SELECT
+			id,
+			code,
+			name,
+			COALESCE(description, ''),
+			price_monthly,
+			product_limit,
+			staff_limit,
+			can_use_pos,
+			can_use_discovery,
+			can_use_courier,
+			can_use_custom_domain,
+			is_active
+		FROM plans
+		ORDER BY price_monthly ASC, name ASC
+	`
+
+	rows, err := q.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]Plan, 0)
+	for rows.Next() {
+		item, err := scanPlan(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, *item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func (r *Repository) FindPlanByIDForUpdate(ctx context.Context, q db.Queryer, planID uuid.UUID) (*Plan, error) {
+	const query = `
+		SELECT
+			id,
+			code,
+			name,
+			COALESCE(description, ''),
+			price_monthly,
+			product_limit,
+			staff_limit,
+			can_use_pos,
+			can_use_discovery,
+			can_use_courier,
+			can_use_custom_domain,
+			is_active
+		FROM plans
+		WHERE id = $1
+		FOR UPDATE
+	`
+	return scanPlan(q.QueryRow(ctx, query, planID))
+}
+
+func (r *Repository) CreatePlan(ctx context.Context, q db.Queryer, params CreatePlanParams) (*Plan, error) {
+	const query = `
+		INSERT INTO plans (
+			code,
+			name,
+			description,
+			price_monthly,
+			product_limit,
+			staff_limit,
+			can_use_pos,
+			can_use_discovery,
+			can_use_courier,
+			can_use_custom_domain,
+			is_active
+		)
+		VALUES (
+			$1,
+			$2,
+			NULLIF($3, ''),
+			$4,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9,
+			$10,
+			$11
+		)
+		RETURNING
+			id,
+			code,
+			name,
+			COALESCE(description, ''),
+			price_monthly,
+			product_limit,
+			staff_limit,
+			can_use_pos,
+			can_use_discovery,
+			can_use_courier,
+			can_use_custom_domain,
+			is_active
+	`
+
+	plan, err := scanPlan(q.QueryRow(
+		ctx,
+		query,
+		params.Code,
+		params.Name,
+		params.Description,
+		params.PriceMonthly,
+		nullableIntArg(params.ProductLimit),
+		nullableIntArg(params.StaffLimit),
+		params.CanUsePOS,
+		params.CanUseDiscovery,
+		params.CanUseCourier,
+		params.CanUseCustomDomain,
+		params.IsActive,
+	))
+	if err != nil && isUniqueViolation(err) {
+		return nil, ErrPlanCodeAlreadyInUse
+	}
+	return plan, err
+}
+
+func (r *Repository) UpdatePlan(ctx context.Context, q db.Queryer, params UpdatePlanParams) (*Plan, error) {
+	const query = `
+		UPDATE plans
+		SET code = $2,
+		    name = $3,
+		    description = NULLIF($4, ''),
+		    price_monthly = $5,
+		    product_limit = $6,
+		    staff_limit = $7,
+		    can_use_pos = $8,
+		    can_use_discovery = $9,
+		    can_use_courier = $10,
+		    can_use_custom_domain = $11,
+		    is_active = $12,
+		    updated_at = now()
+		WHERE id = $1
+		RETURNING
+			id,
+			code,
+			name,
+			COALESCE(description, ''),
+			price_monthly,
+			product_limit,
+			staff_limit,
+			can_use_pos,
+			can_use_discovery,
+			can_use_courier,
+			can_use_custom_domain,
+			is_active
+	`
+
+	plan, err := scanPlan(q.QueryRow(
+		ctx,
+		query,
+		params.PlanID,
+		params.Code,
+		params.Name,
+		params.Description,
+		params.PriceMonthly,
+		nullableIntArg(params.ProductLimit),
+		nullableIntArg(params.StaffLimit),
+		params.CanUsePOS,
+		params.CanUseDiscovery,
+		params.CanUseCourier,
+		params.CanUseCustomDomain,
+		params.IsActive,
+	))
+	if err != nil && isUniqueViolation(err) {
+		return nil, ErrPlanCodeAlreadyInUse
+	}
+	return plan, err
 }
 
 func (r *Repository) UpdateTenantPlan(ctx context.Context, q db.Queryer, tenantID uuid.UUID, planID uuid.UUID) (*Tenant, error) {
@@ -446,13 +629,16 @@ func scanTenant(row pgx.Row) (*Tenant, error) {
 
 func scanPlan(row pgx.Row) (*Plan, error) {
 	var plan Plan
+	var productLimit sql.NullInt64
+	var staffLimit sql.NullInt64
 	if err := row.Scan(
 		&plan.ID,
 		&plan.Code,
 		&plan.Name,
+		&plan.Description,
 		&plan.PriceMonthly,
-		&plan.ProductLimit,
-		&plan.StaffLimit,
+		&productLimit,
+		&staffLimit,
 		&plan.CanUsePOS,
 		&plan.CanUseDiscovery,
 		&plan.CanUseCourier,
@@ -464,6 +650,8 @@ func scanPlan(row pgx.Row) (*Plan, error) {
 		}
 		return nil, err
 	}
+	plan.ProductLimit = nullableInt(productLimit)
+	plan.StaffLimit = nullableInt(staffLimit)
 	return &plan, nil
 }
 
@@ -520,6 +708,8 @@ func scanTenantOverview(
 	counts *TenantCounts,
 ) error {
 	var planID uuid.NullUUID
+	var productLimit sql.NullInt64
+	var staffLimit sql.NullInt64
 	if err := row.Scan(
 		&tenant.ID,
 		&planID,
@@ -531,9 +721,10 @@ func scanTenantOverview(
 		&plan.ID,
 		&plan.Code,
 		&plan.Name,
+		&plan.Description,
 		&plan.PriceMonthly,
-		&plan.ProductLimit,
-		&plan.StaffLimit,
+		&productLimit,
+		&staffLimit,
 		&plan.CanUsePOS,
 		&plan.CanUseDiscovery,
 		&plan.CanUseCourier,
@@ -563,7 +754,24 @@ func scanTenantOverview(
 	if planID.Valid {
 		tenant.PlanID = &planID.UUID
 	}
+	plan.ProductLimit = nullableInt(productLimit)
+	plan.StaffLimit = nullableInt(staffLimit)
 	return nil
+}
+
+func nullableInt(value sql.NullInt64) *int {
+	if !value.Valid {
+		return nil
+	}
+	converted := int(value.Int64)
+	return &converted
+}
+
+func nullableIntArg(value *int) any {
+	if value == nil {
+		return nil
+	}
+	return *value
 }
 
 func marshalOptionalJSON(value any) ([]byte, error) {
@@ -572,4 +780,9 @@ func marshalOptionalJSON(value any) ([]byte, error) {
 	}
 
 	return json.Marshal(value)
+}
+
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+	plans "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/plan"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shipment"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
@@ -77,6 +78,9 @@ func NewRouter(deps *Dependencies) http.Handler {
 		requirePermission := func(required permission.Permission) func(http.Handler) http.Handler {
 			return sharedmw.RequirePermission(required, deps.Logger)
 		}
+		requireFeature := func(required plans.Feature) func(http.Handler) http.Handler {
+			return plans.RequireFeature(deps.PlanService, required, deps.Logger)
+		}
 
 		auth.RegisterRoutes(r, deps.AuthHandler, authMiddleware)
 		tenant.RegisterRoutes(r, deps.TenantHandler, authMiddleware)
@@ -96,11 +100,11 @@ func NewRouter(deps *Dependencies) http.Handler {
 			product.RegisterRoutes(r, deps.ProductHandler, tenantMiddleware, requirePermission)
 			upload.RegisterRoutes(r, deps.UploadHandler, tenantMiddleware, requirePermission)
 			inventory.RegisterRoutes(r, deps.InventoryHandler, tenantMiddleware, requirePermission)
-			pos.RegisterRoutes(r, deps.POSHandler, tenantMiddleware, requirePermission)
+			pos.RegisterRoutes(r, deps.POSHandler, tenantMiddleware, requirePermission, requireFeature)
 			finance.RegisterRoutes(r, deps.FinanceHandler, tenantMiddleware, requirePermission)
 			dashboard.RegisterRoutes(r, deps.DashboardHandler, tenantMiddleware, requirePermission)
-			courier.RegisterRoutes(r, deps.CourierHandler, tenantMiddleware, requirePermission)
-			shipment.RegisterRoutes(r, deps.ShipmentHandler, tenantMiddleware, requirePermission)
+			courier.RegisterRoutes(r, deps.CourierHandler, tenantMiddleware, requirePermission, requireFeature)
+			shipment.RegisterRoutes(r, deps.ShipmentHandler, tenantMiddleware, requirePermission, requireFeature)
 			order.RegisterRoutes(r, deps.OrderHandler, tenantMiddleware, requirePermission)
 			payment.RegisterRoutes(r, deps.PaymentHandler, tenantMiddleware, requirePermission)
 		})

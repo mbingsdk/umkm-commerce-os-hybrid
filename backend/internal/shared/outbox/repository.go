@@ -50,10 +50,15 @@ func (r *Repository) Insert(ctx context.Context, q db.Queryer, params InsertEven
 			created_at
 	`
 
+	var tenantID any = params.TenantID
+	if params.TenantID == uuid.Nil {
+		tenantID = nil
+	}
+
 	return scanEvent(q.QueryRow(
 		ctx,
 		query,
-		params.TenantID,
+		tenantID,
 		params.EventType,
 		params.AggregateType,
 		params.AggregateID,
@@ -165,9 +170,10 @@ func scanEvent(row interface {
 	Scan(dest ...any) error
 }) (*Event, error) {
 	var event Event
+	var tenantID uuid.NullUUID
 	if err := row.Scan(
 		&event.ID,
-		&event.TenantID,
+		&tenantID,
 		&event.EventType,
 		&event.AggregateType,
 		&event.AggregateID,
@@ -179,6 +185,9 @@ func scanEvent(row interface {
 		&event.CreatedAt,
 	); err != nil {
 		return nil, err
+	}
+	if tenantID.Valid {
+		event.TenantID = tenantID.UUID
 	}
 	return &event, nil
 }

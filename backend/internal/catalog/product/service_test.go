@@ -13,6 +13,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/storage"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
+	plans "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/plan"
 )
 
 func TestValidateCreate(t *testing.T) {
@@ -144,6 +145,67 @@ func TestCreateInitialStockCreatesSnapshotAndMovement(t *testing.T) {
 	}
 }
 
+func TestCreateRejectsProductPlanLimit(t *testing.T) {
+	t.Parallel()
+
+	service := NewService(
+		fakeDatabase{},
+		&fakeProductStore{},
+		&fakeCategoryReader{},
+		&fakeStockWriter{},
+		&fakeImageStore{},
+		&fakeAssetStore{},
+		&fakePlanChecker{productLimitErr: apperror.PlanLimitExceeded("Product limit exceeded", nil)},
+	)
+
+	_, err := service.Create(context.Background(), uuid.New(), uuid.New(), uuid.New(), validCreateInput())
+	appErr, ok := err.(*apperror.AppError)
+	if !ok {
+		t.Fatalf("Create error type = %T, want *apperror.AppError", err)
+	}
+	if appErr.Code != apperror.CodePlanLimitExceeded {
+		t.Fatalf("Create code = %s, want %s", appErr.Code, apperror.CodePlanLimitExceeded)
+	}
+}
+
+func TestUpdateRejectsDiscoveryWhenPlanDisallowsIt(t *testing.T) {
+	t.Parallel()
+
+	productID := uuid.New()
+	discoverable := true
+	service := NewService(
+		fakeDatabase{},
+		&fakeProductStore{
+			findByID: func(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, id uuid.UUID) (*Product, error) {
+				return &Product{
+					ID:             id,
+					TenantID:       tenantID,
+					StoreID:        storeID,
+					Name:           "Bouquet Mawar",
+					Slug:           "bouquet-mawar",
+					Price:          150000,
+					Status:         StatusActive,
+					TrackInventory: true,
+				}, nil
+			},
+		},
+		&fakeCategoryReader{},
+		&fakeStockWriter{},
+		&fakeImageStore{},
+		&fakeAssetStore{},
+		&fakePlanChecker{featureErr: apperror.Forbidden("Feature is not available on current plan")},
+	)
+
+	_, err := service.Update(context.Background(), uuid.New(), uuid.New(), productID, UpdateInput{IsDiscoverable: &discoverable})
+	appErr, ok := err.(*apperror.AppError)
+	if !ok {
+		t.Fatalf("Update error type = %T, want *apperror.AppError", err)
+	}
+	if appErr.Code != apperror.CodeForbidden {
+		t.Fatalf("Update code = %s, want %s", appErr.Code, apperror.CodeForbidden)
+	}
+}
+
 func TestCreateZeroInitialStockStillCreatesSnapshot(t *testing.T) {
 	t.Parallel()
 
@@ -223,7 +285,8 @@ func (noopTx) QueryRow(context.Context, string, ...any) pgx.Row {
 }
 
 type fakeProductStore struct {
-	create func(context.Context, db.Queryer, CreateParams) (*Product, error)
+	create   func(context.Context, db.Queryer, CreateParams) (*Product, error)
+	findByID func(context.Context, db.Queryer, uuid.UUID, uuid.UUID, uuid.UUID) (*Product, error)
 }
 
 func (f *fakeProductStore) List(context.Context, db.Queryer, uuid.UUID, uuid.UUID, ListFilters) ([]Product, error) {
@@ -237,7 +300,10 @@ func (f *fakeProductStore) Create(ctx context.Context, q db.Queryer, params Crea
 	return nil, errors.New("unexpected Create")
 }
 
-func (f *fakeProductStore) FindByID(context.Context, db.Queryer, uuid.UUID, uuid.UUID, uuid.UUID) (*Product, error) {
+func (f *fakeProductStore) FindByID(ctx context.Context, q db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, productID uuid.UUID) (*Product, error) {
+	if f.findByID != nil {
+		return f.findByID(ctx, q, tenantID, storeID, productID)
+	}
 	return nil, ErrProductNotFound
 }
 
@@ -297,4 +363,17 @@ func (fakeAssetStore) Store(context.Context, storage.StoreInput) (storage.Asset,
 
 func (fakeAssetStore) Delete(context.Context, string) error {
 	return errors.New("unexpected Delete")
+}
+
+type fakePlanChecker struct {
+	productLimitErr error
+	featureErr      error
+}
+
+func (f *fakePlanChecker) CheckProductLimit(context.Context, db.Queryer, uuid.UUID, uuid.UUID) error {
+	return f.productLimitErr
+}
+
+func (f *fakePlanChecker) RequireFeature(context.Context, db.Queryer, uuid.UUID, plans.Feature) error {
+	return f.featureErr
 }

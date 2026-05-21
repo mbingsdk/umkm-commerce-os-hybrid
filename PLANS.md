@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 10B Admin Tenant Management.
+Sprint 10C Admin Plan Management + Limits.
 
 ## Current Goal
 
-Implement backend super admin tenant list/detail/status/plan endpoints with admin audit and outbox events.
+Implement backend super admin plan management, product plan limits, and basic plan feature gates.
 
 ## Sprint 0 Tasks
 

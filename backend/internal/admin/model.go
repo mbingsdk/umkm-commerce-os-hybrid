@@ -17,17 +17,22 @@ const (
 
 	AuditActionTenantStatusUpdated = "admin.tenant.update_status"
 	AuditActionTenantPlanUpdated   = "admin.tenant.update_plan"
+	AuditActionPlanCreated         = "admin.plan.create"
+	AuditActionPlanUpdated         = "admin.plan.update"
 
 	EventTenantStatusChanged = "TenantStatusChanged"
 	EventTenantPlanChanged   = "TenantPlanChanged"
+	EventPlanChanged         = "PlanChanged"
 
 	AggregateTenant = "tenant"
+	AggregatePlan   = "plan"
 )
 
 var (
-	ErrTenantNotFound = errors.New("tenant not found")
-	ErrPlanNotFound   = errors.New("plan not found")
-	errInvalidCursor  = errors.New("invalid cursor")
+	ErrTenantNotFound       = errors.New("tenant not found")
+	ErrPlanNotFound         = errors.New("plan not found")
+	ErrPlanCodeAlreadyInUse = errors.New("plan code already in use")
+	errInvalidCursor        = errors.New("invalid cursor")
 )
 
 type User struct {
@@ -52,9 +57,10 @@ type Plan struct {
 	ID                 uuid.UUID
 	Code               string
 	Name               string
+	Description        string
 	PriceMonthly       int64
-	ProductLimit       int
-	StaffLimit         int
+	ProductLimit       *int
+	StaffLimit         *int
 	CanUsePOS          bool
 	CanUseDiscovery    bool
 	CanUseCourier      bool
@@ -146,6 +152,35 @@ type AuditLog struct {
 	TargetType  string
 	TargetID    *uuid.UUID
 	CreatedAt   time.Time
+}
+
+type CreatePlanParams struct {
+	Code               string
+	Name               string
+	Description        string
+	PriceMonthly       int64
+	ProductLimit       *int
+	StaffLimit         *int
+	CanUsePOS          bool
+	CanUseDiscovery    bool
+	CanUseCourier      bool
+	CanUseCustomDomain bool
+	IsActive           bool
+}
+
+type UpdatePlanParams struct {
+	PlanID             uuid.UUID
+	Code               string
+	Name               string
+	Description        string
+	PriceMonthly       int64
+	ProductLimit       *int
+	StaffLimit         *int
+	CanUsePOS          bool
+	CanUseDiscovery    bool
+	CanUseCourier      bool
+	CanUseCustomDomain bool
+	IsActive           bool
 }
 
 func EncodeTenantCursor(item TenantListItem) (string, error) {

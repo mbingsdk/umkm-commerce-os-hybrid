@@ -25,6 +25,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/idempotency"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
+	plans "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/plan"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shipment"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
@@ -65,6 +66,7 @@ type Dependencies struct {
 	DiscoveryHandler *discovery.Handler
 	AdminService     *admin.Service
 	AdminHandler     *admin.Handler
+	PlanService      *plans.Service
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -94,6 +96,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	shipmentRepo := shipment.NewRepository()
 	discoveryRepo := discovery.NewRepository()
 	adminRepo := admin.NewRepository()
+	planRepo := plans.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -111,7 +114,8 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	publicStoreService := store.NewPublicService(database, storeRepo)
 	categoryService := category.NewService(database, categoryRepo)
 	publicCategoryService := category.NewPublicService(database, categoryRepo, publicStoreService)
-	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo, productImageRepo, assetStore)
+	planService := plans.NewService(database, planRepo)
+	productService := product.NewService(database, productRepo, categoryRepo, inventoryRepo, productImageRepo, assetStore, planService)
 	publicProductService := product.NewPublicService(database, productRepo, publicStoreService)
 	uploadService := upload.NewService(assetStore)
 	checkoutService := checkout.NewService(database, publicStoreService, checkoutRepo, idempotencyRepo, outboxRepo)
@@ -154,6 +158,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		DiscoveryHandler: discovery.NewHandler(discoveryService, logger),
 		AdminService:     adminService,
 		AdminHandler:     admin.NewHandler(adminService, logger),
+		PlanService:      planService,
 	}, nil
 }
 

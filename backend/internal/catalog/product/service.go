@@ -11,6 +11,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
+	plans "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/plan"
 )
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
@@ -38,6 +39,11 @@ type stockWriter interface {
 	CreateMovement(ctx context.Context, q db.Queryer, params inventory.CreateMovementParams) (*inventory.StockMovement, error)
 }
 
+type planChecker interface {
+	CheckProductLimit(ctx context.Context, q db.Queryer, tenantID uuid.UUID, storeID uuid.UUID) error
+	RequireFeature(ctx context.Context, q db.Queryer, tenantID uuid.UUID, feature plans.Feature) error
+}
+
 type Service struct {
 	db         database
 	products   productStore
@@ -45,6 +51,7 @@ type Service struct {
 	stocks     stockWriter
 	images     imageStore
 	assets     assetStore
+	plans      planChecker
 }
 
 type CreateInput struct {
@@ -95,7 +102,12 @@ func NewService(
 	stocks stockWriter,
 	images imageStore,
 	assets assetStore,
+	planCheckers ...planChecker,
 ) *Service {
+	var checker planChecker
+	if len(planCheckers) > 0 {
+		checker = planCheckers[0]
+	}
 	return &Service{
 		db:         database,
 		products:   products,
@@ -103,6 +115,7 @@ func NewService(
 		stocks:     stocks,
 		images:     images,
 		assets:     assets,
+		plans:      checker,
 	}
 }
 
@@ -149,6 +162,16 @@ func (s *Service) Create(
 	err = s.db.WithTx(ctx, func(tx db.Tx) error {
 		if err := s.validateCategory(ctx, tx, tenantID, storeID, normalized.CategoryID); err != nil {
 			return err
+		}
+		if s.plans != nil {
+			if err := s.plans.CheckProductLimit(ctx, tx, tenantID, storeID); err != nil {
+				return err
+			}
+			if normalized.IsDiscoverable {
+				if err := s.plans.RequireFeature(ctx, tx, tenantID, plans.FeatureDiscovery); err != nil {
+					return err
+				}
+			}
 		}
 
 		created, err := s.products.Create(ctx, tx, CreateParams{
@@ -357,6 +380,11 @@ func (s *Service) Update(
 	}
 	if err := s.validateCategory(ctx, s.db, tenantID, storeID, normalized.CategoryID); err != nil {
 		return SummaryResponse{}, err
+	}
+	if s.plans != nil && input.IsDiscoverable != nil && *input.IsDiscoverable {
+		if err := s.plans.RequireFeature(ctx, s.db, tenantID, plans.FeatureDiscovery); err != nil {
+			return SummaryResponse{}, err
+		}
 	}
 
 	if err := s.products.Update(ctx, s.db, UpdateParams{

@@ -47,6 +47,99 @@ func (h *Handler) ListTenants(w http.ResponseWriter, r *http.Request) {
 	httpserver.WriteOKWithMeta(w, "OK", items, meta)
 }
 
+func (h *Handler) ListPlans(w http.ResponseWriter, r *http.Request) {
+	items, err := h.service.ListPlans(r.Context())
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteOK(w, "OK", items)
+}
+
+func (h *Handler) CreatePlan(w http.ResponseWriter, r *http.Request) {
+	adminCtx, ok := FromContext(r.Context())
+	if !ok {
+		httpserver.WriteError(w, r, h.logger, apperror.Forbidden("Super admin context is required"))
+		return
+	}
+
+	var req CreatePlanRequest
+	if err := httpserver.DecodeJSON(r, &req); err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	ipAddress, userAgent := RequestMetadata(r)
+	result, err := h.service.CreatePlan(r.Context(), CreatePlanInput{
+		ActorUserID:     adminCtx.UserID,
+		Code:            req.Code,
+		Name:            req.Name,
+		Description:     req.Description,
+		PriceMonthly:    req.PriceMonthly,
+		ProductLimit:    req.ProductLimit,
+		StaffLimit:      req.StaffLimit,
+		CanUsePOS:       req.CanUsePOS,
+		CanUseDiscovery: req.CanUseDiscovery,
+		CanUseCourier:   req.CanUseCourier,
+		IsActive:        req.IsActive,
+		IPAddress:       ipAddress,
+		UserAgent:       userAgent,
+	})
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteCreated(w, "Plan created", result)
+}
+
+func (h *Handler) UpdatePlan(w http.ResponseWriter, r *http.Request) {
+	adminCtx, ok := FromContext(r.Context())
+	if !ok {
+		httpserver.WriteError(w, r, h.logger, apperror.Forbidden("Super admin context is required"))
+		return
+	}
+
+	planID, err := parsePlanID(r)
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	var req UpdatePlanRequest
+	if err := httpserver.DecodeJSON(r, &req); err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	ipAddress, userAgent := RequestMetadata(r)
+	result, err := h.service.UpdatePlan(r.Context(), UpdatePlanInput{
+		ActorUserID:     adminCtx.UserID,
+		PlanID:          planID,
+		Code:            req.Code,
+		Name:            req.Name,
+		Description:     req.Description,
+		PriceMonthly:    req.PriceMonthly,
+		ProductLimit:    req.ProductLimit.Value,
+		ProductLimitSet: req.ProductLimit.Set,
+		StaffLimit:      req.StaffLimit.Value,
+		StaffLimitSet:   req.StaffLimit.Set,
+		CanUsePOS:       req.CanUsePOS,
+		CanUseDiscovery: req.CanUseDiscovery,
+		CanUseCourier:   req.CanUseCourier,
+		IsActive:        req.IsActive,
+		IPAddress:       ipAddress,
+		UserAgent:       userAgent,
+	})
+	if err != nil {
+		httpserver.WriteError(w, r, h.logger, err)
+		return
+	}
+
+	httpserver.WriteOK(w, "Plan updated", result)
+}
+
 func (h *Handler) GetTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := parseTenantID(r)
 	if err != nil {
@@ -205,4 +298,12 @@ func parseTenantID(r *http.Request) (uuid.UUID, error) {
 		return uuid.Nil, invalidField("tenantId", "tenantId must be a valid UUID")
 	}
 	return tenantID, nil
+}
+
+func parsePlanID(r *http.Request) (uuid.UUID, error) {
+	planID, err := uuid.Parse(chi.URLParam(r, "planId"))
+	if err != nil {
+		return uuid.Nil, invalidField("planId", "planId must be a valid UUID")
+	}
+	return planID, nil
 }

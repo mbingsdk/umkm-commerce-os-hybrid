@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"encoding/json"
 	"net"
 	"net/http"
 	"strings"
@@ -14,6 +15,52 @@ type UpdateTenantStatusRequest struct {
 type UpdateTenantPlanRequest struct {
 	PlanID string `json:"plan_id"`
 	Reason string `json:"reason,omitempty"`
+}
+
+type CreatePlanRequest struct {
+	Code            string `json:"code"`
+	Name            string `json:"name"`
+	Description     string `json:"description,omitempty"`
+	PriceMonthly    int64  `json:"price_monthly"`
+	ProductLimit    *int   `json:"product_limit"`
+	StaffLimit      *int   `json:"staff_limit"`
+	CanUsePOS       *bool  `json:"can_use_pos"`
+	CanUseDiscovery *bool  `json:"can_use_discovery"`
+	CanUseCourier   *bool  `json:"can_use_courier"`
+	IsActive        *bool  `json:"is_active"`
+}
+
+type UpdatePlanRequest struct {
+	Code            *string     `json:"code"`
+	Name            *string     `json:"name"`
+	Description     *string     `json:"description"`
+	PriceMonthly    *int64      `json:"price_monthly"`
+	ProductLimit    NullableInt `json:"product_limit"`
+	StaffLimit      NullableInt `json:"staff_limit"`
+	CanUsePOS       *bool       `json:"can_use_pos"`
+	CanUseDiscovery *bool       `json:"can_use_discovery"`
+	CanUseCourier   *bool       `json:"can_use_courier"`
+	IsActive        *bool       `json:"is_active"`
+}
+
+type NullableInt struct {
+	Set   bool
+	Value *int
+}
+
+func (n *NullableInt) UnmarshalJSON(data []byte) error {
+	n.Set = true
+	if strings.EqualFold(strings.TrimSpace(string(data)), "null") {
+		n.Value = nil
+		return nil
+	}
+
+	var value int
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	n.Value = &value
+	return nil
 }
 
 type AuditInput struct {

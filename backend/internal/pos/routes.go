@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+	plans "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/plan"
 )
 
 func RegisterRoutes(
@@ -12,9 +13,11 @@ func RegisterRoutes(
 	handler *Handler,
 	tenantMiddleware func(http.Handler) http.Handler,
 	requirePermission func(permission.Permission) func(http.Handler) http.Handler,
+	requireFeature func(plans.Feature) func(http.Handler) http.Handler,
 ) {
 	r.Route("/pos", func(r chi.Router) {
 		r.Use(tenantMiddleware)
+		r.Use(requireFeature(plans.FeaturePOS))
 
 		r.With(requirePermission(permission.POSOpenSession)).Post("/sessions/open", handler.OpenSession)
 		r.With(requirePermission(permission.POSReadSession)).Get("/sessions/current", handler.CurrentSession)

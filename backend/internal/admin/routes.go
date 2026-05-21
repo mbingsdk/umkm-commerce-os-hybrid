@@ -21,6 +21,9 @@ func RegisterRoutes(
 		r.Use(adminGuard)
 
 		r.Get("/me", handler.Me)
+		r.Get("/plans", handler.ListPlans)
+		r.Post("/plans", handler.CreatePlan)
+		r.Patch("/plans/{planId}", handler.UpdatePlan)
 		r.Get("/tenants", handler.ListTenants)
 		r.Get("/tenants/{tenantId}", handler.GetTenant)
 		r.Patch("/tenants/{tenantId}/status", handler.UpdateTenantStatus)

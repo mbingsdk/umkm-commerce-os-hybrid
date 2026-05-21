@@ -12,6 +12,7 @@ const (
 	CodeIdempotencyConflict Code = "IDEMPOTENCY_CONFLICT"
 	CodeInsufficientStock   Code = "INSUFFICIENT_STOCK"
 	CodeInvalidOrderStatus  Code = "INVALID_ORDER_STATUS"
+	CodePlanLimitExceeded   Code = "PLAN_LIMIT_EXCEEDED"
 	CodeRateLimited         Code = "RATE_LIMITED"
 	CodeServiceUnavailable  Code = "SERVICE_UNAVAILABLE"
 	CodeInternal            Code = "INTERNAL_SERVER_ERROR"
@@ -93,6 +94,14 @@ func InsufficientStock(message string, details any) *AppError {
 func InvalidOrderStatus(message string, details any) *AppError {
 	return &AppError{
 		Code:    CodeInvalidOrderStatus,
+		Message: message,
+		Details: details,
+	}
+}
+
+func PlanLimitExceeded(message string, details any) *AppError {
+	return &AppError{
+		Code:    CodePlanLimitExceeded,
 		Message: message,
 		Details: details,
 	}
