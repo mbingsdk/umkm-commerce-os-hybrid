@@ -12,6 +12,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/checkout"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/courier"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/dashboard"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/discovery"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/finance"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/order"
@@ -85,6 +86,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 		payment.RegisterPublicRoutes(r, deps.PaymentHandler)
 		courier.RegisterPublicRoutes(r, deps.CourierHandler)
 		shipment.RegisterPublicRoutes(r, deps.ShipmentHandler)
+		discovery.RegisterPublicRoutes(r, deps.DiscoveryHandler)
 
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware)

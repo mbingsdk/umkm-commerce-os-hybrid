@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 9B Shipment + Tracking.
+Sprint 9C Discovery API.
 
 ## Current Goal
 
-Implement backend shipment lifecycle and public order tracking.
+Implement public discovery APIs for eligible stores and products.
 
 ## Sprint 0 Tasks
 

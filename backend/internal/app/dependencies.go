@@ -11,6 +11,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/config"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/courier"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/dashboard"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/discovery"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/finance"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/inventory"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/order"
@@ -60,6 +61,7 @@ type Dependencies struct {
 	DashboardHandler *dashboard.Handler
 	CourierHandler   *courier.Handler
 	ShipmentHandler  *shipment.Handler
+	DiscoveryHandler *discovery.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -87,6 +89,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	dashboardRepo := dashboard.NewRepository()
 	courierRepo := courier.NewRepository()
 	shipmentRepo := shipment.NewRepository()
+	discoveryRepo := discovery.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -116,6 +119,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	dashboardService := dashboard.NewService(database, dashboardRepo)
 	courierService := courier.NewService(database, courierRepo, publicStoreService, auditRepo)
 	shipmentService := shipment.NewService(database, shipmentRepo, publicStoreService, outboxRepo)
+	discoveryService := discovery.NewService(database, discoveryRepo)
 
 	return &Dependencies{
 		Config:           cfg,
@@ -142,6 +146,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		DashboardHandler: dashboard.NewHandler(dashboardService, logger),
 		CourierHandler:   courier.NewHandler(courierService, logger),
 		ShipmentHandler:  shipment.NewHandler(shipmentService, logger),
+		DiscoveryHandler: discovery.NewHandler(discoveryService, logger),
 	}, nil
 }
 
