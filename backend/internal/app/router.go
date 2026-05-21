@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/admin"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
@@ -103,6 +104,13 @@ func NewRouter(deps *Dependencies) http.Handler {
 			order.RegisterRoutes(r, deps.OrderHandler, tenantMiddleware, requirePermission)
 			payment.RegisterRoutes(r, deps.PaymentHandler, tenantMiddleware, requirePermission)
 		})
+
+		admin.RegisterRoutes(
+			r,
+			deps.AdminHandler,
+			authMiddleware,
+			admin.Guard(deps.AdminService, deps.Logger),
+		)
 	})
 
 	return r

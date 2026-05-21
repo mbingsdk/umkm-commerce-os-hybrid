@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	PlatformRoleUser = "user"
+	PlatformRoleUser       = "user"
+	PlatformRoleSuperAdmin = "super_admin"
 
 	UserStatusActive = "active"
 )

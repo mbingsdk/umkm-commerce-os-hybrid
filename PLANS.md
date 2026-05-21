@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 9E Discovery UI.
+Sprint 10A Super Admin Foundation.
 
 ## Current Goal
 
-Implement public discovery homepage, explore, stores, products, and search pages.
+Implement backend super admin guard, admin audit foundation, and GET /api/v1/admin/me.
 
 ## Sprint 0 Tasks
 

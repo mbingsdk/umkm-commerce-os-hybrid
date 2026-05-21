@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/admin"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/auth"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/category"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/catalog/product"
@@ -62,6 +63,8 @@ type Dependencies struct {
 	CourierHandler   *courier.Handler
 	ShipmentHandler  *shipment.Handler
 	DiscoveryHandler *discovery.Handler
+	AdminService     *admin.Service
+	AdminHandler     *admin.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -90,6 +93,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	courierRepo := courier.NewRepository()
 	shipmentRepo := shipment.NewRepository()
 	discoveryRepo := discovery.NewRepository()
+	adminRepo := admin.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -120,6 +124,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	courierService := courier.NewService(database, courierRepo, publicStoreService, auditRepo)
 	shipmentService := shipment.NewService(database, shipmentRepo, publicStoreService, outboxRepo)
 	discoveryService := discovery.NewService(database, discoveryRepo)
+	adminService := admin.NewService(database, adminRepo)
 
 	return &Dependencies{
 		Config:           cfg,
@@ -147,6 +152,8 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		CourierHandler:   courier.NewHandler(courierService, logger),
 		ShipmentHandler:  shipment.NewHandler(shipmentService, logger),
 		DiscoveryHandler: discovery.NewHandler(discoveryService, logger),
+		AdminService:     adminService,
+		AdminHandler:     admin.NewHandler(adminService, logger),
 	}, nil
 }
 
