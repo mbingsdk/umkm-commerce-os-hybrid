@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 9D Courier + Shipment UI.
+Sprint 9E Discovery UI.
 
 ## Current Goal
 
-Implement frontend courier zones, shipment management, and public order tracking UI.
+Implement public discovery homepage, explore, stores, products, and search pages.
 
 ## Sprint 0 Tasks
 

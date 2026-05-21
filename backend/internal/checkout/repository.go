@@ -5,10 +5,14 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 )
 
-var ErrStockSnapshotNotFound = errors.New("stock snapshot not found")
+var (
+	ErrStockSnapshotNotFound = errors.New("stock snapshot not found")
+	ErrCourierZoneNotFound   = errors.New("courier zone not found")
+)
 
 type Repository struct{}
 
@@ -123,6 +127,46 @@ func (r *Repository) LockStockSnapshots(
 	}
 
 	return items, nil
+}
+
+func (r *Repository) FindActiveCourierZone(
+	ctx context.Context,
+	q db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	zoneID uuid.UUID,
+) (*CourierZoneForCheckout, error) {
+	const query = `
+		SELECT
+			id,
+			tenant_id,
+			store_id,
+			name,
+			rate
+		FROM courier_zones
+		WHERE tenant_id = $1
+		  AND store_id = $2
+		  AND id = $3
+		  AND is_active = true
+		  AND deleted_at IS NULL
+		LIMIT 1
+	`
+
+	var zone CourierZoneForCheckout
+	if err := q.QueryRow(ctx, query, tenantID, storeID, zoneID).Scan(
+		&zone.ID,
+		&zone.TenantID,
+		&zone.StoreID,
+		&zone.Name,
+		&zone.Rate,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrCourierZoneNotFound
+		}
+		return nil, err
+	}
+
+	return &zone, nil
 }
 
 func (r *Repository) FindOrCreateCustomer(

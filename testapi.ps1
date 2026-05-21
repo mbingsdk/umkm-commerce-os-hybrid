@@ -1,4 +1,4 @@
-# REGISTER
+# REGISTER ==============================================
 $body = @{
   name = "Owner A"
   email = "owner-a@example.com"
@@ -12,7 +12,7 @@ Invoke-RestMethod `
   -ContentType "application/json" `
   -Body $body
 
-# LOGIN
+# LOGIN ==============================================
 $loginBody = @{
   email = "owner-a@example.com"
   password = "password123"
@@ -26,13 +26,13 @@ $login = Invoke-RestMethod `
 
 $token = $login.data.access_token
 
-# CEK SESSION
+# CEK SESSION ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/auth/me" `
   -Method GET `
   -Headers @{ Authorization = "Bearer $token" }
 
-# Create tenant + store:
+# Create tenant + store: ==============================================
 $storeBody = @{
   tenant_name = "Toko Bunga Ayu"
   tenant_slug = "toko-bunga-ayu"
@@ -56,13 +56,13 @@ $created = Invoke-RestMethod `
 $created
 $tenantId = $created.data.tenant.id
 
-# LIST Tenant
+# LIST Tenant ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/tenants" `
   -Method GET `
   -Headers @{ Authorization = "Bearer $token" }
 
-# Cek current store dengan X-Tenant-ID:
+# Cek current store dengan X-Tenant-ID: ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/stores/current" `
   -Method GET `
@@ -71,7 +71,7 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   }
 
-# Test publish:
+# Test publish: ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/stores/current/publish" `
   -Method POST `
@@ -80,7 +80,7 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   }
 
-# CHECKOUT
+# CHECKOUT ==============================================
 $checkoutBody = @{
   items = @(
     @{
@@ -113,7 +113,7 @@ $res1 = Invoke-RestMethod `
 
 $res1
 
-# GET ORDER DETAIL + CANCEL ORDER
+# GET ORDER DETAIL + CANCEL ORDER ==============================================
 $orderId = $res1.data.order_id
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/orders/$orderId" `
@@ -138,7 +138,7 @@ Invoke-RestMethod `
   } `
   -Body $cancelBody
 
-# CEK STATUS ORDER
+# CEK STATUS ORDER ==============================================
 $res2 = Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/orders/$orderId" `
   -Method GET `
@@ -148,7 +148,7 @@ $res2 = Invoke-RestMethod `
   }
 $res2
 
-# TEST INVENTORY - STOCKS
+# TEST INVENTORY - STOCKS ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/inventory/stocks" `
   -Method GET `
@@ -157,7 +157,7 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   }
 
-# TEST INVENTORY - ADJUSTMENT
+# TEST INVENTORY - ADJUSTMENT ==============================================
 $adjustBody = @{
   adjustment_type = "in"
   quantity = 5
@@ -176,7 +176,7 @@ Invoke-RestMethod `
   } `
   -Body $adjustBody
 
-# TEST POS - OPEN SESSION
+# TEST POS - OPEN SESSION ==============================================
 $openBody = @{
   opening_cash_amount = 200000
   note = "Buka kasir pagi"
@@ -194,7 +194,7 @@ $session = Invoke-RestMethod `
 
 $sessionId = $session.data.id
 
-# TEST POS - SEARCH PRODUCTS
+# TEST POS - SEARCH PRODUCTS ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/pos/products?q=bouquet" `
   -Method GET `
@@ -203,7 +203,7 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   }
 
-# TEST POS - CREATE TRANSACTION
+# TEST POS - CREATE TRANSACTION ==============================================
 $posBody = @{
   session_id = $sessionId
   items = @(
@@ -232,7 +232,7 @@ $trx = Invoke-RestMethod `
 
 $trx
 
-# TEST POS - CLOSE SESSION
+# TEST POS - CLOSE SESSION ==============================================
 $closeBody = @{
   closing_cash_amount = 300000
   note = "Tutup kasir"
@@ -248,7 +248,7 @@ Invoke-RestMethod `
   } `
   -Body $closeBody
 
-# TEST FINANCE - SUMMARY
+# TEST FINANCE - SUMMARY ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/finance/summary" `
   -Method GET `
@@ -257,7 +257,7 @@ Invoke-RestMethod `
     "X-Tenant-ID" = $tenantId
   }
 
-# TEST FINANCE - CREATE EXPENSE
+# TEST FINANCE - CREATE EXPENSE ==============================================
 $expenseBody = @{
   title = "Beli pita satin"
   amount = 75000
@@ -276,7 +276,7 @@ Invoke-RestMethod `
   } `
   -Body $expenseBody
 
-# TEST FINANCE - SUMMARY DASHBOARD
+# TEST FINANCE - SUMMARY DASHBOARD ==============================================
 Invoke-RestMethod `
   -Uri "http://localhost:8080/api/v1/dashboard/summary" `
   -Method GET `
@@ -284,3 +284,39 @@ Invoke-RestMethod `
     Authorization = "Bearer $token"
     "X-Tenant-ID" = $tenantId
   }
+
+# TEST ZONE - CREATE ZONE ==============================================
+$zoneBody = @{
+  name = "Makassar Kota"
+  description = "Area pusat kota Makassar"
+  rate = 15000
+  is_active = $true
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/courier/zones" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Headers @{
+    Authorization = "Bearer $token"
+    "X-Tenant-ID" = $tenantId
+  } `
+  -Body $zoneBody
+
+# TEST ZONE - LIST ZONES ==============================================
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/public/stores/toko-bunga-ayu/courier/zones" `
+  -Method GET
+
+# TEST DISCOVERY - HOME, PRODUCTS, STORES ==============================================
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/public/discovery/home" `
+  -Method GET
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/public/discovery/products?q=bouquet&city=Makassar" `
+  -Method GET
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/api/v1/public/discovery/stores?city=Makassar" `
+  -Method GET

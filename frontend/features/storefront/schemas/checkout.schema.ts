@@ -14,6 +14,7 @@ export const checkoutSchema = z.object({
   city: z.string().trim().optional(),
   province: z.string().trim().optional(),
   postalCode: z.string().trim().optional(),
+  courierZoneId: z.string().trim().optional(),
   customerNote: z.string().trim().optional(),
   paymentMethod: z.literal("manual_transfer")
 });

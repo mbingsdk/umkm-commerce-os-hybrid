@@ -3,6 +3,7 @@ package checkout
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -58,6 +59,7 @@ type idempotencyStore interface {
 type checkoutStore interface {
 	ListProductsForCheckout(ctx context.Context, q db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, productIDs []uuid.UUID) ([]ProductForCheckout, error)
 	LockStockSnapshots(ctx context.Context, q db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, productIDs []uuid.UUID) ([]StockSnapshot, error)
+	FindActiveCourierZone(ctx context.Context, q db.Queryer, tenantID uuid.UUID, storeID uuid.UUID, zoneID uuid.UUID) (*CourierZoneForCheckout, error)
 	FindOrCreateCustomer(ctx context.Context, q db.Queryer, params FindOrCreateCustomerParams) (*CustomerRecord, error)
 	CreateCustomerAddress(ctx context.Context, q db.Queryer, params CreateAddressParams) (*AddressRecord, error)
 	CreateOrder(ctx context.Context, q db.Queryer, params CreateOrderParams) (*OrderRecord, error)
@@ -131,6 +133,7 @@ type normalizedRequest struct {
 	PostalCode     string
 	PaymentMethod  string
 	CustomerNote   string
+	CourierZoneID  uuid.UUID
 }
 
 func (s *Service) Checkout(ctx context.Context, cmd Command) (CheckoutResult, error) {
@@ -287,8 +290,32 @@ func (s *Service) createCheckout(
 	}
 
 	shippingCost := int64(0)
+	if request.CourierZoneID != uuid.Nil {
+		courierZone, err := s.repository.FindActiveCourierZone(
+			ctx,
+			tx,
+			currentStore.TenantID,
+			currentStore.StoreID,
+			request.CourierZoneID,
+		)
+		if err != nil {
+			return CheckoutResponse{}, mapCourierZoneError(err)
+		}
+		if courierZone.TenantID != currentStore.TenantID || courierZone.StoreID != currentStore.StoreID {
+			return CheckoutResponse{}, apperror.NotFound("Courier zone not found")
+		}
+		if courierZone.Rate < 0 {
+			return CheckoutResponse{}, apperror.Internal(fmt.Errorf("courier zone %s has negative rate", courierZone.ID))
+		}
+		shippingCost = courierZone.Rate
+	}
 	discountTotal := int64(0)
 	taxTotal := int64(0)
+	if subtotal > math.MaxInt64-shippingCost {
+		return CheckoutResponse{}, apperror.Validation("Validation failed", []map[string]string{
+			{"field": "shipping.courier_zone_id", "message": "order total is too large"},
+		})
+	}
 	grandTotal := subtotal + shippingCost + taxTotal - discountTotal
 
 	customerRecord, err := s.repository.FindOrCreateCustomer(ctx, tx, FindOrCreateCustomerParams{
@@ -562,6 +589,14 @@ func normalizeRequest(request CheckoutRequest) (normalizedRequest, error) {
 		details = append(details, map[string]string{"field": "payment_method", "message": "only manual_transfer is supported for MVP checkout"})
 	}
 
+	courierZoneID := uuid.Nil
+	if request.Shipping != nil && request.Shipping.CourierZoneID != nil {
+		courierZoneID = *request.Shipping.CourierZoneID
+		if courierZoneID == uuid.Nil {
+			details = append(details, map[string]string{"field": "shipping.courier_zone_id", "message": "courier zone is invalid"})
+		}
+	}
+
 	if len(details) > 0 {
 		return normalizedRequest{}, apperror.Validation("Validation failed", details)
 	}
@@ -600,7 +635,15 @@ func normalizeRequest(request CheckoutRequest) (normalizedRequest, error) {
 		PostalCode:     strings.TrimSpace(request.ShippingAddress.PostalCode),
 		PaymentMethod:  paymentMethod,
 		CustomerNote:   strings.TrimSpace(request.CustomerNote),
+		CourierZoneID:  courierZoneID,
 	}, nil
+}
+
+func mapCourierZoneError(err error) error {
+	if errors.Is(err, ErrCourierZoneNotFound) {
+		return apperror.NotFound("Courier zone not found")
+	}
+	return apperror.Internal(err)
 }
 
 func productIDsFromItems(items []normalizedItem) []uuid.UUID {

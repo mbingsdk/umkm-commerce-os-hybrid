@@ -21,6 +21,7 @@ var (
 	testStoreID   = uuid.MustParse("22222222-2222-2222-2222-222222222222")
 	testProductID = uuid.MustParse("33333333-3333-3333-3333-333333333333")
 	testOrderID   = uuid.MustParse("44444444-4444-4444-4444-444444444444")
+	testZoneID    = uuid.MustParse("88888888-8888-8888-8888-888888888888")
 )
 
 func TestCheckoutSucceedsWithEnoughStockAndUpdatesSnapshot(t *testing.T) {
@@ -140,6 +141,34 @@ func TestCheckoutIgnoresClientPrice(t *testing.T) {
 	}
 }
 
+func TestCheckoutUsesActiveCourierZoneRateFromDatabase(t *testing.T) {
+	service, _, _, _ := newCheckoutTestService(t)
+	request := validCheckoutRequest(testProductID, 1)
+	request.Shipping = &CheckoutShippingRequest{CourierZoneID: &testZoneID}
+
+	result, err := service.Checkout(context.Background(), checkoutCommand(t, request, "idem-courier-zone"))
+	if err != nil {
+		t.Fatalf("checkout returned error: %v", err)
+	}
+
+	if result.Response.Totals.ShippingCost != 7000 {
+		t.Fatalf("shipping cost = %d, want 7000", result.Response.Totals.ShippingCost)
+	}
+	if result.Response.Totals.GrandTotal != 19500 {
+		t.Fatalf("grand total = %d, want 19500", result.Response.Totals.GrandTotal)
+	}
+}
+
+func TestCheckoutRejectsInactiveOrUnknownCourierZone(t *testing.T) {
+	service, repo, _, _ := newCheckoutTestService(t)
+	delete(repo.courierZones, testZoneID)
+	request := validCheckoutRequest(testProductID, 1)
+	request.Shipping = &CheckoutShippingRequest{CourierZoneID: &testZoneID}
+
+	_, err := service.Checkout(context.Background(), checkoutCommand(t, request, "idem-courier-zone-missing"))
+	assertAppErrorCode(t, err, apperror.CodeNotFound)
+}
+
 func newCheckoutTestService(t *testing.T) (*Service, *fakeCheckoutRepository, *fakeIdempotencyRepository, *fakeOutboxRepository) {
 	t.Helper()
 
@@ -165,6 +194,15 @@ func newCheckoutTestService(t *testing.T) (*Service, *fakeCheckoutRepository, *f
 				QuantityOnHand:    5,
 				QuantityReserved:  0,
 				QuantityAvailable: 5,
+			},
+		},
+		courierZones: map[uuid.UUID]CourierZoneForCheckout{
+			testZoneID: {
+				ID:       testZoneID,
+				TenantID: testTenantID,
+				StoreID:  testStoreID,
+				Name:     "Dalam Kota",
+				Rate:     7000,
 			},
 		},
 		nextOrderID: testOrderID,
@@ -330,6 +368,7 @@ func (f *fakeIdempotencyRepository) SaveCompletedResponse(
 type fakeCheckoutRepository struct {
 	products      map[uuid.UUID]ProductForCheckout
 	snapshots     map[uuid.UUID]StockSnapshot
+	courierZones  map[uuid.UUID]CourierZoneForCheckout
 	nextOrderID   uuid.UUID
 	ordersCreated int
 	reservations  []CreateReservationParams
@@ -366,6 +405,20 @@ func (f *fakeCheckoutRepository) LockStockSnapshots(
 		}
 	}
 	return result, nil
+}
+
+func (f *fakeCheckoutRepository) FindActiveCourierZone(
+	_ context.Context,
+	_ db.Queryer,
+	tenantID uuid.UUID,
+	storeID uuid.UUID,
+	zoneID uuid.UUID,
+) (*CourierZoneForCheckout, error) {
+	item, ok := f.courierZones[zoneID]
+	if !ok || item.TenantID != tenantID || item.StoreID != storeID {
+		return nil, ErrCourierZoneNotFound
+	}
+	return &item, nil
 }
 
 func (f *fakeCheckoutRepository) FindOrCreateCustomer(

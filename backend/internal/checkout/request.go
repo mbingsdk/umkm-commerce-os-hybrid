@@ -36,6 +36,7 @@ type CheckoutAddressRequest struct {
 }
 
 type CheckoutShippingRequest struct {
-	CourierCode string `json:"courier_code,omitempty"`
-	ServiceCode string `json:"service_code,omitempty"`
+	CourierZoneID *uuid.UUID `json:"courier_zone_id,omitempty"`
+	CourierCode   string     `json:"courier_code,omitempty"`
+	ServiceCode   string     `json:"service_code,omitempty"`
 }

@@ -36,6 +36,14 @@ type StockSnapshot struct {
 	QuantityAvailable int
 }
 
+type CourierZoneForCheckout struct {
+	ID       uuid.UUID
+	TenantID uuid.UUID
+	StoreID  uuid.UUID
+	Name     string
+	Rate     int64
+}
+
 type CustomerRecord struct {
 	ID       uuid.UUID
 	TenantID uuid.UUID

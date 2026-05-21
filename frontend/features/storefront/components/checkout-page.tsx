@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, type ReactNode } from "react";
-import { useForm } from "react-hook-form";
+import { useMemo, useState, type ReactNode } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { usePublicCourierZones } from "@/features/courier/hooks/use-courier-zones";
 import { checkoutPublicStore } from "@/features/storefront/api/checkout.api";
 import { useCartStore, getCartEstimatedSubtotal } from "@/features/storefront/cart.store";
 import { checkoutSchema, type CheckoutFormValues } from "@/features/storefront/schemas/checkout.schema";
@@ -27,6 +28,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
   const clearCart = useCartStore((state) => state.clearCart);
   const [submitError, setSubmitError] = useState<string>();
   const subtotal = getCartEstimatedSubtotal(items);
+  const courierZonesQuery = usePublicCourierZones(storeSlug);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -40,10 +42,17 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
       city: "",
       province: "",
       postalCode: "",
+      courierZoneId: "",
       customerNote: "",
       paymentMethod: "manual_transfer"
     }
   });
+  const selectedCourierZoneId = useWatch({ control: form.control, name: "courierZoneId" });
+  const selectedCourierZone = useMemo(
+    () => courierZonesQuery.data?.find((zone) => zone.id === selectedCourierZoneId),
+    [courierZonesQuery.data, selectedCourierZoneId]
+  );
+  const shippingEstimate = selectedCourierZone?.rate ?? 0;
 
   if (cartStoreSlug && cartStoreSlug !== storeSlug) {
     return (
@@ -107,6 +116,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
             province: values.province || undefined,
             postal_code: values.postalCode || undefined
           },
+          shipping: values.courierZoneId ? { courier_zone_id: values.courierZoneId } : undefined,
           payment_method: "manual_transfer",
           customer_note: values.customerNote || undefined
         },
@@ -187,7 +197,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
         <Card>
           <CardHeader>
             <CardTitle>Alamat pengiriman</CardTitle>
-            <CardDescription>Ongkir MVP belum dihitung otomatis, jadi sementara Rp0.</CardDescription>
+            <CardDescription>Alamat dipakai toko untuk mengirim dan menghubungi penerima.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <FormField label="Nama penerima opsional" error={form.formState.errors.recipientName?.message}>
@@ -211,6 +221,51 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
             <FormField className="sm:col-span-2" label="Catatan untuk toko" error={form.formState.errors.customerNote?.message}>
               <Input placeholder="Contoh: kirim sore, hubungi sebelum datang" {...form.register("customerNote")} />
             </FormField>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Zona pengiriman</CardTitle>
+            <CardDescription>
+              Pilih zona kurir toko. Estimasi di frontend hanya bantuan; total final tetap dihitung backend.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {courierZonesQuery.isPending ? (
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
+                Memuat pilihan zona pengiriman...
+              </div>
+            ) : courierZonesQuery.isError ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+                Zona pengiriman belum bisa dimuat. Kamu tetap bisa checkout dan toko akan mengonfirmasi ongkir manual.
+              </div>
+            ) : null}
+
+            <FormField label="Pilih zona pengiriman" error={form.formState.errors.courierZoneId?.message}>
+              <select
+                className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                {...form.register("courierZoneId")}
+              >
+                <option value="">Konfirmasi ongkir manual oleh toko</option>
+                {(courierZonesQuery.data ?? []).map((zone) => (
+                  <option key={zone.id} value={zone.id}>
+                    {zone.name} - {formatRupiah(zone.rate)}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            {selectedCourierZone ? (
+              <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 text-sm leading-6 text-primary-900">
+                Ongkir estimasi untuk zona <strong>{selectedCourierZone.name}</strong>:{" "}
+                <strong>{formatRupiah(selectedCourierZone.rate)}</strong>.
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
+                Jika zona belum dipilih, pesanan dibuat dengan ongkir Rp0 dan toko perlu mengonfirmasi biaya kirim manual.
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -243,6 +298,8 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
             isLoading={form.formState.isSubmitting}
             items={items}
             onSubmit={form.handleSubmit(onSubmit)}
+            selectedCourierZoneName={selectedCourierZone?.name}
+            shippingEstimate={shippingEstimate}
             storeSlug={storeSlug}
             subtotal={subtotal}
           />
@@ -254,6 +311,8 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           isLoading={form.formState.isSubmitting}
           items={items}
           onSubmit={form.handleSubmit(onSubmit)}
+          selectedCourierZoneName={selectedCourierZone?.name}
+          shippingEstimate={shippingEstimate}
           storeSlug={storeSlug}
           subtotal={subtotal}
         />
@@ -266,6 +325,8 @@ function CheckoutSummary({
   isLoading,
   items,
   onSubmit,
+  selectedCourierZoneName,
+  shippingEstimate,
   storeSlug,
   subtotal
 }: {
@@ -277,10 +338,13 @@ function CheckoutSummary({
     quantity: number;
   }>;
   onSubmit: () => void;
+  selectedCourierZoneName?: string;
+  shippingEstimate: number;
   storeSlug: string;
   subtotal: number;
 }) {
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
+  const estimatedTotal = subtotal + shippingEstimate;
 
   return (
     <Card>
@@ -309,12 +373,14 @@ function CheckoutSummary({
             <span className="font-semibold text-neutral-950">{formatRupiah(subtotal)}</span>
           </div>
           <div className="mt-2 flex items-center justify-between text-sm">
-            <span className="text-neutral-500">Ongkir MVP</span>
-            <span className="font-semibold text-neutral-950">{formatRupiah(0)}</span>
+            <span className="text-neutral-500">
+              Ongkir{selectedCourierZoneName ? ` (${selectedCourierZoneName})` : " manual"}
+            </span>
+            <span className="font-semibold text-neutral-950">{formatRupiah(shippingEstimate)}</span>
           </div>
           <div className="mt-4 flex items-center justify-between text-base">
             <span className="font-semibold text-neutral-950">Estimasi total</span>
-            <span className="text-xl font-bold text-primary-700">{formatRupiah(subtotal)}</span>
+            <span className="text-xl font-bold text-primary-700">{formatRupiah(estimatedTotal)}</span>
           </div>
         </div>
 

@@ -22,6 +22,9 @@ export type CheckoutPayload = {
     province?: string;
     postal_code?: string;
   };
+  shipping?: {
+    courier_zone_id?: string;
+  };
   payment_method: "manual_transfer";
   customer_note?: string;
 };
