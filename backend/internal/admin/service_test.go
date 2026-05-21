@@ -434,6 +434,194 @@ func TestRecordAuditRequiresAction(t *testing.T) {
 	assertAppErrorCode(t, err, apperror.CodeValidation)
 }
 
+func TestAdminFeaturedManagementRequiresSuperAdmin(t *testing.T) {
+	router, tokens, _ := newAdminTestRouter(t, map[uuid.UUID]User{
+		testOwnerID: {
+			ID:           testOwnerID,
+			Name:         "Tenant Owner",
+			Email:        "owner@example.test",
+			PlatformRole: auth.PlatformRoleUser,
+			Status:       auth.UserStatusActive,
+		},
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/discovery/featured", nil)
+	req.Header.Set("Authorization", "Bearer "+mustAccessToken(t, tokens, testOwnerID, auth.PlatformRoleUser))
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+
+	if res.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusForbidden)
+	}
+}
+
+func TestCreateFeaturedProductRequiresDiscoverableProduct(t *testing.T) {
+	tenantID := uuid.New()
+	storeID := uuid.New()
+	productID := uuid.New()
+	repo := &fakeAdminRepository{
+		featuredProducts: map[uuid.UUID]FeaturedProductTarget{
+			productID: {
+				ID:                productID,
+				TenantID:          tenantID,
+				StoreID:           storeID,
+				Name:              "Produk Draft",
+				Slug:              "produk-draft",
+				TenantStatus:      TenantStatusActive,
+				Status:            "active",
+				IsDiscoverable:    false,
+				StoreStatus:       "published",
+				StoreDiscoverable: true,
+			},
+		},
+	}
+	service := NewService(fakeTxDatabase{}, repo)
+
+	_, err := service.CreateFeaturedItem(context.Background(), CreateFeaturedInput{
+		ActorUserID: testSuperAdminID,
+		ItemType:    FeaturedItemTypeProduct,
+		TenantID:    tenantID,
+		ProductID:   &productID,
+		Placement:   FeaturedPlacementHome,
+	})
+	assertAppErrorCode(t, err, apperror.CodeValidation)
+}
+
+func TestCreateFeaturedStoreRequiresPublishedStore(t *testing.T) {
+	tenantID := uuid.New()
+	storeID := uuid.New()
+	repo := &fakeAdminRepository{
+		featuredStores: map[uuid.UUID]FeaturedStoreTarget{
+			storeID: {
+				ID:             storeID,
+				TenantID:       tenantID,
+				Name:           "Toko Draft",
+				Slug:           "toko-draft",
+				TenantStatus:   TenantStatusActive,
+				Status:         "draft",
+				IsDiscoverable: true,
+			},
+		},
+	}
+	service := NewService(fakeTxDatabase{}, repo)
+
+	_, err := service.CreateFeaturedItem(context.Background(), CreateFeaturedInput{
+		ActorUserID: testSuperAdminID,
+		ItemType:    FeaturedItemTypeStore,
+		TenantID:    tenantID,
+		StoreID:     &storeID,
+		Placement:   FeaturedPlacementHome,
+	})
+	assertAppErrorCode(t, err, apperror.CodeValidation)
+}
+
+func TestCreateFeaturedItemWritesAdminAuditLog(t *testing.T) {
+	tenantID := uuid.New()
+	storeID := uuid.New()
+	repo := &fakeAdminRepository{
+		featuredStores: map[uuid.UUID]FeaturedStoreTarget{
+			storeID: {
+				ID:             storeID,
+				TenantID:       tenantID,
+				Name:           "Toko Bunga Ayu",
+				Slug:           "toko-bunga-ayu",
+				TenantStatus:   TenantStatusActive,
+				Status:         "published",
+				IsDiscoverable: true,
+			},
+		},
+	}
+	service := NewService(fakeTxDatabase{}, repo)
+
+	result, err := service.CreateFeaturedItem(context.Background(), CreateFeaturedInput{
+		ActorUserID: testSuperAdminID,
+		ItemType:    FeaturedItemTypeStore,
+		TenantID:    tenantID,
+		StoreID:     &storeID,
+		Placement:   FeaturedPlacementHome,
+		IsActive:    boolPtr(true),
+	})
+	if err != nil {
+		t.Fatalf("CreateFeaturedItem error = %v", err)
+	}
+	if result.TargetName != "Toko Bunga Ayu" {
+		t.Fatalf("target name = %q, want Toko Bunga Ayu", result.TargetName)
+	}
+	if len(repo.auditLogs) != 1 || repo.auditLogs[0].Action != AuditActionFeaturedCreated {
+		t.Fatalf("audit logs = %#v", repo.auditLogs)
+	}
+}
+
+func TestAdminAuditLogListRequiresSuperAdmin(t *testing.T) {
+	router, tokens, _ := newAdminTestRouter(t, map[uuid.UUID]User{
+		testOwnerID: {
+			ID:           testOwnerID,
+			Name:         "Tenant Owner",
+			Email:        "owner@example.test",
+			PlatformRole: auth.PlatformRoleUser,
+			Status:       auth.UserStatusActive,
+		},
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/audit-logs", nil)
+	req.Header.Set("Authorization", "Bearer "+mustAccessToken(t, tokens, testOwnerID, auth.PlatformRoleUser))
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+
+	if res.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", res.Code, http.StatusForbidden)
+	}
+}
+
+func TestAuditLogResponseRedactsSensitiveFields(t *testing.T) {
+	beforeData, err := json.Marshal(map[string]any{
+		"safe":       "visible",
+		"password":   "secret",
+		"cost_price": 75000,
+		"nested": map[string]any{
+			"refresh_token": "raw-token",
+		},
+	})
+	if err != nil {
+		t.Fatalf("marshal audit data: %v", err)
+	}
+	repo := &fakeAdminRepository{
+		adminAuditItems: []AdminAuditLogItem{{
+			ID:          uuid.New(),
+			ActorUserID: testSuperAdminID,
+			Action:      AuditActionFeaturedCreated,
+			TargetType:  AggregateFeaturedDiscovery,
+			BeforeData:  beforeData,
+			CreatedAt:   time.Date(2026, 5, 21, 10, 0, 0, 0, time.UTC),
+		}},
+	}
+	service := NewService(fakeTxDatabase{}, repo)
+
+	items, _, err := service.ListAuditLogs(context.Background(), AuditLogListFilters{})
+	if err != nil {
+		t.Fatalf("ListAuditLogs error = %v", err)
+	}
+	if len(items) != 1 {
+		t.Fatalf("items = %d, want 1", len(items))
+	}
+	payload, ok := items[0].BeforeData.(map[string]any)
+	if !ok {
+		t.Fatalf("before_data type = %T", items[0].BeforeData)
+	}
+	if payload["safe"] != "visible" {
+		t.Fatalf("safe field = %#v", payload["safe"])
+	}
+	if payload["password"] != "[REDACTED]" || payload["cost_price"] != "[REDACTED]" {
+		t.Fatalf("sensitive fields not redacted: %#v", payload)
+	}
+	nested := payload["nested"].(map[string]any)
+	if nested["refresh_token"] != "[REDACTED]" {
+		t.Fatalf("nested token not redacted: %#v", nested)
+	}
+}
+
 func newAdminTestRouter(t *testing.T, users map[uuid.UUID]User) (http.Handler, *token.JWTService, *fakeAdminRepository) {
 	t.Helper()
 
@@ -483,12 +671,16 @@ func assertAppErrorCode(t *testing.T, err error, code apperror.Code) {
 }
 
 type fakeAdminRepository struct {
-	users     map[uuid.UUID]User
-	auditLogs []AuditEntry
-	listItems []TenantListItem
-	detail    *TenantDetail
-	tenants   map[uuid.UUID]Tenant
-	plans     map[uuid.UUID]Plan
+	users            map[uuid.UUID]User
+	auditLogs        []AuditEntry
+	listItems        []TenantListItem
+	detail           *TenantDetail
+	tenants          map[uuid.UUID]Tenant
+	plans            map[uuid.UUID]Plan
+	featuredItems    map[uuid.UUID]FeaturedItem
+	featuredStores   map[uuid.UUID]FeaturedStoreTarget
+	featuredProducts map[uuid.UUID]FeaturedProductTarget
+	adminAuditItems  []AdminAuditLogItem
 }
 
 func (f *fakeAdminRepository) FindUserByID(_ context.Context, _ db.Queryer, userID uuid.UUID) (*User, error) {
@@ -632,6 +824,101 @@ func (f *fakeAdminRepository) UpdatePlan(_ context.Context, _ db.Queryer, params
 	}
 	f.plans[params.PlanID] = plan
 	return &plan, nil
+}
+
+func (f *fakeAdminRepository) ListFeaturedItems(_ context.Context, _ db.Queryer, _ FeaturedListFilters) ([]FeaturedItem, error) {
+	items := make([]FeaturedItem, 0, len(f.featuredItems))
+	for _, item := range f.featuredItems {
+		items = append(items, item)
+	}
+	return items, nil
+}
+
+func (f *fakeAdminRepository) FindFeaturedItemByIDForUpdate(_ context.Context, _ db.Queryer, featuredID uuid.UUID) (*FeaturedItem, error) {
+	item, ok := f.featuredItems[featuredID]
+	if !ok {
+		return nil, ErrFeaturedItemNotFound
+	}
+	return &item, nil
+}
+
+func (f *fakeAdminRepository) CreateFeaturedItem(_ context.Context, _ db.Queryer, params CreateFeaturedParams) (*FeaturedItem, error) {
+	item := FeaturedItem{
+		ID:        uuid.New(),
+		ItemType:  params.ItemType,
+		TenantID:  params.TenantID,
+		StoreID:   params.StoreID,
+		ProductID: params.ProductID,
+		Placement: params.Placement,
+		SortOrder: params.SortOrder,
+		StartsAt:  params.StartsAt,
+		EndsAt:    params.EndsAt,
+		IsActive:  params.IsActive,
+		CreatedBy: &params.CreatedBy,
+		CreatedAt: time.Date(2026, 5, 21, 10, 0, 0, 0, time.UTC),
+		UpdatedAt: time.Date(2026, 5, 21, 10, 0, 0, 0, time.UTC),
+	}
+	if f.featuredItems == nil {
+		f.featuredItems = map[uuid.UUID]FeaturedItem{}
+	}
+	f.featuredItems[item.ID] = item
+	return &item, nil
+}
+
+func (f *fakeAdminRepository) UpdateFeaturedItem(_ context.Context, _ db.Queryer, params UpdateFeaturedParams) (*FeaturedItem, error) {
+	if _, ok := f.featuredItems[params.ID]; !ok {
+		return nil, ErrFeaturedItemNotFound
+	}
+	item := FeaturedItem{
+		ID:        params.ID,
+		ItemType:  params.ItemType,
+		TenantID:  params.TenantID,
+		StoreID:   params.StoreID,
+		ProductID: params.ProductID,
+		Placement: params.Placement,
+		SortOrder: params.SortOrder,
+		StartsAt:  params.StartsAt,
+		EndsAt:    params.EndsAt,
+		IsActive:  params.IsActive,
+		CreatedAt: f.featuredItems[params.ID].CreatedAt,
+		UpdatedAt: time.Date(2026, 5, 21, 11, 0, 0, 0, time.UTC),
+	}
+	f.featuredItems[params.ID] = item
+	return &item, nil
+}
+
+func (f *fakeAdminRepository) DeleteFeaturedItem(_ context.Context, _ db.Queryer, featuredID uuid.UUID) (*FeaturedItem, error) {
+	item, ok := f.featuredItems[featuredID]
+	if !ok {
+		return nil, ErrFeaturedItemNotFound
+	}
+	item.IsActive = false
+	item.UpdatedAt = time.Date(2026, 5, 21, 11, 0, 0, 0, time.UTC)
+	delete(f.featuredItems, featuredID)
+	return &item, nil
+}
+
+func (f *fakeAdminRepository) FindFeaturedStoreTarget(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID uuid.UUID) (*FeaturedStoreTarget, error) {
+	target, ok := f.featuredStores[storeID]
+	if !ok || target.TenantID != tenantID {
+		return nil, ErrFeaturedStoreNotFound
+	}
+	return &target, nil
+}
+
+func (f *fakeAdminRepository) FindFeaturedProductTarget(_ context.Context, _ db.Queryer, tenantID uuid.UUID, storeID *uuid.UUID, productID uuid.UUID) (*FeaturedProductTarget, error) {
+	target, ok := f.featuredProducts[productID]
+	if !ok || target.TenantID != tenantID {
+		return nil, ErrFeaturedProductNotFound
+	}
+	if storeID != nil && target.StoreID != *storeID {
+		return nil, ErrFeaturedProductNotFound
+	}
+	return &target, nil
+}
+
+func (f *fakeAdminRepository) ListAdminAuditLogs(_ context.Context, _ db.Queryer, _ AuditLogListFilters) ([]AdminAuditLogItem, error) {
+	return f.adminAuditItems, nil
 }
 
 func boolPtr(value bool) *bool {

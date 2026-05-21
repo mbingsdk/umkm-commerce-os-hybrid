@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -125,6 +127,38 @@ type AdminTenantMutationResponse struct {
 	Plan   *AdminPlanResponse `json:"plan,omitempty"`
 }
 
+type AdminFeaturedResponse struct {
+	ID         string  `json:"id"`
+	ItemType   string  `json:"item_type"`
+	TenantID   string  `json:"tenant_id"`
+	StoreID    *string `json:"store_id,omitempty"`
+	ProductID  *string `json:"product_id,omitempty"`
+	Placement  string  `json:"placement"`
+	SortOrder  int     `json:"sort_order"`
+	StartsAt   *string `json:"starts_at,omitempty"`
+	EndsAt     *string `json:"ends_at,omitempty"`
+	IsActive   bool    `json:"is_active"`
+	TargetName string  `json:"target_name,omitempty"`
+	TargetSlug string  `json:"target_slug,omitempty"`
+	CreatedBy  *string `json:"created_by,omitempty"`
+	CreatedAt  string  `json:"created_at"`
+	UpdatedAt  string  `json:"updated_at"`
+}
+
+type AdminAuditLogResponse struct {
+	ID          string `json:"id"`
+	ActorUserID string `json:"actor_user_id,omitempty"`
+	ActorName   string `json:"actor_name,omitempty"`
+	Action      string `json:"action"`
+	TargetType  string `json:"target_type,omitempty"`
+	TargetID    string `json:"target_id,omitempty"`
+	BeforeData  any    `json:"before_data,omitempty"`
+	AfterData   any    `json:"after_data,omitempty"`
+	IPAddress   string `json:"ip_address,omitempty"`
+	UserAgent   string `json:"user_agent,omitempty"`
+	CreatedAt   string `json:"created_at"`
+}
+
 func NewTenantListResponse(items []TenantListItem) []AdminTenantListResponse {
 	response := make([]AdminTenantListResponse, 0, len(items))
 	for _, item := range items {
@@ -177,6 +211,85 @@ func NewPlanResponses(items []Plan) []AdminPlanResponse {
 
 func NewPlanMutationResponse(plan Plan) AdminPlanResponse {
 	return *newPlanResponse(&plan)
+}
+
+func NewFeaturedResponses(items []FeaturedItem) []AdminFeaturedResponse {
+	response := make([]AdminFeaturedResponse, 0, len(items))
+	for _, item := range items {
+		response = append(response, NewFeaturedResponse(item))
+	}
+	return response
+}
+
+func NewFeaturedResponse(item FeaturedItem) AdminFeaturedResponse {
+	var storeID *string
+	if item.StoreID != nil && *item.StoreID != uuid.Nil {
+		value := item.StoreID.String()
+		storeID = &value
+	}
+	var productID *string
+	if item.ProductID != nil && *item.ProductID != uuid.Nil {
+		value := item.ProductID.String()
+		productID = &value
+	}
+	var createdBy *string
+	if item.CreatedBy != nil && *item.CreatedBy != uuid.Nil {
+		value := item.CreatedBy.String()
+		createdBy = &value
+	}
+
+	targetName := item.StoreName
+	targetSlug := item.StoreSlug
+	if item.ItemType == FeaturedItemTypeProduct {
+		targetName = item.ProductName
+		targetSlug = item.ProductSlug
+	}
+
+	return AdminFeaturedResponse{
+		ID:         item.ID.String(),
+		ItemType:   item.ItemType,
+		TenantID:   item.TenantID.String(),
+		StoreID:    storeID,
+		ProductID:  productID,
+		Placement:  item.Placement,
+		SortOrder:  item.SortOrder,
+		StartsAt:   optionalFormattedTime(item.StartsAt),
+		EndsAt:     optionalFormattedTime(item.EndsAt),
+		IsActive:   item.IsActive,
+		TargetName: targetName,
+		TargetSlug: targetSlug,
+		CreatedBy:  createdBy,
+		CreatedAt:  formatTime(item.CreatedAt),
+		UpdatedAt:  formatTime(item.UpdatedAt),
+	}
+}
+
+func NewAuditLogResponses(items []AdminAuditLogItem) []AdminAuditLogResponse {
+	response := make([]AdminAuditLogResponse, 0, len(items))
+	for _, item := range items {
+		actorUserID := ""
+		if item.ActorUserID != uuid.Nil {
+			actorUserID = item.ActorUserID.String()
+		}
+		targetID := ""
+		if item.TargetID != nil && *item.TargetID != uuid.Nil {
+			targetID = item.TargetID.String()
+		}
+		response = append(response, AdminAuditLogResponse{
+			ID:          item.ID.String(),
+			ActorUserID: actorUserID,
+			ActorName:   item.ActorName,
+			Action:      item.Action,
+			TargetType:  item.TargetType,
+			TargetID:    targetID,
+			BeforeData:  redactAuditJSON(item.BeforeData),
+			AfterData:   redactAuditJSON(item.AfterData),
+			IPAddress:   item.IPAddress,
+			UserAgent:   item.UserAgent,
+			CreatedAt:   formatTime(item.CreatedAt),
+		})
+	}
+	return response
 }
 
 func newTenantBasicResponse(tenant Tenant) AdminTenantBasicResponse {
@@ -276,4 +389,72 @@ func formatTime(value time.Time) string {
 		return ""
 	}
 	return value.Format(time.RFC3339)
+}
+
+func optionalFormattedTime(value *time.Time) *string {
+	if value == nil || value.IsZero() {
+		return nil
+	}
+	formatted := value.Format(time.RFC3339)
+	return &formatted
+}
+
+func redactAuditJSON(raw json.RawMessage) any {
+	if len(raw) == 0 || string(raw) == "null" {
+		return nil
+	}
+
+	var decoded any
+	if err := json.Unmarshal(raw, &decoded); err != nil {
+		return nil
+	}
+	return redactAuditValue(decoded)
+}
+
+func redactAuditValue(value any) any {
+	switch typed := value.(type) {
+	case map[string]any:
+		redacted := make(map[string]any, len(typed))
+		for key, nested := range typed {
+			if isSensitiveAuditKey(key) {
+				redacted[key] = "[REDACTED]"
+				continue
+			}
+			redacted[key] = redactAuditValue(nested)
+		}
+		return redacted
+	case []any:
+		redacted := make([]any, 0, len(typed))
+		for _, nested := range typed {
+			redacted = append(redacted, redactAuditValue(nested))
+		}
+		return redacted
+	default:
+		return value
+	}
+}
+
+func isSensitiveAuditKey(key string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(key))
+	sensitiveFragments := []string{
+		"password",
+		"token",
+		"authorization",
+		"secret",
+		"database_url",
+		"cost_price",
+		"customer_phone",
+		"customer_email",
+		"shipping_address",
+		"address",
+		"phone",
+		"email",
+		"note",
+	}
+	for _, fragment := range sensitiveFragments {
+		if strings.Contains(normalized, fragment) {
+			return true
+		}
+	}
+	return false
 }

@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type UpdateTenantStatusRequest struct {
@@ -41,6 +42,30 @@ type UpdatePlanRequest struct {
 	CanUseDiscovery *bool       `json:"can_use_discovery"`
 	CanUseCourier   *bool       `json:"can_use_courier"`
 	IsActive        *bool       `json:"is_active"`
+}
+
+type CreateFeaturedRequest struct {
+	ItemType  string     `json:"item_type"`
+	TenantID  string     `json:"tenant_id"`
+	StoreID   string     `json:"store_id,omitempty"`
+	ProductID string     `json:"product_id,omitempty"`
+	Placement string     `json:"placement"`
+	SortOrder int        `json:"sort_order"`
+	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	EndsAt    *time.Time `json:"ends_at,omitempty"`
+	IsActive  *bool      `json:"is_active"`
+}
+
+type UpdateFeaturedRequest struct {
+	ItemType  *string    `json:"item_type"`
+	TenantID  *string    `json:"tenant_id"`
+	StoreID   *string    `json:"store_id"`
+	ProductID *string    `json:"product_id"`
+	Placement *string    `json:"placement"`
+	SortOrder *int       `json:"sort_order"`
+	StartsAt  *time.Time `json:"starts_at"`
+	EndsAt    *time.Time `json:"ends_at"`
+	IsActive  *bool      `json:"is_active"`
 }
 
 type NullableInt struct {

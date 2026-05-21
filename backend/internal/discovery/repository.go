@@ -28,10 +28,13 @@ func (r *Repository) ListFeaturedStores(ctx context.Context, q db.Queryer, limit
 			COALESCE(s.province, ''),
 			s.created_at
 		FROM discovery_featured_items d
-		JOIN stores s ON s.id = d.item_id
+		JOIN stores s
+		  ON s.id = COALESCE(d.store_id, d.item_id)
 		JOIN tenants t ON t.id = s.tenant_id
 		WHERE d.item_type = 'store'
+		  AND COALESCE(d.placement, 'home') = 'home'
 		  AND d.is_active = true
+		  AND d.deleted_at IS NULL
 		  AND (d.starts_at IS NULL OR d.starts_at <= now())
 		  AND (d.ends_at IS NULL OR d.ends_at > now())
 		  AND t.status IN ('active', 'trialing')
@@ -69,7 +72,8 @@ func (r *Repository) ListFeaturedProducts(ctx context.Context, q db.Queryer, lim
 			COALESCE(s.province, ''),
 			p.created_at
 		FROM discovery_featured_items d
-		JOIN products p ON p.id = d.item_id
+		JOIN products p
+		  ON p.id = COALESCE(d.product_id, d.item_id)
 		JOIN stores s ON s.id = p.store_id AND s.tenant_id = p.tenant_id
 		JOIN tenants t ON t.id = p.tenant_id
 		LEFT JOIN categories c
@@ -86,7 +90,9 @@ func (r *Repository) ListFeaturedProducts(ctx context.Context, q db.Queryer, lim
 			LIMIT 1
 		) pi ON true
 		WHERE d.item_type = 'product'
+		  AND COALESCE(d.placement, 'home') = 'home'
 		  AND d.is_active = true
+		  AND d.deleted_at IS NULL
 		  AND (d.starts_at IS NULL OR d.starts_at <= now())
 		  AND (d.ends_at IS NULL OR d.ends_at > now())
 		  AND t.status IN ('active', 'trialing')
