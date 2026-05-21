@@ -48,6 +48,11 @@ const (
 	CourierUpdateZone Permission = "courier.update_zone"
 	CourierDeleteZone Permission = "courier.delete_zone"
 
+	ShipmentRead         Permission = "shipment.read"
+	ShipmentCreate       Permission = "shipment.create"
+	ShipmentUpdateStatus Permission = "shipment.update_status"
+	ShipmentAssignDriver Permission = "shipment.assign_driver"
+
 	OrderRead                Permission = "order.read"
 	OrderReadDetail          Permission = "order.read_detail"
 	OrderUpdateStatus        Permission = "order.update_status"

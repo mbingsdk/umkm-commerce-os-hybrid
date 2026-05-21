@@ -23,6 +23,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/idempotency"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shipment"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/upload"
@@ -58,6 +59,7 @@ type Dependencies struct {
 	FinanceHandler   *finance.Handler
 	DashboardHandler *dashboard.Handler
 	CourierHandler   *courier.Handler
+	ShipmentHandler  *shipment.Handler
 }
 
 func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, logger *slog.Logger) (*Dependencies, error) {
@@ -84,6 +86,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	financeRepo := finance.NewRepository()
 	dashboardRepo := dashboard.NewRepository()
 	courierRepo := courier.NewRepository()
+	shipmentRepo := shipment.NewRepository()
 	idempotencyRepo := idempotency.NewRepository()
 	outboxRepo := outbox.NewRepository()
 	assetStore := storage.NewLocal(cfg.StorageLocalDir, cfg.StoragePublicURL, cfg.UploadMaxBytes)
@@ -112,6 +115,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 	financeService := finance.NewService(database, financeRepo, auditRepo, outboxRepo)
 	dashboardService := dashboard.NewService(database, dashboardRepo)
 	courierService := courier.NewService(database, courierRepo, publicStoreService, auditRepo)
+	shipmentService := shipment.NewService(database, shipmentRepo, publicStoreService, outboxRepo)
 
 	return &Dependencies{
 		Config:           cfg,
@@ -137,6 +141,7 @@ func NewDependencies(ctx context.Context, cfg config.Config, build BuildInfo, lo
 		FinanceHandler:   finance.NewHandler(financeService, logger),
 		DashboardHandler: dashboard.NewHandler(dashboardService, logger),
 		CourierHandler:   courier.NewHandler(courierService, logger),
+		ShipmentHandler:  shipment.NewHandler(shipmentService, logger),
 	}, nil
 }
 

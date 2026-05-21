@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 9A Courier Zones.
+Sprint 9B Shipment + Tracking.
 
 ## Current Goal
 
-Implement backend courier zone management and public active courier zone listing for checkout.
+Implement backend shipment lifecycle and public order tracking.
 
 ## Sprint 0 Tasks
 

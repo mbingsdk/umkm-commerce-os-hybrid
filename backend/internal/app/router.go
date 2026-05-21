@@ -21,6 +21,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	sharedmw "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/middleware"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shipment"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/tenant"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/upload"
@@ -83,6 +84,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 		checkout.RegisterPublicRoutes(r, deps.CheckoutHandler)
 		payment.RegisterPublicRoutes(r, deps.PaymentHandler)
 		courier.RegisterPublicRoutes(r, deps.CourierHandler)
+		shipment.RegisterPublicRoutes(r, deps.ShipmentHandler)
 
 		r.Group(func(r chi.Router) {
 			r.Use(authMiddleware)
@@ -95,6 +97,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 			finance.RegisterRoutes(r, deps.FinanceHandler, tenantMiddleware, requirePermission)
 			dashboard.RegisterRoutes(r, deps.DashboardHandler, tenantMiddleware, requirePermission)
 			courier.RegisterRoutes(r, deps.CourierHandler, tenantMiddleware, requirePermission)
+			shipment.RegisterRoutes(r, deps.ShipmentHandler, tenantMiddleware, requirePermission)
 			order.RegisterRoutes(r, deps.OrderHandler, tenantMiddleware, requirePermission)
 			payment.RegisterRoutes(r, deps.PaymentHandler, tenantMiddleware, requirePermission)
 		})
