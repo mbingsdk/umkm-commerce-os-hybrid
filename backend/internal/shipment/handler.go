@@ -166,6 +166,20 @@ func filtersFromRequest(r *http.Request) (ListFilters, error) {
 	if raw := strings.TrimSpace(query.Get("status")); raw != "" {
 		filters.Status = &raw
 	}
+	if raw := strings.TrimSpace(query.Get("date_from")); raw != "" {
+		dateFrom, err := parseDateParam(raw, false)
+		if err != nil {
+			return ListFilters{}, invalidField("date_from", "date_from must be RFC3339 or YYYY-MM-DD")
+		}
+		filters.DateFrom = &dateFrom
+	}
+	if raw := strings.TrimSpace(query.Get("date_to")); raw != "" {
+		dateTo, err := parseDateParam(raw, true)
+		if err != nil {
+			return ListFilters{}, invalidField("date_to", "date_to must be RFC3339 or YYYY-MM-DD")
+		}
+		filters.DateTo = &dateTo
+	}
 	if raw := strings.TrimSpace(query.Get("limit")); raw != "" {
 		limit, err := strconv.Atoi(raw)
 		if err != nil || limit <= 0 {

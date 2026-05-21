@@ -71,10 +71,12 @@ type StatusLog struct {
 }
 
 type ListFilters struct {
-	Status *string
-	Query  string
-	Limit  int
-	Cursor *Cursor
+	Status   *string
+	Query    string
+	DateFrom *time.Time
+	DateTo   *time.Time
+	Limit    int
+	Cursor   *Cursor
 }
 
 type Cursor struct {

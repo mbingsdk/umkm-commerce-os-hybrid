@@ -23,6 +23,14 @@ func (r *Repository) List(ctx context.Context, q db.Queryer, tenantID uuid.UUID,
 		cursorCreatedAt = filters.Cursor.CreatedAt
 		cursorID = filters.Cursor.ID
 	}
+	var dateFrom any
+	var dateTo any
+	if filters.DateFrom != nil {
+		dateFrom = *filters.DateFrom
+	}
+	if filters.DateTo != nil {
+		dateTo = *filters.DateTo
+	}
 
 	const query = `
 		SELECT
@@ -62,15 +70,17 @@ func (r *Repository) List(ctx context.Context, q db.Queryer, tenantID uuid.UUID,
 			OR o.customer_name ILIKE '%' || $4 || '%'
 			OR o.customer_phone ILIKE '%' || $4 || '%'
 		  )
+		  AND ($5::timestamptz IS NULL OR s.created_at >= $5)
+		  AND ($6::timestamptz IS NULL OR s.created_at < $6)
 		  AND (
-			($5::timestamptz IS NULL AND $6::uuid IS NULL)
-			OR (s.created_at, s.id) < ($5::timestamptz, $6::uuid)
+			($7::timestamptz IS NULL AND $8::uuid IS NULL)
+			OR (s.created_at, s.id) < ($7::timestamptz, $8::uuid)
 		  )
 		ORDER BY s.created_at DESC, s.id DESC
-		LIMIT $7
+		LIMIT $9
 	`
 
-	rows, err := q.Query(ctx, query, tenantID, storeID, filters.Status, filters.Query, cursorCreatedAt, cursorID, filters.Limit)
+	rows, err := q.Query(ctx, query, tenantID, storeID, filters.Status, filters.Query, dateFrom, dateTo, cursorCreatedAt, cursorID, filters.Limit)
 	if err != nil {
 		return nil, err
 	}

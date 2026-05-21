@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { SafeImage } from "@/features/storefront/components/safe-image";
 import { StorefrontCartLink } from "@/features/storefront/components/storefront-cart-link";
@@ -32,6 +33,12 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            className="hidden h-9 items-center justify-center rounded-xl border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 sm:inline-flex"
+            href={`/s/${storeSlug}/track-order`}
+          >
+            Lacak order
+          </Link>
           <StorefrontCartLink storeSlug={storeSlug} />
           <Badge className="hidden sm:inline-flex" tone="neutral">
             Publik

@@ -36,5 +36,12 @@ export const queryKeys = {
   financeMonthlyReport: (tenantId: string | null, filters?: Record<string, unknown>) =>
     ["finance-monthly-report", tenantId, filters ?? {}] as const,
   financeExpenses: (tenantId: string | null, filters?: Record<string, unknown>) =>
-    ["finance-expenses", tenantId, filters ?? {}] as const
+    ["finance-expenses", tenantId, filters ?? {}] as const,
+  courierZones: (tenantId: string | null) => ["courier-zones", tenantId] as const,
+  publicCourierZones: (storeSlug: string | null) => ["public-courier-zones", storeSlug] as const,
+  shipments: (tenantId: string | null, filters?: Record<string, unknown>) =>
+    ["shipments", tenantId, filters ?? {}] as const,
+  shipment: (tenantId: string | null, shipmentId: string | null) => ["shipment", tenantId, shipmentId] as const,
+  publicTracking: (storeSlug: string | null, orderNumber?: string, phone?: string) =>
+    ["public-tracking", storeSlug, orderNumber ?? "", phone ?? ""] as const
 };

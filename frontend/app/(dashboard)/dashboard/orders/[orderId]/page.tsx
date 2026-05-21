@@ -15,6 +15,8 @@ import {
   rejectPayment,
   updateOrderStatus
 } from "@/features/orders/api/orders.api";
+import { createShipment } from "@/features/shipments/api/shipments.api";
+import { CreateShipmentDialog } from "@/features/shipments/components/create-shipment-dialog";
 import { canCancelOrderStatus, nextOperationalStatus, statusActionLabels } from "@/features/orders/constants";
 import { CancelOrderDialog } from "@/features/orders/components/cancel-order-dialog";
 import { PaymentReviewDialog } from "@/features/orders/components/payment-review-dialog";
@@ -46,8 +48,10 @@ export default function OrderDetailPage() {
   const canUpdateStatus = userPermissions.includes(permissions.orderUpdateStatus);
   const canUpdatePayment = userPermissions.includes(permissions.orderUpdatePaymentStatus);
   const canCancel = userPermissions.includes(permissions.orderCancel);
+  const canCreateShipment = userPermissions.includes(permissions.shipmentCreate);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [paymentReviewMode, setPaymentReviewMode] = useState<PaymentReviewMode | null>(null);
+  const [shipmentOpen, setShipmentOpen] = useState(false);
   const detailQuery = useOrderDetail(orderId, canReadDetail);
   const confirmationsQuery = usePaymentConfirmations(orderId, canReadDetail);
 
@@ -117,6 +121,22 @@ export default function OrderDetailPage() {
     }
   });
 
+  const createShipmentMutation = useMutation({
+    mutationFn: (values: Parameters<typeof createShipment>[1]) => createShipment(orderId, values),
+    onSuccess: async (result) => {
+      await Promise.all([
+        invalidateOrderQueries(),
+        queryClient.invalidateQueries({ queryKey: ["shipments", tenantId] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.shipment(tenantId, result.id) })
+      ]);
+      setShipmentOpen(false);
+      pushToast({ tone: "success", title: "Pengiriman dibuat", description: "Shipment baru siap dipantau dari menu Pengiriman." });
+    },
+    onError: (error) => {
+      pushToast({ tone: "error", title: "Pengiriman gagal dibuat", description: error.message });
+    }
+  });
+
   if (!canReadDetail) {
     return (
       <EmptyState
@@ -157,6 +177,10 @@ export default function OrderDetailPage() {
   const canReviewPayment =
     canUpdatePayment && order.paymentStatus !== "paid" && order.status !== "cancelled" && pendingConfirmations.length > 0;
   const canOpenCancel = canCancel && canCancelOrderStatus(order.status);
+  const canOpenShipment =
+    canCreateShipment &&
+    order.paymentStatus === "paid" &&
+    ["confirmed", "processing", "ready_to_ship"].includes(order.status);
 
   const itemColumns: Array<DataTableColumn<OrderItem>> = [
     {
@@ -221,6 +245,9 @@ export default function OrderDetailPage() {
           </Button>
           <Button type="button" variant="danger" disabled={!canOpenCancel} onClick={() => setCancelOpen(true)}>
             Batalkan pesanan
+          </Button>
+          <Button type="button" disabled={!canOpenShipment} onClick={() => setShipmentOpen(true)}>
+            Buat pengiriman
           </Button>
         </div>
       </div>
@@ -300,6 +327,15 @@ export default function OrderDetailPage() {
           }
           rejectPaymentMutation.mutate(values);
         }}
+      />
+
+      <CreateShipmentDialog
+        open={shipmentOpen}
+        orderNumber={order.orderNumber}
+        isSubmitting={createShipmentMutation.isPending}
+        error={createShipmentMutation.error?.message}
+        onClose={() => setShipmentOpen(false)}
+        onSubmit={(values) => createShipmentMutation.mutate(values)}
       />
     </div>
   );

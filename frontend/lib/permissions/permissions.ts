@@ -43,7 +43,14 @@ export const permissions = {
   financeDeleteExpense: "finance.delete_expense",
   dashboardReadSummary: "dashboard.read_summary",
   dashboardReadRecentOrders: "dashboard.read_recent_orders",
-  dashboardReadLowStock: "dashboard.read_low_stock"
+  dashboardReadLowStock: "dashboard.read_low_stock",
+  courierReadZone: "courier.read_zone",
+  courierCreateZone: "courier.create_zone",
+  courierUpdateZone: "courier.update_zone",
+  courierDeleteZone: "courier.delete_zone",
+  shipmentRead: "shipment.read",
+  shipmentCreate: "shipment.create",
+  shipmentUpdateStatus: "shipment.update_status"
 } as const;
 
 export type Permission = (typeof permissions)[keyof typeof permissions];

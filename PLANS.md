@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 9C Discovery API.
+Sprint 9D Courier + Shipment UI.
 
 ## Current Goal
 
-Implement public discovery APIs for eligible stores and products.
+Implement frontend courier zones, shipment management, and public order tracking UI.
 
 ## Sprint 0 Tasks
 
