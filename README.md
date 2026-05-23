@@ -72,6 +72,24 @@ Business features such as auth, checkout, POS, payment confirmation, finance, di
 | `make frontend-lint` | Run frontend lint |
 | `make frontend-typecheck` | Run TypeScript typecheck |
 
+## Slow backend integration tests
+
+Race-condition tests that depend on PostgreSQL row locks are guarded by the `integration` build tag and must use a disposable test database. The harness applies pending migrations and truncates public tables except `schema_migrations`.
+
+```powershell
+cd backend
+$env:RUN_DB_INTEGRATION = "1"
+$env:TEST_DATABASE_URL = "postgres://postgres:postgres@localhost:5432/umkm_os_test?sslmode=disable"
+go test -tags=integration ./internal/integration -count=1
+```
+
+Daily lightweight backend tests remain:
+
+```powershell
+cd backend
+go test ./...
+```
+
 ## Repository structure
 
 ```txt

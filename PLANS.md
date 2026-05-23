@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 11B Tenant Isolation + Permission Tests.
+Sprint 11C Race + Idempotency Tests.
 
 ## Current Goal
 
-Add reusable backend security fixtures and focused tests for tenant isolation, permission matrix behavior, admin separation, and public safety before pilot QA.
+Add PostgreSQL-backed slow tests for checkout/POS race safety, idempotency replay/conflict behavior, payment/cancel consistency, outbox worker concurrency, and critical transaction rollback.
 
 ## Sprint 0 Tasks
 
