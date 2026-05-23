@@ -43,5 +43,11 @@ export const queryKeys = {
     ["shipments", tenantId, filters ?? {}] as const,
   shipment: (tenantId: string | null, shipmentId: string | null) => ["shipment", tenantId, shipmentId] as const,
   publicTracking: (storeSlug: string | null, orderNumber?: string, phone?: string) =>
-    ["public-tracking", storeSlug, orderNumber ?? "", phone ?? ""] as const
+    ["public-tracking", storeSlug, orderNumber ?? "", phone ?? ""] as const,
+  adminMe: ["admin-me"] as const,
+  adminTenants: (filters?: Record<string, unknown>) => ["admin-tenants", filters ?? {}] as const,
+  adminTenant: (tenantId: string | null) => ["admin-tenant", tenantId] as const,
+  adminPlans: ["admin-plans"] as const,
+  adminFeatured: (filters?: Record<string, unknown>) => ["admin-featured", filters ?? {}] as const,
+  adminAuditLogs: (filters?: Record<string, unknown>) => ["admin-audit-logs", filters ?? {}] as const
 };

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 10D Featured Discovery + Admin Audit.
+Sprint 10E Super Admin UI.
 
 ## Current Goal
 
-Implement backend super admin featured discovery management and safe admin audit log browsing.
+Implement frontend super admin console for tenants, plans, featured discovery, and admin audit logs.
 
 ## Sprint 0 Tasks
 
