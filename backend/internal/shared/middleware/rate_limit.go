@@ -69,7 +69,7 @@ func CriticalRateLimitPolicies() []RateLimitPolicy {
 func NewRateLimiter(policies ...RateLimitPolicy) *RateLimiter {
 	return &RateLimiter{
 		now:      time.Now,
-		buckets: make(map[string]rateLimitBucket),
+		buckets:  make(map[string]rateLimitBucket),
 		policies: policies,
 	}
 }

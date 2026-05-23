@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 11A Backend Security Hardening.
+Sprint 11B Tenant Isolation + Permission Tests.
 
 ## Current Goal
 
-Harden backend route security, rate limiting, CORS, upload validation, and sensitive response guardrails before pilot QA.
+Add reusable backend security fixtures and focused tests for tenant isolation, permission matrix behavior, admin separation, and public safety before pilot QA.
 
 ## Sprint 0 Tasks
 
