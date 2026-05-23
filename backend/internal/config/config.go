@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -77,6 +78,9 @@ func (c Config) Validate() error {
 	if c.RefreshTokenTTL <= 0 {
 		return errors.New("REFRESH_TOKEN_TTL_DAYS must be greater than zero")
 	}
+	if err := validateCORSOrigins(c.AppEnv, c.CORSAllowedOrigins); err != nil {
+		return err
+	}
 	if c.StorageDriver != "local" {
 		return errors.New("STORAGE_DRIVER must be local for the current backend foundation")
 	}
@@ -139,4 +143,37 @@ func splitCSV(value string) []string {
 	}
 
 	return result
+}
+
+func validateCORSOrigins(appEnv string, origins []string) error {
+	isProduction := strings.EqualFold(strings.TrimSpace(appEnv), "production")
+	if isProduction && len(origins) == 0 {
+		return errors.New("CORS_ALLOWED_ORIGINS is required in production")
+	}
+
+	for _, origin := range origins {
+		origin = strings.TrimSpace(origin)
+		if origin == "" {
+			continue
+		}
+		if origin == "*" {
+			if isProduction {
+				return errors.New("CORS_ALLOWED_ORIGINS cannot contain wildcard in production")
+			}
+			continue
+		}
+
+		parsed, err := url.Parse(origin)
+		if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+			return fmt.Errorf("CORS_ALLOWED_ORIGINS contains invalid origin %q", origin)
+		}
+		if parsed.Scheme != "http" && parsed.Scheme != "https" {
+			return fmt.Errorf("CORS_ALLOWED_ORIGINS origin %q must use http or https", origin)
+		}
+		if isProduction && parsed.Scheme != "https" {
+			return fmt.Errorf("CORS_ALLOWED_ORIGINS origin %q must use https in production", origin)
+		}
+	}
+
+	return nil
 }

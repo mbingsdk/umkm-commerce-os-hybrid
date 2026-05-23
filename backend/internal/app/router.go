@@ -37,7 +37,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 	r.Use(sharedmw.Logger(deps.Logger))
 	r.Use(sharedmw.Recover(deps.Logger))
 	r.Use(sharedmw.CORS(deps.Config.CORSAllowedOrigins))
-	r.Use(sharedmw.RateLimitPlaceholder)
+	r.Use(sharedmw.NewRateLimiter(sharedmw.CriticalRateLimitPolicies()...).Middleware)
 
 	r.Get("/health/live", func(w http.ResponseWriter, _ *http.Request) {
 		httpserver.WriteOK(w, "API process is alive", map[string]string{

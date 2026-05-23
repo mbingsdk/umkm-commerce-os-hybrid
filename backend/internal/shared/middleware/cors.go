@@ -1,11 +1,17 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
 	allowed := make(map[string]struct{}, len(allowedOrigins))
 	for _, origin := range allowedOrigins {
-		allowed[origin] = struct{}{}
+		origin = strings.TrimSpace(origin)
+		if origin != "" {
+			allowed[origin] = struct{}{}
+		}
 	}
 
 	return func(next http.Handler) http.Handler {
@@ -16,8 +22,8 @@ func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
 					w.Header().Set("Access-Control-Allow-Origin", "*")
 				} else if _, ok := allowed[origin]; ok {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Add("Vary", "Origin")
 				}
+				w.Header().Add("Vary", "Origin")
 
 				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID, X-Tenant-ID, Idempotency-Key")
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 10E Super Admin UI.
+Sprint 11A Backend Security Hardening.
 
 ## Current Goal
 
-Implement frontend super admin console for tenants, plans, featured discovery, and admin audit logs.
+Harden backend route security, rate limiting, CORS, upload validation, and sensitive response guardrails before pilot QA.
 
 ## Sprint 0 Tasks
 
