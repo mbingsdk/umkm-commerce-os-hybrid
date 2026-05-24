@@ -14,6 +14,7 @@ import { CloseSessionDialog } from "@/features/pos/components/close-session-dial
 import { ReceiptDialog } from "@/features/pos/components/receipt-dialog";
 import { usePOSProducts } from "@/features/pos/hooks/use-pos";
 import { usePOSStore } from "@/features/pos/pos.store";
+import { posPaymentSubmitSchema } from "@/features/pos/schemas/pos.schema";
 import type { POSCartLine, POSProduct, POSSession, POSTransaction } from "@/features/pos/types";
 import { createIdempotencyKey } from "@/lib/api/idempotency";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -68,9 +69,17 @@ export function POSRegisterScreen({ session }: POSRegisterScreenProps) {
   );
   const subtotalEstimate = items.reduce((total, item) => total + item.price * item.quantity, 0);
   const changeEstimate = paymentMethod === "cash" ? Math.max(0, amountPaid - subtotalEstimate) : 0;
-  const qrisMismatch = paymentMethod === "qris_manual" && amountPaid !== subtotalEstimate;
-  const cashUnderpaid = paymentMethod === "cash" && amountPaid < subtotalEstimate;
   const cartEmpty = items.length === 0;
+  const paymentValidation = posPaymentSubmitSchema.safeParse({
+    itemCount: items.length,
+    paymentMethod,
+    amountPaid: Number.isFinite(amountPaid) ? amountPaid : -1,
+    subtotalEstimate
+  });
+  const paymentError = paymentValidation.success
+    ? undefined
+    : paymentValidation.error.issues.find((issue) => issue.path[0] === "amountPaid")?.message ??
+      paymentValidation.error.issues[0]?.message;
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -248,7 +257,8 @@ export function POSRegisterScreen({ session }: POSRegisterScreenProps) {
                 min={0}
                 step={1}
                 value={amountPaid}
-                onChange={(event) => setAmountPaid(Number(event.target.value))}
+                hasError={!!paymentError && !cartEmpty}
+                onChange={(event) => setAmountPaid(Number(event.target.value || 0))}
               />
             </label>
 
@@ -261,9 +271,9 @@ export function POSRegisterScreen({ session }: POSRegisterScreenProps) {
               </Button>
             </div>
 
-            {qrisMismatch ? (
+            {paymentError && !cartEmpty && canCreateTransaction ? (
               <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
-                Untuk QRIS manual, jumlah dibayar harus sama dengan total estimasi.
+                {paymentError}
               </p>
             ) : null}
 
@@ -271,9 +281,9 @@ export function POSRegisterScreen({ session }: POSRegisterScreenProps) {
               className="w-full"
               type="button"
               isLoading={createMutation.isPending}
-              disabled={createMutation.isPending || !canCreateTransaction || cartEmpty || cashUnderpaid || qrisMismatch}
+              disabled={createMutation.isPending || !canCreateTransaction || !paymentValidation.success}
               onClick={() => {
-                if (createMutation.isPending || !canCreateTransaction || cartEmpty || cashUnderpaid || qrisMismatch) {
+                if (createMutation.isPending || !canCreateTransaction || !paymentValidation.success) {
                   return;
                 }
 

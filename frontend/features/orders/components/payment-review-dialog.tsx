@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import {
+  paymentReviewSchema,
+  type PaymentReviewFormValues
+} from "@/features/orders/schemas/order-actions.schema";
 import type { PaymentConfirmation } from "@/features/orders/types";
 import { formatDateTime } from "@/lib/format/date";
 import { formatRupiah } from "@/lib/format/money";
@@ -30,17 +36,39 @@ export function PaymentReviewDialog({
     () => confirmations.filter((confirmation) => confirmation.status === "pending"),
     [confirmations]
   );
-  const [selectedId, setSelectedId] = useState("");
-  const [note, setNote] = useState("");
+  const form = useForm<PaymentReviewFormValues>({
+    resolver: zodResolver(paymentReviewSchema),
+    defaultValues: {
+      paymentConfirmationId: pendingConfirmations[0]?.id ?? "",
+      note: ""
+    }
+  });
+  const selectedConfirmationId = useWatch({ control: form.control, name: "paymentConfirmationId" });
   const isConfirm = mode === "confirm";
-  const selectedConfirmationId = pendingConfirmations.some((confirmation) => confirmation.id === selectedId)
-    ? selectedId
-    : pendingConfirmations[0]?.id ?? "";
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        paymentConfirmationId: pendingConfirmations[0]?.id ?? "",
+        note: ""
+      });
+    }
+  }, [form, open, pendingConfirmations]);
 
   function handleClose() {
-    setSelectedId("");
-    setNote("");
+    form.reset({ paymentConfirmationId: pendingConfirmations[0]?.id ?? "", note: "" });
     onClose();
+  }
+
+  function handleSubmit(values: PaymentReviewFormValues) {
+    if (isSubmitting || !values.paymentConfirmationId) {
+      return;
+    }
+
+    onSubmit({
+      paymentConfirmationId: values.paymentConfirmationId,
+      note: values.note?.trim() || undefined
+    });
   }
 
   return (
@@ -59,24 +87,18 @@ export function PaymentReviewDialog({
             Batal
           </Button>
           <Button
-            type="button"
+            type="submit"
+            form="payment-review-form"
             variant={isConfirm ? "primary" : "danger"}
             isLoading={isSubmitting}
             disabled={isSubmitting || !selectedConfirmationId}
-            onClick={() => {
-              if (isSubmitting || !selectedConfirmationId) {
-                return;
-              }
-
-              onSubmit({ paymentConfirmationId: selectedConfirmationId || undefined, note: note.trim() || undefined });
-            }}
           >
             {isConfirm ? "Konfirmasi pembayaran" : "Tolak pembayaran"}
           </Button>
         </>
       }
     >
-      <div className="space-y-4">
+      <form id="payment-review-form" className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
         {pendingConfirmations.length === 0 ? (
           <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
             Belum ada konfirmasi pembayaran pending untuk direview.
@@ -86,8 +108,7 @@ export function PaymentReviewDialog({
             Konfirmasi yang direview
             <select
               className="mt-2 h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-              value={selectedConfirmationId}
-              onChange={(event) => setSelectedId(event.target.value)}
+              {...form.register("paymentConfirmationId")}
             >
               {pendingConfirmations.map((confirmation) => (
                 <option key={confirmation.id} value={confirmation.id}>
@@ -98,19 +119,26 @@ export function PaymentReviewDialog({
             </select>
           </label>
         )}
+        {form.formState.errors.paymentConfirmationId ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">
+            {form.formState.errors.paymentConfirmationId.message}
+          </p>
+        ) : null}
 
         <label className="block text-sm font-medium text-neutral-800">
           Catatan review
           <textarea
             className="mt-2 min-h-24 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-950 shadow-sm outline-none transition placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
             placeholder="Opsional"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
+            {...form.register("note")}
           />
         </label>
+        {form.formState.errors.note ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.note.message}</p>
+        ) : null}
 
         {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-      </div>
+      </form>
     </Dialog>
   );
 }

@@ -1,10 +1,16 @@
 "use client";
 
-import { type FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { shipmentStatusOptions } from "@/features/shipments/constants";
+import {
+  updateShipmentStatusSchema,
+  type UpdateShipmentStatusFormValues
+} from "@/features/shipments/schemas/shipment.schema";
 import type { ShipmentStatus, UpdateShipmentStatusInput } from "@/features/shipments/types";
 
 type UpdateShipmentStatusDialogProps = {
@@ -24,16 +30,28 @@ export function UpdateShipmentStatusDialog({
   onClose,
   onSubmit
 }: UpdateShipmentStatusDialogProps) {
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const form = useForm<UpdateShipmentStatusFormValues>({
+    resolver: zodResolver(updateShipmentStatusSchema),
+    defaultValues: {
+      status: nextShipmentStatus(currentStatus),
+      note: ""
+    }
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({ status: nextShipmentStatus(currentStatus), note: "" });
+    }
+  }, [currentStatus, form, open]);
+
+  function handleSubmit(values: UpdateShipmentStatusFormValues) {
     if (isSubmitting) {
       return;
     }
 
-    const formData = new FormData(event.currentTarget);
     onSubmit({
-      status: String(formData.get("status") ?? nextShipmentStatus(currentStatus)) as ShipmentStatus,
-      note: String(formData.get("note") ?? "").trim() || undefined
+      status: values.status,
+      note: values.note?.trim() || undefined
     });
   }
 
@@ -54,15 +72,19 @@ export function UpdateShipmentStatusDialog({
         </>
       }
     >
-      <form key={currentStatus} id="update-shipment-status-form" className="space-y-4" onSubmit={handleSubmit}>
+      <form
+        key={currentStatus}
+        id="update-shipment-status-form"
+        className="space-y-4"
+        onSubmit={form.handleSubmit(handleSubmit)}
+      >
         {error ? <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
 
         <label className="space-y-1">
           <span className="text-sm font-medium text-neutral-700">Status baru</span>
           <select
-            name="status"
             className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-            defaultValue={nextShipmentStatus(currentStatus)}
+            {...form.register("status")}
           >
             {shipmentStatusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -71,10 +93,20 @@ export function UpdateShipmentStatusDialog({
             ))}
           </select>
         </label>
+        {form.formState.errors.status ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.status.message}</p>
+        ) : null}
 
         <label className="space-y-1">
           <span className="text-sm font-medium text-neutral-700">Catatan opsional</span>
-          <Input name="note" placeholder="Contoh: paket sudah diterima kurir" />
+          <Input
+            hasError={!!form.formState.errors.note}
+            placeholder="Contoh: paket sudah diterima kurir"
+            {...form.register("note")}
+          />
+          {form.formState.errors.note ? (
+            <span className="block text-xs font-medium text-red-600">{form.formState.errors.note.message}</span>
+          ) : null}
         </label>
       </form>
     </Dialog>

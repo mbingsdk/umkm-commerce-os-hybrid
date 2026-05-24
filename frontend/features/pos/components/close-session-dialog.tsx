@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { closeSessionSchema, type CloseSessionFormValues } from "@/features/pos/schemas/pos.schema";
 import type { POSSession } from "@/features/pos/types";
 import { formatRupiah } from "@/lib/format/money";
 
@@ -26,10 +29,29 @@ export function CloseSessionDialog({
   onClose,
   onSubmit
 }: CloseSessionDialogProps) {
-  const [closingCash, setClosingCash] = useState(String(session.expectedCash ?? session.openingCash));
-  const [note, setNote] = useState("");
-  const parsedClosingCash = Number(closingCash);
-  const invalid = !Number.isInteger(parsedClosingCash) || parsedClosingCash < 0;
+  const form = useForm<CloseSessionFormValues>({
+    resolver: zodResolver(closeSessionSchema),
+    defaultValues: toFormValues(session)
+  });
+
+  useEffect(() => {
+    if (open && !closedSession) {
+      form.reset(toFormValues(session));
+    }
+  }, [closedSession, form, open, session]);
+
+  function handleClose() {
+    form.reset(toFormValues(session));
+    onClose();
+  }
+
+  function handleSubmit(values: CloseSessionFormValues) {
+    if (isSubmitting) {
+      return;
+    }
+
+    onSubmit({ closingCashAmount: values.closingCashAmount, note: values.note?.trim() || undefined });
+  }
 
   return (
     <Dialog
@@ -40,30 +62,18 @@ export function CloseSessionDialog({
           ? "Backend sudah menghitung expected cash dan selisih kas sesi ini."
           : "Masukkan kas aktual di laci. Expected cash dihitung backend berdasarkan kas awal dan transaksi tunai."
       }
-      onClose={onClose}
+      onClose={handleClose}
       footer={
         closedSession ? (
-          <Button type="button" onClick={onClose}>
+          <Button type="button" onClick={handleClose}>
             Selesai
           </Button>
         ) : (
           <>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               Batal
             </Button>
-            <Button
-              type="button"
-              variant="danger"
-              isLoading={isSubmitting}
-              disabled={isSubmitting || invalid}
-              onClick={() => {
-                if (isSubmitting || invalid) {
-                  return;
-                }
-
-                onSubmit({ closingCashAmount: parsedClosingCash, note: note.trim() || undefined });
-              }}
-            >
+            <Button type="submit" form="close-session-form" variant="danger" isLoading={isSubmitting} disabled={isSubmitting}>
               Tutup sesi
             </Button>
           </>
@@ -86,7 +96,7 @@ export function CloseSessionDialog({
             <InfoBox label="Selisih" value={formatRupiah(closedSession.difference ?? 0)} />
           </div>
         ) : (
-          <>
+          <form id="close-session-form" className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
             <label className="block text-sm font-medium text-neutral-800">
               Kas aktual saat tutup
               <Input
@@ -94,28 +104,39 @@ export function CloseSessionDialog({
                 type="number"
                 min={0}
                 step={1}
-                hasError={invalid}
-                value={closingCash}
-                onChange={(event) => setClosingCash(event.target.value)}
+                hasError={!!form.formState.errors.closingCashAmount}
+                {...form.register("closingCashAmount", { valueAsNumber: true })}
               />
             </label>
+            {form.formState.errors.closingCashAmount ? (
+              <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.closingCashAmount.message}</p>
+            ) : null}
 
             <label className="block text-sm font-medium text-neutral-800">
               Catatan
               <textarea
                 className="mt-2 min-h-24 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-950 shadow-sm outline-none transition placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
                 placeholder="Opsional"
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
+                {...form.register("note")}
               />
             </label>
-          </>
+            {form.formState.errors.note ? (
+              <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.note.message}</p>
+            ) : null}
+          </form>
         )}
 
         {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       </div>
     </Dialog>
   );
+}
+
+function toFormValues(session: POSSession): CloseSessionFormValues {
+  return {
+    closingCashAmount: session.expectedCash ?? session.openingCash,
+    note: ""
+  };
 }
 
 function InfoBox({ label, value }: { label: string; value: string }) {
