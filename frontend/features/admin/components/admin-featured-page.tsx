@@ -80,7 +80,12 @@ export function AdminFeaturedPage() {
             variant="danger"
             size="sm"
             isLoading={deleteFeatured.isPending}
+            disabled={deleteFeatured.isPending}
             onClick={() => {
+              if (deleteFeatured.isPending) {
+                return;
+              }
+
               if (!window.confirm("Hapus featured item ini?")) {
                 return;
               }
@@ -98,6 +103,10 @@ export function AdminFeaturedPage() {
   ];
 
   function submitFeatured(values: FeaturedFormInput) {
+    if (createFeatured.isPending || updateFeatured.isPending) {
+      return;
+    }
+
     if (editingItem) {
       updateFeatured.mutate(
         { featuredId: editingItem.id, input: values },
@@ -250,6 +259,10 @@ function FeaturedDialog({
 }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     const form = new FormData(event.currentTarget);
     onSubmit({
       itemType: String(form.get("item_type") ?? "store") as FeaturedFormInput["itemType"],
@@ -275,7 +288,7 @@ function FeaturedDialog({
           <Button type="button" variant="outline" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" form="admin-featured-form" isLoading={isSubmitting}>
+          <Button type="submit" form="admin-featured-form" isLoading={isSubmitting} disabled={isSubmitting}>
             Simpan
           </Button>
         </>

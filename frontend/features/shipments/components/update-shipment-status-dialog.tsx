@@ -26,6 +26,10 @@ export function UpdateShipmentStatusDialog({
 }: UpdateShipmentStatusDialogProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
     onSubmit({
       status: String(formData.get("status") ?? nextShipmentStatus(currentStatus)) as ShipmentStatus,
@@ -44,7 +48,7 @@ export function UpdateShipmentStatusDialog({
           <Button type="button" variant="outline" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" form="update-shipment-status-form" isLoading={isSubmitting}>
+          <Button type="submit" form="update-shipment-status-form" isLoading={isSubmitting} disabled={isSubmitting}>
             Update status
           </Button>
         </>

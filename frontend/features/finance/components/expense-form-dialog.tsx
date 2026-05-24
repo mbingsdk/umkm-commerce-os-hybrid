@@ -40,6 +40,14 @@ export function ExpenseFormDialog({
     form.reset(toDefaults(expense));
   }, [expense, form, open]);
 
+  function handleSubmit(values: ExpenseFormValues) {
+    if (isSubmitting) {
+      return;
+    }
+
+    onSubmit(values);
+  }
+
   return (
     <Dialog
       open={open}
@@ -51,13 +59,13 @@ export function ExpenseFormDialog({
           <Button type="button" variant="outline" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" form="expense-form" isLoading={isSubmitting}>
+          <Button type="submit" form="expense-form" isLoading={isSubmitting} disabled={isSubmitting}>
             {expense ? "Simpan perubahan" : "Tambah pengeluaran"}
           </Button>
         </>
       }
     >
-      <form id="expense-form" className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="expense-form" className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
         <Field label="Judul" error={form.formState.errors.title?.message}>
           <Input
             placeholder="Beli plastik bouquet"

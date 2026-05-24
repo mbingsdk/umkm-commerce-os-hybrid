@@ -40,6 +40,14 @@ export function CategoryFormDialog({
     form.reset(toDefaults(category));
   }, [category, form, open]);
 
+  function handleSubmit(values: CategoryFormValues) {
+    if (isSubmitting) {
+      return;
+    }
+
+    onSubmit(values);
+  }
+
   return (
     <Dialog
       open={open}
@@ -51,13 +59,13 @@ export function CategoryFormDialog({
           <Button type="button" variant="outline" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" form="category-form" isLoading={isSubmitting}>
+          <Button type="submit" form="category-form" isLoading={isSubmitting} disabled={isSubmitting}>
             {category ? "Simpan perubahan" : "Buat kategori"}
           </Button>
         </>
       }
     >
-      <form id="category-form" className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="category-form" className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
         <Field label="Nama kategori" error={form.formState.errors.name?.message}>
           <Input placeholder="Bouquet" hasError={!!form.formState.errors.name} {...form.register("name")} />
         </Field>

@@ -34,8 +34,14 @@ export function CancelOrderDialog({ open, isSubmitting = false, error, onClose, 
             type="button"
             variant="danger"
             isLoading={isSubmitting}
-            disabled={reasonInvalid}
-            onClick={() => onSubmit({ reason: reason.trim(), note: note.trim() || undefined })}
+            disabled={isSubmitting || reasonInvalid}
+            onClick={() => {
+              if (isSubmitting || reasonInvalid) {
+                return;
+              }
+
+              onSubmit({ reason: reason.trim(), note: note.trim() || undefined });
+            }}
           >
             Batalkan pesanan
           </Button>

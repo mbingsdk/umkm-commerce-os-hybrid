@@ -23,7 +23,7 @@ export function ThresholdDialog({
   onClose,
   onSubmit
 }: ThresholdDialogProps) {
-  const [threshold, setThreshold] = useState("0");
+  const [threshold, setThreshold] = useState(String(stock?.lowStockThreshold ?? 0));
   const parsedThreshold = Number(threshold);
   const invalid = !Number.isInteger(parsedThreshold) || parsedThreshold < 0;
 
@@ -41,8 +41,14 @@ export function ThresholdDialog({
           <Button
             type="button"
             isLoading={isSubmitting}
-            disabled={invalid}
-            onClick={() => onSubmit(parsedThreshold)}
+            disabled={isSubmitting || invalid}
+            onClick={() => {
+              if (isSubmitting || invalid) {
+                return;
+              }
+
+              onSubmit(parsedThreshold);
+            }}
           >
             Simpan threshold
           </Button>

@@ -7,6 +7,12 @@ import { useTenantStore } from "@/lib/stores/tenant.store";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 
 type ApiFetchOptions = RequestInit & {
+  /**
+   * Dashboard and admin requests use bearer auth by default.
+   * Public storefront/discovery/checkout/tracking code should prefer raw public fetch helpers,
+   * but this explicit escape hatch prevents accidental auth headers if apiFetch is reused there.
+   */
+  auth?: boolean;
   tenantScoped?: boolean;
 };
 
@@ -31,25 +37,26 @@ export async function apiFetchWithMeta<T, M = unknown>(
   path: string,
   options: ApiFetchOptions = {}
 ): Promise<ApiFetchResult<T, M>> {
+  const { auth = true, tenantScoped = true, headers: initialHeaders, ...fetchOptions } = options;
   const token = useAuthStore.getState().accessToken;
   const tenantId = useTenantStore.getState().selectedTenantId;
-  const headers = new Headers(options.headers);
-  const isFormDataBody = typeof FormData !== "undefined" && options.body instanceof FormData;
+  const headers = new Headers(initialHeaders);
+  const isFormDataBody = typeof FormData !== "undefined" && fetchOptions.body instanceof FormData;
 
-  if (options.body && !headers.has("Content-Type") && !isFormDataBody) {
+  if (fetchOptions.body && !headers.has("Content-Type") && !isFormDataBody) {
     headers.set("Content-Type", "application/json");
   }
 
-  if (token) {
+  if (auth && token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  if (options.tenantScoped !== false && tenantId) {
+  if (tenantScoped && tenantId) {
     headers.set("X-Tenant-ID", tenantId);
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
+    ...fetchOptions,
     headers
   });
 

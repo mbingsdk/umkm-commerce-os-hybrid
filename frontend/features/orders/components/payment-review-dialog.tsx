@@ -62,10 +62,14 @@ export function PaymentReviewDialog({
             type="button"
             variant={isConfirm ? "primary" : "danger"}
             isLoading={isSubmitting}
-            disabled={!selectedConfirmationId}
-            onClick={() =>
-              onSubmit({ paymentConfirmationId: selectedConfirmationId || undefined, note: note.trim() || undefined })
-            }
+            disabled={isSubmitting || !selectedConfirmationId}
+            onClick={() => {
+              if (isSubmitting || !selectedConfirmationId) {
+                return;
+              }
+
+              onSubmit({ paymentConfirmationId: selectedConfirmationId || undefined, note: note.trim() || undefined });
+            }}
           >
             {isConfirm ? "Konfirmasi pembayaran" : "Tolak pembayaran"}
           </Button>

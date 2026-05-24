@@ -27,6 +27,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
   const items = useCartStore((state) => (state.storeSlug === storeSlug ? state.items : []));
   const clearCart = useCartStore((state) => state.clearCart);
   const [submitError, setSubmitError] = useState<string>();
+  const [submitPending, setSubmitPending] = useState(false);
   const subtotal = getCartEstimatedSubtotal(items);
   const courierZonesQuery = usePublicCourierZones(storeSlug);
 
@@ -93,6 +94,11 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
   }
 
   async function onSubmit(values: CheckoutFormValues) {
+    if (submitPending) {
+      return;
+    }
+
+    setSubmitPending(true);
     setSubmitError(undefined);
 
     try {
@@ -150,8 +156,12 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
       }
 
       setSubmitError("Checkout gagal diproses. Coba beberapa saat lagi.");
+    } finally {
+      setSubmitPending(false);
     }
   }
+
+  const isCheckoutSubmitting = form.formState.isSubmitting || submitPending;
 
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
@@ -295,7 +305,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
 
         <div className="lg:hidden">
           <CheckoutSummary
-            isLoading={form.formState.isSubmitting}
+            isLoading={isCheckoutSubmitting}
             items={items}
             onSubmit={form.handleSubmit(onSubmit)}
             selectedCourierZoneName={selectedCourierZone?.name}
@@ -308,7 +318,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
 
       <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start">
         <CheckoutSummary
-          isLoading={form.formState.isSubmitting}
+          isLoading={isCheckoutSubmitting}
           items={items}
           onSubmit={form.handleSubmit(onSubmit)}
           selectedCourierZoneName={selectedCourierZone?.name}
@@ -384,7 +394,7 @@ function CheckoutSummary({
           </div>
         </div>
 
-        <Button className="w-full" isLoading={isLoading} onClick={onSubmit} size="lg" type="button">
+        <Button className="w-full" isLoading={isLoading} disabled={isLoading || items.length === 0} onClick={onSubmit} size="lg" type="button">
           Buat Pesanan
         </Button>
         <Link className="block text-center text-sm font-semibold text-primary-700" href={`/s/${storeSlug}/cart`}>

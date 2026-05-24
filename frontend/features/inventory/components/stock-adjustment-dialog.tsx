@@ -35,7 +35,7 @@ export function StockAdjustmentDialog({
   const reasonInvalid = reason.trim().length === 0;
   const stockOutNeedsConfirm = isStockOut && !confirmedStockOut;
   const stockOutWouldExceedAvailable = isStockOut && !!stock && parsedQuantity > stock.quantityAvailable;
-  const disabled = quantityInvalid || reasonInvalid || stockOutNeedsConfirm || stockOutWouldExceedAvailable;
+  const disabled = isSubmitting || quantityInvalid || reasonInvalid || stockOutNeedsConfirm || stockOutWouldExceedAvailable;
 
   function handleClose() {
     setAdjustmentType("in");
@@ -62,14 +62,18 @@ export function StockAdjustmentDialog({
             variant={isStockOut ? "danger" : "primary"}
             isLoading={isSubmitting}
             disabled={disabled}
-            onClick={() =>
+            onClick={() => {
+              if (disabled) {
+                return;
+              }
+
               onSubmit({
                 adjustmentType,
                 quantity: parsedQuantity,
                 reason: reason.trim(),
                 note: note.trim() || undefined
-              })
-            }
+              });
+            }}
           >
             Simpan penyesuaian
           </Button>

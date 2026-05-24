@@ -185,7 +185,11 @@ export default function CategoriesPage() {
           setDialogOpen(false);
           setEditingCategory(null);
         }}
-        onSubmit={(values) => saveMutation.mutate(values)}
+        onSubmit={(values) => {
+          if (!saveMutation.isPending) {
+            saveMutation.mutate(values);
+          }
+        }}
       />
 
       <Dialog
@@ -202,8 +206,9 @@ export default function CategoriesPage() {
               type="button"
               variant="danger"
               isLoading={deleteMutation.isPending}
+              disabled={deleteMutation.isPending}
               onClick={() => {
-                if (deletingCategory) {
+                if (!deleteMutation.isPending && deletingCategory) {
                   deleteMutation.mutate(deletingCategory.id);
                 }
               }}

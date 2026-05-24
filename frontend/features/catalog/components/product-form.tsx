@@ -49,8 +49,16 @@ export function ProductForm({
     form.reset(toDefaults(initialProduct));
   }, [form, initialProduct]);
 
+  function handleSubmit(values: ProductFormValues) {
+    if (isSubmitting) {
+      return;
+    }
+
+    onSubmit(values, imageFiles);
+  }
+
   return (
-    <form className="space-y-6" onSubmit={form.handleSubmit((values) => onSubmit(values, imageFiles))}>
+    <form className="space-y-6" onSubmit={form.handleSubmit(handleSubmit)}>
       <Card>
         <CardHeader>
           <CardTitle>Informasi dasar</CardTitle>
@@ -266,7 +274,7 @@ export function ProductForm({
       {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
           {mode === "create" ? "Simpan produk" : "Simpan perubahan"}
         </Button>
       </div>

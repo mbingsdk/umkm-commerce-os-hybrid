@@ -32,6 +32,10 @@ export function CreateShipmentDialog({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
     const parsedShippingCost = Number(formData.get("shipping_cost") || 0);
 
@@ -62,7 +66,7 @@ export function CreateShipmentDialog({
           <Button type="button" variant="outline" onClick={handleClose}>
             Batal
           </Button>
-          <Button type="submit" form="create-shipment-form" isLoading={isSubmitting}>
+          <Button type="submit" form="create-shipment-form" isLoading={isSubmitting} disabled={isSubmitting}>
             Buat shipment
           </Button>
         </>

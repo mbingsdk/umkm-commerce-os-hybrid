@@ -72,6 +72,10 @@ export function AdminPlansPage() {
   ];
 
   function submitPlan(values: PlanFormInput) {
+    if (createPlan.isPending || updatePlan.isPending) {
+      return;
+    }
+
     if (editingPlan) {
       updatePlan.mutate(
         { planId: editingPlan.id, input: values },
@@ -157,6 +161,10 @@ function PlanDialog({
 }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     const form = new FormData(event.currentTarget);
     onSubmit({
       code: String(form.get("code") ?? "").trim(),
@@ -183,7 +191,7 @@ function PlanDialog({
           <Button type="button" variant="outline" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" form="admin-plan-form" isLoading={isSubmitting}>
+          <Button type="submit" form="admin-plan-form" isLoading={isSubmitting} disabled={isSubmitting}>
             Simpan
           </Button>
         </>

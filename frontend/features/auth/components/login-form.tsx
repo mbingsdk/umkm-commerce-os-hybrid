@@ -54,8 +54,16 @@ export function LoginForm() {
     }
   });
 
+  function handleSubmit(values: LoginFormValues) {
+    if (loginMutation.isPending) {
+      return;
+    }
+
+    loginMutation.mutate(values);
+  }
+
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit((values) => loginMutation.mutate(values))}>
+    <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
           Email
@@ -96,7 +104,7 @@ export function LoginForm() {
         </p>
       ) : null}
 
-      <Button className="w-full" type="submit" isLoading={loginMutation.isPending}>
+      <Button className="w-full" type="submit" isLoading={loginMutation.isPending} disabled={loginMutation.isPending}>
         Masuk
       </Button>
 

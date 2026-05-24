@@ -139,12 +139,16 @@ export function CourierZonesPage() {
             variant="outline"
             size="sm"
             disabled={!canUpdate || updateMutation.isPending}
-            onClick={() =>
+            onClick={() => {
+              if (updateMutation.isPending) {
+                return;
+              }
+
               updateMutation.mutate({
                 zoneId: zone.id,
                 values: { isActive: !zone.isActive }
-              })
-            }
+              });
+            }}
           >
             {zone.isActive ? "Nonaktifkan" : "Aktifkan"}
           </Button>
@@ -222,6 +226,10 @@ export function CourierZonesPage() {
           setEditingZone(null);
         }}
         onSubmit={(values) => {
+          if (createMutation.isPending || updateMutation.isPending) {
+            return;
+          }
+
           if (editingZone) {
             updateMutation.mutate({ zoneId: editingZone.id, values });
             return;
@@ -244,7 +252,12 @@ export function CourierZonesPage() {
               type="button"
               variant="danger"
               isLoading={deleteMutation.isPending}
-              onClick={() => deletingZone && deleteMutation.mutate(deletingZone.id)}
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                if (!deleteMutation.isPending && deletingZone) {
+                  deleteMutation.mutate(deletingZone.id);
+                }
+              }}
             >
               Hapus
             </Button>

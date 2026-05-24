@@ -30,6 +30,10 @@ export function OpenSessionForm({ isSubmitting = false, error, onSubmit }: OpenS
           className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
+            if (isSubmitting) {
+              return;
+            }
+
             if (!invalid) {
               onSubmit({ openingCashAmount: parsedOpeningCash, note: note.trim() || undefined });
             }
@@ -60,7 +64,7 @@ export function OpenSessionForm({ isSubmitting = false, error, onSubmit }: OpenS
 
           {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
 
-          <Button className="w-full" type="submit" isLoading={isSubmitting} disabled={invalid}>
+          <Button className="w-full" type="submit" isLoading={isSubmitting} disabled={isSubmitting || invalid}>
             Buka sesi
           </Button>
         </form>

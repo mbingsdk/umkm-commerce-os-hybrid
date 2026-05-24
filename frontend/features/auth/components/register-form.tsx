@@ -56,8 +56,16 @@ export function RegisterForm() {
     }
   });
 
+  function handleSubmit(values: RegisterFormValues) {
+    if (registerMutation.isPending) {
+      return;
+    }
+
+    registerMutation.mutate(values);
+  }
+
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit((values) => registerMutation.mutate(values))}>
+    <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
       <Field
         label="Nama lengkap"
         error={form.formState.errors.name?.message}
@@ -128,7 +136,7 @@ export function RegisterForm() {
         </p>
       ) : null}
 
-      <Button className="w-full" type="submit" isLoading={registerMutation.isPending}>
+      <Button className="w-full" type="submit" isLoading={registerMutation.isPending} disabled={registerMutation.isPending}>
         Buat akun
       </Button>
 

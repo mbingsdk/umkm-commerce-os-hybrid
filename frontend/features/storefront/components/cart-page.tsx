@@ -95,7 +95,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
                   <div className="inline-flex items-center rounded-xl border border-neutral-200 bg-white">
                     <button
                       aria-label={`Kurangi ${item.name}`}
-                      className="flex h-9 w-9 items-center justify-center text-neutral-600 hover:text-primary-700"
+                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-neutral-600 hover:text-primary-700"
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       type="button"
                     >
@@ -104,7 +104,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
                     <span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span>
                     <button
                       aria-label={`Tambah ${item.name}`}
-                      className="flex h-9 w-9 items-center justify-center text-neutral-600 hover:text-primary-700"
+                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-neutral-600 hover:text-primary-700"
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                       type="button"
                     >

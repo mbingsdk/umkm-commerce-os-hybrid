@@ -205,8 +205,9 @@ export default function ProductsPage() {
               type="button"
               variant="danger"
               isLoading={deleteMutation.isPending}
+              disabled={deleteMutation.isPending}
               onClick={() => {
-                if (deletingProduct) {
+                if (!deleteMutation.isPending && deletingProduct) {
                   deleteMutation.mutate(deletingProduct.id);
                 }
               }}

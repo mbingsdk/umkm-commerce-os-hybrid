@@ -34,6 +34,10 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (trackingQuery.isFetching) {
+      return;
+    }
+
     const nextOrderNumber = orderNumber.trim();
     const nextPhone = phone.trim();
 
@@ -84,7 +88,7 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
                 <Input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="08123456789" />
               </label>
 
-              <Button className="w-full" type="submit" isLoading={trackingQuery.isFetching}>
+              <Button className="w-full" type="submit" isLoading={trackingQuery.isFetching} disabled={trackingQuery.isFetching}>
                 Lacak pesanan
               </Button>
             </form>

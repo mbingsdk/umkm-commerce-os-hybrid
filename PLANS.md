@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 11D Performance + Query Audit.
+Sprint 11E Frontend Hardening + UX Audit.
 
 ## Current Goal
 
-Audit high-traffic backend queries, add safe pagination/search bounds, improve slow-request observability, document local EXPLAIN workflow, and add performance-oriented indexes without weakening tenant isolation.
+Harden frontend UX states, submit guards, permission-aware navigation, public/admin request separation, mobile storefront flows, and POS usability without adding new business features.
 
 ## Sprint 0 Tasks
 

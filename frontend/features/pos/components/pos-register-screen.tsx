@@ -140,7 +140,15 @@ export function POSRegisterScreen({ session }: POSRegisterScreenProps) {
       <div className="grid min-h-[680px] gap-4 xl:grid-cols-[1fr_420px]">
         <section className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-soft">
           <div className="grid gap-3 lg:grid-cols-[1fr_220px]">
-            <Input placeholder="Cari produk atau SKU..." value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Input
+              aria-label="Cari produk POS"
+              autoFocus
+              className="h-12 text-base"
+              enterKeyHint="search"
+              placeholder="Cari produk atau SKU..."
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
             <select
               className="h-10 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
               value={category}
@@ -263,8 +271,14 @@ export function POSRegisterScreen({ session }: POSRegisterScreenProps) {
               className="w-full"
               type="button"
               isLoading={createMutation.isPending}
-              disabled={!canCreateTransaction || cartEmpty || cashUnderpaid || qrisMismatch}
-              onClick={() => createMutation.mutate()}
+              disabled={createMutation.isPending || !canCreateTransaction || cartEmpty || cashUnderpaid || qrisMismatch}
+              onClick={() => {
+                if (createMutation.isPending || !canCreateTransaction || cartEmpty || cashUnderpaid || qrisMismatch) {
+                  return;
+                }
+
+                createMutation.mutate();
+              }}
             >
               Proses pembayaran
             </Button>
@@ -307,13 +321,13 @@ function ProductTile({ product, selected, onClick }: { product: POSProduct; sele
       type="button"
       disabled={isOut}
       className={[
-        "overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-soft disabled:cursor-not-allowed disabled:opacity-60",
+        "min-h-[230px] touch-manipulation overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-soft disabled:cursor-not-allowed disabled:opacity-60",
         selected ? "border-primary-500 ring-2 ring-primary-100" : "border-neutral-200"
       ].join(" ")}
       onClick={onClick}
     >
       <div
-        className="h-28 bg-neutral-100"
+        className="h-32 bg-neutral-100"
         style={
           product.image
             ? {

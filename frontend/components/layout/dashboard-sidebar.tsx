@@ -28,7 +28,7 @@ export function DashboardSidebar() {
     <aside className="hidden w-64 border-r border-neutral-200 bg-white p-5 lg:block">
       <p className="text-sm font-semibold text-primary-700">UMKM Commerce OS</p>
       <Badge className="mt-3" tone="primary">
-        Sprint 9D
+        Sprint 11E
       </Badge>
       <nav className="mt-8 space-y-2 text-sm text-neutral-600">
         {navItems.map((item) => (

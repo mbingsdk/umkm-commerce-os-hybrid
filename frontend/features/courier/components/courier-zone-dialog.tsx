@@ -32,6 +32,10 @@ export function CourierZoneDialog({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
     const name = String(formData.get("name") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
@@ -71,7 +75,7 @@ export function CourierZoneDialog({
           <Button type="button" variant="outline" onClick={handleClose}>
             Batal
           </Button>
-          <Button type="submit" form="courier-zone-form" isLoading={isSubmitting}>
+          <Button type="submit" form="courier-zone-form" isLoading={isSubmitting} disabled={isSubmitting}>
             Simpan
           </Button>
         </>

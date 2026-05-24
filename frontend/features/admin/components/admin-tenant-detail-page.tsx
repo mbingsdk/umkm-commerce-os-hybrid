@@ -47,6 +47,10 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
 
   function submitStatus(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (updateStatus.isPending) {
+      return;
+    }
+
     const form = new FormData(event.currentTarget);
     updateStatus.mutate(
       {
@@ -66,6 +70,10 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
 
   function submitPlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (updatePlan.isPending) {
+      return;
+    }
+
     const form = new FormData(event.currentTarget);
     updatePlan.mutate(
       {
@@ -174,7 +182,7 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
             <Button type="button" variant="outline" onClick={() => setDialogMode(null)}>
               Batal
             </Button>
-            <Button type="submit" form="tenant-status-form" isLoading={updateStatus.isPending}>
+            <Button type="submit" form="tenant-status-form" isLoading={updateStatus.isPending} disabled={updateStatus.isPending}>
               Simpan status
             </Button>
           </>
@@ -205,7 +213,7 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
             <Button type="button" variant="outline" onClick={() => setDialogMode(null)}>
               Batal
             </Button>
-            <Button type="submit" form="tenant-plan-form" isLoading={updatePlan.isPending}>
+            <Button type="submit" form="tenant-plan-form" isLoading={updatePlan.isPending} disabled={updatePlan.isPending}>
               Simpan paket
             </Button>
           </>

@@ -66,7 +66,7 @@ export function CreateStoreWizard() {
           city: values.city,
           province: values.province
         }
-    }),
+      }),
     onSuccess: (tenant) => {
       upsertTenant(tenant);
       selectTenant(tenant);
@@ -75,10 +75,22 @@ export function CreateStoreWizard() {
   });
 
   async function goNext() {
+    if (createStoreMutation.isPending) {
+      return;
+    }
+
     const valid = await form.trigger(stepFields[step]);
     if (valid) {
       setStep((current) => Math.min(current + 1, 2));
     }
+  }
+
+  function handleSubmit(values: CreateStoreFormValues) {
+    if (createStoreMutation.isPending) {
+      return;
+    }
+
+    createStoreMutation.mutate(values);
   }
 
   if (!accessToken) {
@@ -93,7 +105,7 @@ export function CreateStoreWizard() {
   }
 
   return (
-    <form className="space-y-6" onSubmit={form.handleSubmit((values) => createStoreMutation.mutate(values))}>
+    <form className="space-y-6" onSubmit={form.handleSubmit(handleSubmit)}>
       <ol className="grid grid-cols-3 gap-2 text-xs font-semibold text-neutral-500">
         {["Identitas", "Profil singkat", "Tinjau"].map((label, index) => (
           <li
@@ -174,11 +186,11 @@ export function CreateStoreWizard() {
         </Button>
 
         {step < 2 ? (
-          <Button type="button" onClick={goNext}>
+          <Button type="button" disabled={createStoreMutation.isPending} onClick={goNext}>
             Lanjut
           </Button>
         ) : (
-          <Button type="submit" isLoading={createStoreMutation.isPending}>
+          <Button type="submit" isLoading={createStoreMutation.isPending} disabled={createStoreMutation.isPending}>
             Buat toko
           </Button>
         )}

@@ -55,8 +55,14 @@ export function CloseSessionDialog({
               type="button"
               variant="danger"
               isLoading={isSubmitting}
-              disabled={invalid}
-              onClick={() => onSubmit({ closingCashAmount: parsedClosingCash, note: note.trim() || undefined })}
+              disabled={isSubmitting || invalid}
+              onClick={() => {
+                if (isSubmitting || invalid) {
+                  return;
+                }
+
+                onSubmit({ closingCashAmount: parsedClosingCash, note: note.trim() || undefined });
+              }}
             >
               Tutup sesi
             </Button>
