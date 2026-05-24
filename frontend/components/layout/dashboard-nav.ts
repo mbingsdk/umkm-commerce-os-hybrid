@@ -9,7 +9,7 @@ export type DashboardNavItem = {
 
 export const dashboardNavItems: DashboardNavItem[] = [
   { label: "Dashboard", href: "/dashboard", permission: permissions.dashboardReadSummary, ready: true },
-  { label: "Toko", permission: permissions.storeRead, ready: false },
+  { label: "Toko", href: "/dashboard/settings/store", permission: permissions.storeRead, ready: true },
   { label: "Produk", href: "/dashboard/products", permission: permissions.productRead, ready: true },
   { label: "Kategori", href: "/dashboard/categories", permission: permissions.categoryRead, ready: true },
   { label: "Inventori", href: "/dashboard/inventory", permission: permissions.inventoryRead, ready: true },
