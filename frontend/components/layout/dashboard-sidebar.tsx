@@ -1,40 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { usePathname } from "next/navigation";
+import { dashboardNavItems, isDashboardNavItemActive } from "@/components/layout/dashboard-nav";
 import { PermissionGate } from "@/lib/permissions/permission-gate";
-import { permissions, type Permission } from "@/lib/permissions/permissions";
-
-const navItems: Array<{
-  label: string;
-  href?: string;
-  permission: Permission;
-  ready: boolean;
-}> = [
-  { label: "Dashboard", href: "/dashboard", permission: permissions.dashboardReadSummary, ready: true },
-  { label: "Toko", permission: permissions.storeRead, ready: false },
-  { label: "Produk", href: "/dashboard/products", permission: permissions.productRead, ready: true },
-  { label: "Kategori", href: "/dashboard/categories", permission: permissions.categoryRead, ready: true },
-  { label: "Inventori", href: "/dashboard/inventory", permission: permissions.inventoryRead, ready: true },
-  { label: "Pesanan", href: "/dashboard/orders", permission: permissions.orderRead, ready: true },
-  { label: "Pengiriman", href: "/dashboard/shipments", permission: permissions.shipmentRead, ready: true },
-  { label: "Zona Kurir", href: "/dashboard/courier/zones", permission: permissions.courierReadZone, ready: true },
-  { label: "POS", href: "/dashboard/pos", permission: permissions.posReadSession, ready: true },
-  { label: "Keuangan", href: "/dashboard/finance", permission: permissions.financeReadSummary, ready: true }
-];
+import { cn } from "@/lib/utils/cn";
 
 export function DashboardSidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="hidden w-64 border-r border-neutral-200 bg-white p-5 lg:block">
       <p className="text-sm font-semibold text-primary-700">UMKM Commerce OS</p>
-      <Badge className="mt-3" tone="primary">
-        Sprint 11E
-      </Badge>
       <nav className="mt-8 space-y-2 text-sm text-neutral-600">
-        {navItems.map((item) => (
+        {dashboardNavItems.map((item) => (
           <PermissionGate key={item.label} permission={item.permission}>
             {item.ready && item.href ? (
-              <Link className="block rounded-xl px-3 py-2 font-medium hover:bg-neutral-100" href={item.href}>
+              <Link
+                className={cn(
+                  "block rounded-xl px-3 py-2 font-medium transition hover:bg-neutral-100",
+                  isDashboardNavItemActive(pathname, item.href) && "bg-primary-50 text-primary-700"
+                )}
+                href={item.href}
+              >
                 {item.label}
               </Link>
             ) : (

@@ -76,9 +76,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <p className="text-sm font-semibold text-primary-300">UMKM Commerce OS</p>
           <h1 className="mt-2 text-xl font-bold">Super Admin</h1>
           <p className="mt-2 text-xs leading-5 text-neutral-400">{adminQuery.data.email}</p>
-          <Badge className="mt-4" tone="primary">
-            Sprint 10E
-          </Badge>
           <nav className="mt-8 space-y-2">
             {navItems.map((item) => (
               <Link
@@ -107,7 +104,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <p className="text-xs font-semibold text-primary-700">Super Admin</p>
                 <p className="text-sm text-neutral-500">{adminQuery.data.email}</p>
               </div>
-              <Badge tone="primary">10E</Badge>
+              <Badge tone="primary">Admin</Badge>
             </div>
             <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {navItems.map((item) => (

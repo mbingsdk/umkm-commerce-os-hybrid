@@ -7,7 +7,7 @@ export default function NotFound() {
         <p className="text-sm font-semibold text-primary-700">404</p>
         <h1 className="mt-2 text-2xl font-bold text-neutral-950">Halaman tidak ditemukan</h1>
         <p className="mt-3 text-sm text-neutral-500">
-          Fondasi aplikasinya sudah ada, tetapi halaman yang kamu cari belum tersedia.
+          Link yang kamu buka tidak tersedia atau sudah dipindahkan. Coba kembali ke beranda untuk lanjut menjelajah.
         </p>
         <Link
           href="/"
@@ -19,4 +19,3 @@ export default function NotFound() {
     </main>
   );
 }
-

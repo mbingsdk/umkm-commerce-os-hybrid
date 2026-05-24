@@ -6,6 +6,7 @@ import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorState } from "@/components/feedback/error-state";
 import { LoadingState } from "@/components/feedback/loading-state";
+import { DashboardMobileNav } from "@/components/layout/dashboard-mobile-nav";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/layout/dashboard-topbar";
 import { Button } from "@/components/ui/button";
@@ -164,6 +165,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             onLogout={() => logoutMutation.mutate()}
             isLoggingOut={logoutMutation.isPending}
           />
+          <DashboardMobileNav />
 
           <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</div>
         </div>
