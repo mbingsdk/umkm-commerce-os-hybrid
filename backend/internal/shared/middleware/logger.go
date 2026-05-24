@@ -39,13 +39,15 @@ func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 			next.ServeHTTP(wrapped, r)
 
 			latency := time.Since(start)
+			route := routePattern(r)
 			attrs := []any{
 				"request_id", httpserver.RequestIDFromContext(r.Context()),
 				"method", r.Method,
 				"path", r.URL.Path,
-				"path_template", routePattern(r),
+				"route", route,
+				"path_template", route,
 				"status", wrapped.status,
-				"latency_ms", latency.Milliseconds(),
+				"duration_ms", latency.Milliseconds(),
 				"ip", requestIP(r),
 				"user_agent", r.UserAgent(),
 			}

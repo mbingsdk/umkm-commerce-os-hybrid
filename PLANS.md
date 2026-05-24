@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 12A Deployment Assets.
+Sprint 12B Backup + Observability.
 
 ## Current Goal
 
-Prepare staging and pilot production deployment assets for Docker Compose on a VPS, including proxy examples, operational scripts, production env examples, and deployment documentation without adding business features.
+Prepare backup, restore, incident response, and logging readiness for staging and pilot production without adding business features or external monitoring services.
 
 ## Sprint 0 Tasks
 

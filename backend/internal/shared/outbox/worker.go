@@ -100,7 +100,7 @@ func (w *Worker) ProcessOnce(ctx context.Context) error {
 
 func (w *Worker) processEvent(ctx context.Context, event Event) error {
 	attrs := eventLogAttrs(event)
-	w.logger.Info("outbox event processing", attrs...)
+	w.logger.Info("outbox event processing", append(attrs, "status", event.Status)...)
 
 	if err := w.dispatcher.Handle(ctx, event); err != nil {
 		retryAt := w.now().UTC().Add(w.config.RetryDelay)
@@ -111,7 +111,7 @@ func (w *Worker) processEvent(ctx context.Context, event Event) error {
 
 		levelAttrs := append(attrs,
 			"status", updated.Status,
-			"attempts", updated.Attempts,
+			"attempts_after", updated.Attempts,
 			"error", err,
 		)
 		if updated.Status == StatusFailed {
@@ -137,6 +137,7 @@ func eventLogAttrs(event Event) []any {
 		"tenant_id", event.TenantID.String(),
 		"aggregate_type", event.AggregateType,
 		"aggregate_id", event.AggregateID.String(),
+		"attempt", event.Attempts + 1,
 		"attempts", event.Attempts,
 	}
 }

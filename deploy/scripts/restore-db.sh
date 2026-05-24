@@ -7,15 +7,19 @@ cd "$REPO_ROOT"
 
 COMPOSE_FILE="${COMPOSE_FILE:-deploy/docker-compose.prod.yml}"
 ENV_FILE="${ENV_FILE:-deploy/.env.production}"
+YES="false"
+
+case "${1:-}" in
+  --yes|-y)
+    YES="true"
+    shift
+    ;;
+esac
+
 BACKUP_FILE="${1:-}"
 
 if [ -z "$BACKUP_FILE" ]; then
-  echo "Usage: CONFIRM_RESTORE=yes $0 path/to/backup.sql.gz" >&2
-  exit 1
-fi
-
-if [ "${CONFIRM_RESTORE:-}" != "yes" ]; then
-  echo "Refusing restore without CONFIRM_RESTORE=yes." >&2
+  echo "Usage: $0 [--yes] path/to/backup.sql.gz" >&2
   exit 1
 fi
 
@@ -30,6 +34,22 @@ if [ ! -f "$BACKUP_FILE" ]; then
 fi
 
 gzip -t "$BACKUP_FILE"
+
+cat >&2 <<'EOF'
+WARNING: database restore is destructive.
+- Do not run this blindly on production.
+- Test the backup on staging first whenever possible.
+- API and worker will be stopped to prevent writes during restore.
+EOF
+
+if [ "$YES" != "true" ]; then
+  printf "Type RESTORE to continue: " >&2
+  read -r CONFIRM
+  if [ "$CONFIRM" != "RESTORE" ]; then
+    echo "Restore cancelled." >&2
+    exit 1
+  fi
+fi
 
 echo "Stopping API and worker before restore to prevent writes..."
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" stop api worker

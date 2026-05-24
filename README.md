@@ -244,8 +244,10 @@ Create a compressed PostgreSQL backup before every deploy and daily during pilot
 Restore is intentionally guarded:
 
 ```bash
-CONFIRM_RESTORE=yes ./deploy/scripts/restore-db.sh backups/database/daily/umkm_os_db_YYYYMMDD_HHMMSS.sql.gz
+./deploy/scripts/restore-db.sh backups/database/daily/umkm_os_db_YYYYMMDD_HHMMSS.sql.gz
 ```
+
+Use `--yes` only for controlled non-interactive emergency automation after approval.
 
 Always test restore on staging before touching production. Uploaded files are stored in the named Docker volume `uploads_data`; include that volume in VPS backup planning if local upload storage is used.
 
@@ -291,7 +293,7 @@ ORDER BY p.created_at DESC, p.id DESC
 LIMIT 21;
 ```
 
-When a slow request warning appears in API logs, use `request_id`, method, `path_template`, status, and `latency_ms` to choose the matching query family above.
+When a slow request warning appears in API logs, use `request_id`, method, `path_template`, status, and `duration_ms` to choose the matching query family above.
 
 ## Repository structure
 
