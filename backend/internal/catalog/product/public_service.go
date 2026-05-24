@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/store"
 )
 
@@ -131,8 +132,8 @@ func (s *PublicService) Get(ctx context.Context, storeSlug string, productSlug s
 }
 
 func normalizePublicFilters(filters PublicListFilters) PublicListFilters {
-	filters.Query = strings.TrimSpace(filters.Query)
-	filters.CategorySlug = strings.TrimSpace(filters.CategorySlug)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
+	filters.CategorySlug = querytext.NormalizeSearch(filters.CategorySlug)
 	if filters.Limit <= 0 {
 		filters.Limit = defaultPublicLimit
 	}

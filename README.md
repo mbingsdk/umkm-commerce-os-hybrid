@@ -90,6 +90,35 @@ cd backend
 go test ./...
 ```
 
+## Query/index audit helpers
+
+For slow endpoint investigation, run `EXPLAIN (ANALYZE, BUFFERS)` locally against a dev database with representative tenant/store data. Do not paste production customer data or full query parameter values into logs or tickets.
+
+Recommended first-pass queries to inspect:
+
+- public product listing/detail: products + categories + product_images + stock snapshots
+- discovery stores/products/search: stores, tenants, products, categories, featured discovery
+- dashboard product/order lists: tenant/store/status/search/date filters
+- inventory stock list and POS product search
+- finance summary: paid online orders, completed POS transactions, non-deleted expenses
+- admin tenant list: tenants, plan, primary store, owner lookup, count snippets
+
+Example local workflow:
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT p.id, p.name, p.slug
+FROM products p
+WHERE p.tenant_id = '00000000-0000-0000-0000-000000000000'
+  AND p.store_id = '00000000-0000-0000-0000-000000000000'
+  AND p.status = 'active'
+  AND p.deleted_at IS NULL
+ORDER BY p.created_at DESC, p.id DESC
+LIMIT 21;
+```
+
+When a slow request warning appears in API logs, use `request_id`, method, `path_template`, status, and `latency_ms` to choose the matching query family above.
+
 ## Repository structure
 
 ```txt

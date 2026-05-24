@@ -99,6 +99,7 @@ type ListFilters struct {
 	Query      string
 	Status     *string
 	CategoryID *uuid.UUID
+	Limit      int
 }
 
 type CreateImageParams struct {

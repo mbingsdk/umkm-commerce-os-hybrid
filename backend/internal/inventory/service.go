@@ -11,6 +11,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/audit"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 )
 
 const (
@@ -420,7 +421,7 @@ func (s *Service) insertStockAdjustedEvent(ctx context.Context, tx db.Tx, snapsh
 }
 
 func normalizeStockFilters(filters ListStockFilters) ListStockFilters {
-	filters.Query = strings.TrimSpace(filters.Query)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
 	if filters.Limit <= 0 {
 		filters.Limit = defaultListLimit
 	}

@@ -34,6 +34,7 @@ func NewRouter(deps *Dependencies) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(sharedmw.RequestID)
+	r.Use(sharedmw.RequestTimeout(15 * time.Second))
 	r.Use(sharedmw.Logger(deps.Logger))
 	r.Use(sharedmw.Recover(deps.Logger))
 	r.Use(sharedmw.CORS(deps.Config.CORSAllowedOrigins))

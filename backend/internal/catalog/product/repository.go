@@ -78,10 +78,11 @@ func (r *Repository) List(
 			OR p.name ILIKE '%' || $5 || '%'
 			OR COALESCE(p.description, '') ILIKE '%' || $5 || '%'
 		  )
-		ORDER BY p.created_at DESC
+		ORDER BY p.created_at DESC, p.id DESC
+		LIMIT $6
 	`
 
-	rows, err := q.Query(ctx, query, tenantID, storeID, filters.Status, filters.CategoryID, filters.Query)
+	rows, err := q.Query(ctx, query, tenantID, storeID, filters.Status, filters.CategoryID, filters.Query, filters.Limit)
 	if err != nil {
 		return nil, err
 	}

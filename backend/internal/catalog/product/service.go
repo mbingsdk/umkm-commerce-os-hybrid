@@ -12,9 +12,15 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	plans "github.com/sdkdev/umkm-commerce-os/backend/internal/shared/plan"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 )
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+
+const (
+	defaultListLimit = 20
+	maxListLimit     = 100
+)
 
 type database interface {
 	db.Queryer
@@ -124,15 +130,22 @@ func (s *Service) List(
 	tenantID uuid.UUID,
 	storeID uuid.UUID,
 	filters ListFilters,
-) ([]ListItemResponse, error) {
+) ([]ListItemResponse, PaginationMeta, error) {
 	if err := validateScope(tenantID, storeID); err != nil {
-		return nil, err
+		return nil, PaginationMeta{}, err
 	}
-	filters.Query = strings.TrimSpace(filters.Query)
+	filters = normalizeListFilters(filters)
+	queryFilters := filters
+	queryFilters.Limit = filters.Limit + 1
 
-	items, err := s.products.List(ctx, s.db, tenantID, storeID, filters)
+	items, err := s.products.List(ctx, s.db, tenantID, storeID, queryFilters)
 	if err != nil {
-		return nil, apperror.Internal(err)
+		return nil, PaginationMeta{}, apperror.Internal(err)
+	}
+
+	hasMore := len(items) > filters.Limit
+	if hasMore {
+		items = items[:filters.Limit]
 	}
 
 	response := make([]ListItemResponse, 0, len(items))
@@ -140,7 +153,10 @@ func (s *Service) List(
 		response = append(response, NewListItemResponse(&items[idx]))
 	}
 
-	return response, nil
+	return response, PaginationMeta{Pagination: Pagination{
+		Limit:   filters.Limit,
+		HasMore: hasMore,
+	}}, nil
 }
 
 func (s *Service) Create(
@@ -465,6 +481,17 @@ func (s *Service) validateCategory(
 		return apperror.Internal(err)
 	}
 	return nil
+}
+
+func normalizeListFilters(filters ListFilters) ListFilters {
+	filters.Query = querytext.NormalizeSearch(filters.Query)
+	if filters.Limit <= 0 {
+		filters.Limit = defaultListLimit
+	}
+	if filters.Limit > maxListLimit {
+		filters.Limit = maxListLimit
+	}
+	return filters
 }
 
 func validateCreate(input CreateInput) (CreateInput, error) {

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 11C Race + Idempotency Tests.
+Sprint 11D Performance + Query Audit.
 
 ## Current Goal
 
-Add PostgreSQL-backed slow tests for checkout/POS race safety, idempotency replay/conflict behavior, payment/cancel consistency, outbox worker concurrency, and critical transaction rollback.
+Audit high-traffic backend queries, add safe pagination/search bounds, improve slow-request observability, document local EXPLAIN workflow, and add performance-oriented indexes without weakening tenant isolation.
 
 ## Sprint 0 Tasks
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 )
 
 const (
@@ -167,17 +168,17 @@ func (s *Service) Search(ctx context.Context, filters SearchFilters) (SearchResp
 }
 
 func normalizeStoreFilters(filters ListStoresFilters) ListStoresFilters {
-	filters.Query = strings.TrimSpace(filters.Query)
-	filters.City = strings.TrimSpace(filters.City)
-	filters.Category = strings.TrimSpace(filters.Category)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
+	filters.City = querytext.NormalizeSearch(filters.City)
+	filters.Category = querytext.NormalizeSearch(filters.Category)
 	filters.Limit = normalizeLimit(filters.Limit)
 	return filters
 }
 
 func normalizeProductFilters(filters ListProductsFilters) (ListProductsFilters, error) {
-	filters.Query = strings.TrimSpace(filters.Query)
-	filters.City = strings.TrimSpace(filters.City)
-	filters.Category = strings.TrimSpace(filters.Category)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
+	filters.City = querytext.NormalizeSearch(filters.City)
+	filters.Category = querytext.NormalizeSearch(filters.Category)
 	filters.Limit = normalizeLimit(filters.Limit)
 	if filters.PriceMin != nil && *filters.PriceMin < 0 {
 		return ListProductsFilters{}, invalidField("price_min", "price_min must be greater than or equal to zero")
@@ -192,9 +193,9 @@ func normalizeProductFilters(filters ListProductsFilters) (ListProductsFilters, 
 }
 
 func normalizeSearchFilters(filters SearchFilters) (SearchFilters, error) {
-	filters.Query = strings.TrimSpace(filters.Query)
-	filters.City = strings.TrimSpace(filters.City)
-	filters.Category = strings.TrimSpace(filters.Category)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
+	filters.City = querytext.NormalizeSearch(filters.City)
+	filters.Category = querytext.NormalizeSearch(filters.Category)
 	filters.Type = strings.TrimSpace(filters.Type)
 	if filters.Type == "" {
 		filters.Type = SearchTypeAll

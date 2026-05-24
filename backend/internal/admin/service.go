@@ -13,6 +13,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 )
 
 const (
@@ -569,7 +570,7 @@ func (s *Service) insertPlanEvent(ctx context.Context, tx db.Tx, eventType strin
 
 func normalizeTenantListFilters(filters TenantListFilters) (TenantListFilters, error) {
 	filters.Status = strings.TrimSpace(filters.Status)
-	filters.Query = strings.TrimSpace(filters.Query)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
 	if filters.Status != "" && !allowedTenantStatus(filters.Status) {
 		return TenantListFilters{}, invalidField("status", "status must be active, trialing, suspended, or cancelled")
 	}

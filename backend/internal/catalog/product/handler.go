@@ -3,6 +3,7 @@ package product
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -39,13 +40,13 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.service.List(r.Context(), currentTenant.TenantID, currentTenant.StoreID, filters)
+	result, meta, err := h.service.List(r.Context(), currentTenant.TenantID, currentTenant.StoreID, filters)
 	if err != nil {
 		httpserver.WriteError(w, r, h.logger, err)
 		return
 	}
 
-	httpserver.WriteOK(w, "OK", result)
+	httpserver.WriteOKWithMeta(w, "OK", result, meta)
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -199,6 +200,15 @@ func filtersFromRequest(r *http.Request) (ListFilters, error) {
 			})
 		}
 		filters.CategoryID = &categoryID
+	}
+	if rawLimit := strings.TrimSpace(r.URL.Query().Get("limit")); rawLimit != "" {
+		limit, err := strconv.Atoi(rawLimit)
+		if err != nil || limit <= 0 {
+			return ListFilters{}, apperror.Validation("Validation failed", []map[string]string{
+				{"field": "limit", "message": "limit must be a positive integer"},
+			})
+		}
+		filters.Limit = limit
 	}
 	return filters, nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/db"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/apperror"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 )
 
 const (
@@ -525,7 +526,7 @@ func (s *Service) insertStatusUpdatedEvent(
 }
 
 func normalizeListFilters(filters ListFilters) (ListFilters, error) {
-	filters.Query = strings.TrimSpace(filters.Query)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
 	if filters.Status != nil {
 		status := strings.TrimSpace(*filters.Status)
 		if !knownStatus(status) {

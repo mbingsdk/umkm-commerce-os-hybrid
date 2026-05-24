@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/platform/httpserver"
 )
 
@@ -37,17 +38,51 @@ func Logger(logger *slog.Logger) func(http.Handler) http.Handler {
 
 			next.ServeHTTP(wrapped, r)
 
-			logger.Info("http request",
+			latency := time.Since(start)
+			attrs := []any{
 				"request_id", httpserver.RequestIDFromContext(r.Context()),
 				"method", r.Method,
 				"path", r.URL.Path,
+				"path_template", routePattern(r),
 				"status", wrapped.status,
-				"latency_ms", time.Since(start).Milliseconds(),
+				"latency_ms", latency.Milliseconds(),
 				"ip", requestIP(r),
 				"user_agent", r.UserAgent(),
-			)
+			}
+			if latency >= slowRequestThreshold(r) {
+				logger.Warn("slow http request", attrs...)
+				return
+			}
+
+			logger.Info("http request", attrs...)
 		})
 	}
+}
+
+func routePattern(r *http.Request) string {
+	if rctx := chi.RouteContext(r.Context()); rctx != nil {
+		if pattern := rctx.RoutePattern(); pattern != "" {
+			return pattern
+		}
+	}
+	return r.URL.Path
+}
+
+func slowRequestThreshold(r *http.Request) time.Duration {
+	path := r.URL.Path
+	if r.Method == http.MethodPost && strings.Contains(path, "/checkout") {
+		return 1500 * time.Millisecond
+	}
+	if r.Method == http.MethodPost && path == "/api/v1/pos/transactions" {
+		return 1000 * time.Millisecond
+	}
+	if strings.HasPrefix(path, "/api/v1/admin/") {
+		return 1000 * time.Millisecond
+	}
+	if r.Method == http.MethodGet && strings.HasPrefix(path, "/api/v1/public/") {
+		return 500 * time.Millisecond
+	}
+	return 800 * time.Millisecond
 }
 
 func requestIP(r *http.Request) string {

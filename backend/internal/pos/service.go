@@ -19,6 +19,7 @@ import (
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/idempotency"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/outbox"
 	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/permission"
+	"github.com/sdkdev/umkm-commerce-os/backend/internal/shared/querytext"
 )
 
 const maxSessionNoteLength = 500
@@ -783,8 +784,8 @@ func canAccessAnyPOSSession(role string) bool {
 }
 
 func normalizeProductFilters(filters ProductSearchFilters) ProductSearchFilters {
-	filters.Query = strings.TrimSpace(filters.Query)
-	filters.Barcode = strings.TrimSpace(filters.Barcode)
+	filters.Query = querytext.NormalizeSearch(filters.Query)
+	filters.Barcode = querytext.NormalizeSearch(filters.Barcode)
 	if filters.Limit <= 0 {
 		filters.Limit = defaultPOSListLimit
 	}

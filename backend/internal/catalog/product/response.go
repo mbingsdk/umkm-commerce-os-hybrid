@@ -17,6 +17,15 @@ type ImageResponse struct {
 	SortOrder int       `json:"sort_order"`
 }
 
+type PaginationMeta struct {
+	Pagination Pagination `json:"pagination"`
+}
+
+type Pagination struct {
+	Limit   int  `json:"limit"`
+	HasMore bool `json:"has_more"`
+}
+
 type ListItemResponse struct {
 	ID              uuid.UUID     `json:"id"`
 	CategoryID      *uuid.UUID    `json:"category_id"`
