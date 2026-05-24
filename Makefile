@@ -27,6 +27,9 @@ backend-worker:
 backend-migrate:
 	cd backend && go run ./cmd/migrate up
 
+backend-seed:
+	cd backend && go run ./cmd/seed
+
 frontend-install:
 	cd frontend && npm install
 

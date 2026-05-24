@@ -30,3 +30,5 @@ docs/*
 !docs/qa/**
 !docs/ops/
 !docs/ops/**
+!docs/pilot/
+!docs/pilot/**

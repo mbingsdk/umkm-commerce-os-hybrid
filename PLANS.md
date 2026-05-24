@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 12B Backup + Observability.
+Sprint 12C Demo Seed + Pilot Onboarding.
 
 ## Current Goal
 
-Prepare backup, restore, incident response, and logging readiness for staging and pilot production without adding business features or external monitoring services.
+Prepare guarded, idempotent demo seed data and pilot onboarding assets so staging and demo environments can be exercised consistently without creating production fake orders or changing business logic.
 
 ## Sprint 0 Tasks
 
