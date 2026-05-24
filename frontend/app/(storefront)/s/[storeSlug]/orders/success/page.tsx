@@ -53,13 +53,21 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
               "Silakan tunggu instruksi pembayaran manual dari toko. Jika perlu lebih cepat, hubungi toko melalui kontak yang tersedia."}
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
               href={`/s/${storeSlug}`}
             >
               Lanjut Belanja
             </Link>
+            {orderNumber ? (
+              <Link
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-primary-200 bg-primary-50 px-4 text-sm font-semibold text-primary-800 transition hover:bg-primary-100"
+                href={`/s/${storeSlug}/orders/${encodeURIComponent(orderNumber)}/payment-confirmation`}
+              >
+                Konfirmasi pembayaran
+              </Link>
+            ) : null}
             <Link
               className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
               href={`/s/${storeSlug}/cart`}
