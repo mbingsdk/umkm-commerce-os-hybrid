@@ -138,7 +138,7 @@ export function AggregateChips({
             <Link
               key={`${type}-${value}`}
               href={href}
-              className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-primary-300 hover:text-primary-700"
+              className="inline-flex min-h-11 items-center rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-primary-300 hover:text-primary-700"
             >
               {label} <span className="text-neutral-400">({item.count})</span>
             </Link>
@@ -163,7 +163,7 @@ export function PaginationLinks({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <LinkButton href={buildHref(basePath, { ...searchParams, cursor: undefined })}>Reset halaman</LinkButton>
       <p className="text-sm text-neutral-500">Menampilkan maksimal {pagination.limit} item.</p>
       {pagination.hasMore && pagination.nextCursor ? (
@@ -201,12 +201,12 @@ export function FilterBar({
   return (
     <form className="grid gap-3 rounded-2xl border border-neutral-200 bg-white p-4 lg:grid-cols-[1.2fr_180px_180px_auto]" action={action}>
       <input
-        className="h-10 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+        className="h-11 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
         defaultValue={query}
         name="q"
         placeholder="Cari nama, produk, atau toko..."
       />
-      <select className="h-10 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" defaultValue={city} name="city">
+      <select className="h-11 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" defaultValue={city} name="city">
         <option value="">Semua kota</option>
         {cities.map((item) =>
           item.city ? (
@@ -216,7 +216,7 @@ export function FilterBar({
           ) : null
         )}
       </select>
-      <select className="h-10 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" defaultValue={category} name="category">
+      <select className="h-11 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100" defaultValue={category} name="category">
         <option value="">Semua kategori</option>
         {categories.map((item) =>
           item.slug ? (
@@ -229,7 +229,7 @@ export function FilterBar({
       {showPrice ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:col-span-3">
           <input
-            className="h-10 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            className="h-11 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
             defaultValue={priceMin}
             min={0}
             name="price_min"
@@ -237,7 +237,7 @@ export function FilterBar({
             type="number"
           />
           <input
-            className="h-10 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            className="h-11 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
             defaultValue={priceMax}
             min={0}
             name="price_max"
@@ -246,7 +246,7 @@ export function FilterBar({
           />
         </div>
       ) : null}
-      <Button type="submit">Terapkan</Button>
+      <Button className="h-11 w-full lg:w-auto" type="submit">Terapkan</Button>
     </form>
   );
 }
@@ -259,7 +259,7 @@ function SectionHeader({ title, description, href }: { title: string; descriptio
         <p className="mt-1 text-sm leading-6 text-neutral-500">{description}</p>
       </div>
       {href ? (
-        <Link className="text-sm font-semibold text-primary-700 hover:text-primary-800" href={href}>
+        <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-primary-700 hover:text-primary-800" href={href}>
           Lihat semua →
         </Link>
       ) : null}
@@ -281,8 +281,8 @@ function LinkButton({
       href={href}
       className={
         variant === "primary"
-          ? "inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
-          : "inline-flex h-10 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
+          ? "inline-flex h-11 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+          : "inline-flex h-11 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
       }
     >
       {children}

@@ -1,4 +1,4 @@
-import type { PublicProductDetail } from "@/features/storefront/types";
+import type { PublicProductDetail, PublicStore } from "@/features/storefront/types";
 
 export function toAbsoluteURL(value?: string) {
   if (!value) {
@@ -39,6 +39,37 @@ export function buildProductJsonLd(product: PublicProductDetail) {
       priceCurrency: "IDR",
       url: productURL
     }
+  };
+}
+
+export function buildStoreJsonLd(store: PublicStore) {
+  const storeURL = `${getSiteURL()}/s/${store.slug}`;
+  const description =
+    store.seo?.description ??
+    store.description ??
+    `${store.name}${store.city ? ` di ${store.city}` : ""} di UMKM Commerce OS.`;
+  const image = toAbsoluteURL(store.bannerUrl ?? store.logoUrl);
+  const logo = toAbsoluteURL(store.logoUrl);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: store.name,
+    description,
+    url: storeURL,
+    ...(image ? { image } : {}),
+    ...(logo ? { logo } : {}),
+    ...(store.phone || store.whatsapp ? { telephone: store.phone ?? store.whatsapp } : {}),
+    ...(store.city || store.province
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: store.city,
+            addressRegion: store.province,
+            addressCountry: "ID"
+          }
+        }
+      : {})
   };
 }
 

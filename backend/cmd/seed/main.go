@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	demoPassword = "demo-password-change-me"
+	demoPassword = "demopassword"
 )
 
 type demoSeed struct {

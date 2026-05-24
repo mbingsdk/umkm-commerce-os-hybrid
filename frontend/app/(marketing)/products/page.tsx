@@ -8,15 +8,17 @@ import {
   PaginationLinks,
   ProductSection
 } from "@/features/discovery/components/discovery-sections";
+import { publicPageMetadata } from "@/lib/seo/metadata";
 
 type ProductsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: "Produk UMKM",
-  description: "Cari produk aktif dari storefront UMKM yang tampil di discovery platform."
-};
+  description: "Cari produk aktif dari storefront UMKM yang tampil di discovery platform.",
+  path: "/products"
+});
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams;

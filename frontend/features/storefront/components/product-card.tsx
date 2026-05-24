@@ -73,7 +73,7 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
             quantity: 1
           }}
           label="Tambah"
-          size="sm"
+          size="md"
           className="w-full"
         />
       </div>

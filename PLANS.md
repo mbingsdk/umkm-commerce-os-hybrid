@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 12C Demo Seed + Pilot Onboarding.
+Sprint 12D SEO + UI Polish.
 
 ## Current Goal
 
-Prepare guarded, idempotent demo seed data and pilot onboarding assets so staging and demo environments can be exercised consistently without creating production fake orders or changing business logic.
+Finalize public SEO assets, sitemap, robots, safe structured data, and low-risk UI polish for pilot readiness without adding business features or exposing private dashboard/admin data.
 
 ## Sprint 0 Tasks
 

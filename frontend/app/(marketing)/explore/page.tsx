@@ -10,11 +10,13 @@ import {
   ProductSection,
   StoreSection
 } from "@/features/discovery/components/discovery-sections";
+import { publicPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: "Explore UMKM - Toko dan Produk Lokal",
-  description: "Jelajahi toko dan produk publik dari tenant UMKM Commerce OS."
-};
+  description: "Jelajahi toko dan produk publik dari tenant UMKM Commerce OS.",
+  path: "/explore"
+});
 
 export default async function ExplorePage() {
   const [home, stores, products] = await Promise.all([

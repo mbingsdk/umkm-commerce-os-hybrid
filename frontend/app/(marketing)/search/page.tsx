@@ -4,15 +4,17 @@ import { EmptyState } from "@/components/feedback/empty-state";
 import { Button } from "@/components/ui/button";
 import { searchDiscovery } from "@/features/discovery/api/discovery.api";
 import { DiscoveryProductCard, DiscoveryStoreCard } from "@/features/discovery/components/discovery-cards";
+import { publicPageMetadata } from "@/lib/seo/metadata";
 
 type SearchPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicPageMetadata({
   title: "Cari Produk dan Toko UMKM",
-  description: "Cari produk dan toko publik di UMKM Commerce OS."
-};
+  description: "Cari produk dan toko publik di UMKM Commerce OS.",
+  path: "/search"
+});
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
@@ -41,13 +43,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
         <form className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:flex-row" action="/search">
           <input
-            className="h-10 min-w-0 flex-1 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
             defaultValue={query}
             name="q"
             placeholder="Cari produk atau toko..."
           />
           <input name="type" type="hidden" value={type} />
-          <Button type="submit">Cari</Button>
+          <Button className="h-11" type="submit">Cari</Button>
         </form>
 
         <div className="flex flex-wrap gap-2">
@@ -105,8 +107,8 @@ function TabLink({ active, href, label }: { active: boolean; href: string; label
       href={href}
       className={
         active
-          ? "rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white"
-          : "rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-primary-300 hover:text-primary-700"
+          ? "inline-flex min-h-11 items-center rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white"
+          : "inline-flex min-h-11 items-center rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-primary-300 hover:text-primary-700"
       }
     >
       {label}

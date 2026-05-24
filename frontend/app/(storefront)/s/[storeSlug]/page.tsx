@@ -12,7 +12,7 @@ import {
 import { ProductCard } from "@/features/storefront/components/product-card";
 import { SafeImage } from "@/features/storefront/components/safe-image";
 import { ShareLinkButton } from "@/features/storefront/components/share-link-button";
-import { getSiteURL, toAbsoluteURL } from "@/features/storefront/seo";
+import { buildStoreJsonLd, getSiteURL, serializeJsonLd, toAbsoluteURL } from "@/features/storefront/seo";
 import type {
   PublicCategory,
   PublicProductListResult,
@@ -92,9 +92,15 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
 
   const selectedCategory = categories.find((category) => category.slug === categorySlug);
   const whatsappHref = buildWhatsappHref(store.whatsapp);
+  const storeJsonLd = buildStoreJsonLd(store);
 
   return (
     <main>
+      <script
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(storeJsonLd) }}
+        type="application/ld+json"
+      />
+
       <section className="border-b border-neutral-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-primary-700 via-primary-700 to-neutral-950 text-white shadow-soft">
