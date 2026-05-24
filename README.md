@@ -148,6 +148,122 @@ Toko Bunga Ayu, Makassar, demo bouquet products, courier zones, and an open cash
 
 By default it refuses non-local URLs. Use `-AllowNonLocal` only for disposable staging.
 
+## Staging and pilot production deployment
+
+Sprint 12A adds Docker Compose deployment assets under `deploy/` for a small VPS-based staging or pilot production environment. Caddy is the preferred MVP reverse proxy because it manages TLS certificates automatically.
+
+### Required VPS packages
+
+Install the minimum runtime tools on an Ubuntu/Debian VPS:
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl git
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker "$USER"
+```
+
+Log out and back in after adding the Docker group. Then verify:
+
+```bash
+docker version
+docker compose version
+```
+
+### Required environment variables
+
+Copy the production env example and replace all placeholders:
+
+```bash
+cp deploy/.env.production.example deploy/.env.production
+chmod 600 deploy/.env.production
+```
+
+Required values include:
+
+- `APP_DOMAIN`, `API_DOMAIN`, and `ACME_EMAIL`
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `CORS_ALLOWED_ORIGINS`
+- `STORAGE_PUBLIC_URL`
+- `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_SITE_URL`
+
+Do not commit `deploy/.env.production`. PostgreSQL is intentionally not exposed with a public host port in `deploy/docker-compose.prod.yml`.
+
+### Build or push images
+
+For a simple VPS pilot, Compose can build images directly from the repository:
+
+```bash
+docker compose --env-file deploy/.env.production -f deploy/docker-compose.prod.yml build
+```
+
+If using a registry, set `API_IMAGE` and `FRONTEND_IMAGE` in `deploy/.env.production`, then push from CI or your workstation:
+
+```bash
+docker build -t "$API_IMAGE" ./backend
+docker build \
+  --build-arg NEXT_PUBLIC_API_BASE_URL="https://api.example.com" \
+  --build-arg NEXT_PUBLIC_SITE_URL="https://app.example.com" \
+  -t "$FRONTEND_IMAGE" ./frontend
+docker push "$API_IMAGE"
+docker push "$FRONTEND_IMAGE"
+```
+
+### First deploy
+
+From the repository root on the VPS:
+
+```bash
+chmod +x deploy/scripts/*.sh
+./deploy/scripts/deploy.sh
+```
+
+Run migrations after PostgreSQL is healthy:
+
+```bash
+./deploy/scripts/migrate.sh
+```
+
+Then check health:
+
+```bash
+./deploy/scripts/check-health.sh
+docker compose --env-file deploy/.env.production -f deploy/docker-compose.prod.yml ps
+```
+
+### Backups and restore
+
+Create a compressed PostgreSQL backup before every deploy and daily during pilot:
+
+```bash
+./deploy/scripts/backup-db.sh
+```
+
+Restore is intentionally guarded:
+
+```bash
+CONFIRM_RESTORE=yes ./deploy/scripts/restore-db.sh backups/database/daily/umkm_os_db_YYYYMMDD_HHMMSS.sql.gz
+```
+
+Always test restore on staging before touching production. Uploaded files are stored in the named Docker volume `uploads_data`; include that volume in VPS backup planning if local upload storage is used.
+
+### Rollback basics
+
+For application-only rollback:
+
+1. Set `API_IMAGE` and `FRONTEND_IMAGE` in `deploy/.env.production` to the previous known-good tags.
+2. Run:
+
+   ```bash
+   docker compose --env-file deploy/.env.production -f deploy/docker-compose.prod.yml pull
+   docker compose --env-file deploy/.env.production -f deploy/docker-compose.prod.yml up -d
+   ./deploy/scripts/check-health.sh
+   ```
+
+Do not restore the database for an app rollback unless the incident runbook says data is damaged and a restore has been approved.
+
 ## Query/index audit helpers
 
 For slow endpoint investigation, run `EXPLAIN (ANALYZE, BUFFERS)` locally against a dev database with representative tenant/store data. Do not paste production customer data or full query parameter values into logs or tickets.

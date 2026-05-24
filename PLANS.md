@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 11F QA Scripts + API Test Collection.
+Sprint 12A Deployment Assets.
 
 ## Current Goal
 
-Prepare pilot QA scripts, security/race test scripts, and a local API smoke collection so MVP flows can be verified consistently without adding new business features.
+Prepare staging and pilot production deployment assets for Docker Compose on a VPS, including proxy examples, operational scripts, production env examples, and deployment documentation without adding business features.
 
 ## Sprint 0 Tasks
 

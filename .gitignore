@@ -2,12 +2,14 @@
 .env
 .env.*
 !.env.example
+!deploy/.env.production.example
 
 # Go
 backend/bin/
 backend/tmp/
 backend/coverage.out
 backend/uploads/
+backups/
 
 # Node / Next.js
 frontend/node_modules/
