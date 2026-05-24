@@ -1,18 +1,17 @@
 # UMKM Commerce OS Hybrid
 
-Initial monorepo foundation for **UMKM Commerce OS Hybrid**, a multi-tenant SaaS commerce platform for Indonesian UMKM.
+**UMKM Commerce OS Hybrid** is a multi-tenant SaaS commerce platform for Indonesian UMKM. The MVP pilot combines tenant storefronts, platform discovery, online checkout, inventory, order management, POS/kasir, basic finance, local courier, and super admin operations in one monorepo.
 
-This repository currently contains only the Sprint 0 foundation:
+This repository contains the pilot-ready application foundation and release assets:
 
-- `backend/` -> Go modular-monolith scaffold
-- `frontend/` -> Next.js App Router scaffold
-- `docker-compose.yml` -> local PostgreSQL development service
-- root tooling for common local commands
+- `backend/` - Go modular monolith with PostgreSQL, chi, pgx, slog, idempotency, and outbox foundations.
+- `frontend/` - Next.js App Router with TypeScript, Tailwind CSS, TanStack Query, and Zustand.
+- `deploy/` - Docker Compose, Caddy, migration, backup, restore, and health-check assets for VPS deployment.
+- `docs/qa/`, `docs/ops/`, `docs/pilot/`, and `docs/release/` - QA scripts, operations runbooks, pilot guides, and release checklists.
 
-Business features such as auth, checkout, POS, payment confirmation, finance, discovery, and admin are intentionally **not implemented yet**.
+Pilot scope is intentionally controlled: manual payment, online-first POS, one-store checkout, basic finance estimates, basic courier, and no marketplace sync or payment gateway yet.
 
 ## Prerequisites
-
 - Go 1.23+
 - Node.js 20+
 - npm
@@ -34,11 +33,14 @@ Business features such as auth, checkout, POS, payment confirmation, finance, di
    docker compose up -d postgres
    ```
 
-3. Verify the backend scaffold:
+3. Run backend checks, migrations, and the API:
 
    ```powershell
    cd backend
    go test ./...
+   go run ./cmd/migrate up
+   # Optional non-production demo seed
+   go run ./cmd/seed
    go run ./cmd/api
    ```
 
@@ -65,7 +67,7 @@ Business features such as auth, checkout, POS, payment confirmation, finance, di
 | `make db-logs` | Follow PostgreSQL logs |
 | `make backend-test` | Run Go tests |
 | `make backend-build` | Compile backend scaffold |
-| `make backend-run` | Run the backend placeholder entrypoint |
+| `make backend-run` | Run the backend API locally |
 | `make frontend-install` | Install frontend dependencies |
 | `make frontend-dev` | Start Next.js dev server |
 | `make frontend-build` | Build frontend |
@@ -147,6 +149,20 @@ Toko Bunga Ayu, Makassar, demo bouquet products, courier zones, and an open cash
 ```
 
 By default it refuses non-local URLs. Use `-AllowNonLocal` only for disposable staging.
+
+## Release candidate docs
+
+Sprint 12E release readiness lives in these files:
+
+| File | Purpose |
+|---|---|
+| `RELEASE_CHECKLIST.md` | Final release candidate gate covering tests, migrations, seed, smoke tests, deployment, backup/restore, rollback, and SEO. |
+| `RELEASE_NOTES.md` | `v1.0.0-pilot` release note, pilot-ready areas, and operational notes. |
+| `docs/release/staging-deploy-checklist.md` | Staging deployment rehearsal checklist. |
+| `docs/release/production-deploy-checklist.md` | Controlled pilot production deployment checklist. |
+| `docs/release/pilot-go-live-checklist.md` | Tenant onboarding and go-live readiness checklist. |
+| `docs/release/known-limitations.md` | Explicit MVP limitations: manual payment, no offline POS, no payment gateway, no marketplace sync, no custom domain, and finance estimate caveats. |
+| `docs/release/pilot-support-playbook.md` | Support triage, tenant feedback, stock/order inconsistency handling, and safe tenant pause flow. |
 
 ## Staging and pilot production deployment
 
@@ -299,30 +315,39 @@ When a slow request warning appears in API logs, use `request_id`, method, `path
 
 ```txt
 .
-├─ backend/
-│  ├─ cmd/
-│  ├─ internal/
-│  ├─ migrations/
-│  ├─ seeds/
-│  └─ tests/
-├─ frontend/
-│  ├─ app/
-│  ├─ components/
-│  ├─ features/
-│  └─ lib/
-├─ docker-compose.yml
-├─ Makefile
-└─ README.md
+|-- backend/
+|   |-- cmd/
+|   |-- internal/
+|   |-- migrations/
+|   |-- seeds/
+|   `-- tests/
+|-- deploy/
+|-- docs/
+|   |-- ops/
+|   |-- pilot/
+|   |-- qa/
+|   `-- release/
+|-- frontend/
+|   |-- app/
+|   |-- components/
+|   |-- features/
+|   `-- lib/
+|-- docker-compose.yml
+|-- Makefile
+`-- README.md
 ```
 
-## Scope boundary for this foundation
+## MVP pilot scope and limitations
 
-The scaffold reserves clear places for later implementation, but it does not yet add:
+The current release candidate is intended for controlled pilot usage. It includes the core MVP flows, release documentation, and deployment assets, but it is not a broad public production launch.
 
-- tenant/auth logic
-- database migrations
-- business repositories or services
-- checkout/order/POS/payment flows
-- finance/discovery/admin behavior
+Important limitations are tracked in `docs/release/known-limitations.md`, including:
 
-Those belong to the later sprints defined in `PLANS.md` and the project docs.
+- manual payment only
+- no offline POS
+- no payment gateway
+- no marketplace sync
+- no custom domain support
+- finance `net_estimate` excludes detailed HPP/COGS
+
+Do not put production secrets or real customer data in repository docs, QA scripts, or committed environment files.

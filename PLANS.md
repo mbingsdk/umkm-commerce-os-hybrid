@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 12D SEO + UI Polish.
+Sprint 12E Release Candidate.
 
 ## Current Goal
 
-Finalize public SEO assets, sitemap, robots, safe structured data, and low-risk UI polish for pilot readiness without adding business features or exposing private dashboard/admin data.
+Prepare release candidate documentation, deployment checklists, pilot go-live readiness, known limitations, and support playbook for v1.0.0-pilot without adding business features.
 
 ## Sprint 0 Tasks
 
