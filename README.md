@@ -90,6 +90,64 @@ cd backend
 go test ./...
 ```
 
+## Frontend quality checks
+
+Run these before a UI or frontend API-client change:
+
+```powershell
+cd frontend
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run build
+```
+
+## Manual QA and API smoke collection
+
+Sprint 11F adds manual QA scripts under `docs/qa/`:
+
+| File | Purpose |
+|---|---|
+| `docs/qa/pilot-test-script.md` | End-to-end pilot flow from owner onboarding through storefront, checkout, POS, finance, courier, discovery, and admin suspend/activate. |
+| `docs/qa/security-test-script.md` | Tenant isolation, permission matrix, admin guard, public data leak, upload validation, and rate-limit checks. |
+| `docs/qa/race-test-script.md` | Last-stock checkout/POS, idempotency, payment/cancel race, outbox worker concurrency, and rollback checks. |
+| `docs/qa/umkm-commerce-os.postman_collection.json` | Placeholder-based Postman collection for local/staging smoke tests. No real credentials are stored. |
+
+Suggested local QA order:
+
+```powershell
+docker compose up -d postgres
+cd backend
+go run ./cmd/migrate up
+go test ./...
+cd ..
+.\scripts\qa\seed-demo-data.ps1
+```
+
+Then import `docs/qa/umkm-commerce-os.postman_collection.json` into Postman and run folders in order:
+
+```txt
+Health -> Auth -> Tenant + Store -> Catalog -> Public Storefront + Checkout
+-> Order + Payment -> Inventory + POS -> Finance -> Courier + Shipment
+-> Discovery -> Admin
+```
+
+For frontend verification, run:
+
+```powershell
+cd frontend
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd run build
+```
+
+The demo seed script creates non-production data only:
+
+```txt
+Toko Bunga Ayu, Makassar, demo bouquet products, courier zones, and an open cashier session.
+```
+
+By default it refuses non-local URLs. Use `-AllowNonLocal` only for disposable staging.
+
 ## Query/index audit helpers
 
 For slow endpoint investigation, run `EXPLAIN (ANALYZE, BUFFERS)` locally against a dev database with representative tenant/store data. Do not paste production customer data or full query parameter values into logs or tickets.

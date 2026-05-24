@@ -23,4 +23,6 @@ Thumbs.db
 
 # AI
 AGENTS.md
-docs/
+docs/*
+!docs/qa/
+!docs/qa/**

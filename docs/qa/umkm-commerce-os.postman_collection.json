@@ -1,0 +1,627 @@
+{
+  "info": {
+    "name": "UMKM Commerce OS Hybrid - Sprint 11F QA Smoke",
+    "description": "Local/staging API smoke collection. Uses placeholder variables only; do not store production secrets here.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "ownerName", "value": "Owner Demo" },
+    { "key": "ownerEmail", "value": "owner-demo@example.test" },
+    { "key": "ownerPassword", "value": "demo-password-change-me" },
+    { "key": "adminEmail", "value": "admin-demo@example.test" },
+    { "key": "adminPassword", "value": "demo-password-change-me" },
+    { "key": "accessToken", "value": "" },
+    { "key": "adminAccessToken", "value": "" },
+    { "key": "tenantId", "value": "" },
+    { "key": "storeSlug", "value": "toko-bunga-ayu" },
+    { "key": "categoryId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "productSlug", "value": "bouquet-mawar-merah" },
+    { "key": "orderId", "value": "" },
+    { "key": "orderNumber", "value": "" },
+    { "key": "customerPhone", "value": "081234567890" },
+    { "key": "sessionId", "value": "" },
+    { "key": "transactionId", "value": "" },
+    { "key": "expenseId", "value": "" },
+    { "key": "zoneId", "value": "" },
+    { "key": "shipmentId", "value": "" },
+    { "key": "planId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health - Live",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health/live"
+          }
+        },
+        {
+          "name": "Health - Ready",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health/ready"
+          }
+        },
+        {
+          "name": "Version",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/version"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth Flow",
+      "item": [
+        {
+          "name": "Auth - Register Owner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{ownerName}}\",\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\",\n  \"phone\": \"{{customerPhone}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?.access_token) pm.collectionVariables.set('accessToken', body.data.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Auth - Login Owner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?.access_token) pm.collectionVariables.set('accessToken', body.data.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Auth - Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tenant + Store Flow",
+      "item": [
+        {
+          "name": "Tenant - Create Store Onboarding",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenant_name\": \"Toko Bunga Ayu\",\n  \"tenant_slug\": \"toko-bunga-ayu\",\n  \"store\": {\n    \"name\": \"Toko Bunga Ayu\",\n    \"slug\": \"{{storeSlug}}\",\n    \"description\": \"Demo toko bunga non-produksi di Makassar.\",\n    \"whatsapp\": \"{{customerPhone}}\",\n    \"city\": \"Makassar\",\n    \"province\": \"Sulawesi Selatan\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/onboarding/create-store"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?.id) pm.collectionVariables.set('tenantId', body.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tenant - List My Tenants",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/tenants"
+          }
+        },
+        {
+          "name": "Store - Current",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/stores/current"
+          }
+        },
+        {
+          "name": "Store - Publish",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/stores/current/publish"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog Flow",
+      "item": [
+        {
+          "name": "Category - Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Bouquet\",\n  \"slug\": \"bouquet\",\n  \"description\": \"Demo category\",\n  \"is_active\": true\n}" },
+            "url": "{{baseUrl}}/api/v1/categories"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.id) pm.collectionVariables.set('categoryId', body.data.id);"] }
+            }
+          ]
+        },
+        {
+          "name": "Product - Create Active With Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bouquet Mawar Merah\",\n  \"slug\": \"{{productSlug}}\",\n  \"description\": \"Produk demo non-produksi.\",\n  \"category_id\": \"{{categoryId}}\",\n  \"sku\": \"BQT-MWR-DEMO\",\n  \"status\": \"active\",\n  \"price\": 150000,\n  \"compare_at_price\": null,\n  \"cost_price\": 0,\n  \"track_inventory\": true,\n  \"initial_stock\": 10,\n  \"low_stock_threshold\": 2,\n  \"is_visible\": true,\n  \"is_discoverable\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/products"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.id) pm.collectionVariables.set('productId', body.data.id);"] }
+            }
+          ]
+        },
+        {
+          "name": "Product - List Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/products?limit=20"
+          }
+        },
+        {
+          "name": "Upload - Local Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
+            },
+            "url": "{{baseUrl}}/api/v1/uploads"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Storefront + Checkout Flow",
+      "item": [
+        {
+          "name": "Public - Store",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}" }
+        },
+        {
+          "name": "Public - Products",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}/products?search=bouquet&limit=20" }
+        },
+        {
+          "name": "Public - Product Detail",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}/products/{{productSlug}}" }
+        },
+        {
+          "name": "Checkout - Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "qa-checkout-{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [{ \"product_id\": \"{{productId}}\", \"quantity\": 1 }],\n  \"customer\": { \"name\": \"Customer Demo\", \"phone\": \"{{customerPhone}}\" },\n  \"shipping_address\": {\n    \"recipient_name\": \"Customer Demo\",\n    \"recipient_phone\": \"{{customerPhone}}\",\n    \"address\": \"Jl Demo No 1\",\n    \"city\": \"Makassar\",\n    \"province\": \"Sulawesi Selatan\"\n  },\n  \"payment_method\": \"manual_transfer\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?.order_id) pm.collectionVariables.set('orderId', body.data.order_id);",
+                  "if (body?.data?.order_number) pm.collectionVariables.set('orderNumber', body.data.order_number);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Order + Payment Flow",
+      "item": [
+        {
+          "name": "Orders - List",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/orders?limit=20"
+          }
+        },
+        {
+          "name": "Orders - Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Payment - Public Confirmation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_phone\": \"{{customerPhone}}\",\n  \"payer_name\": \"Customer Demo\",\n  \"bank_name\": \"Bank Demo\",\n  \"transfer_amount\": 150000,\n  \"transfer_date\": \"2026-05-24T10:00:00+08:00\",\n  \"note\": \"Demo confirmation\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}/orders/{{orderNumber}}/payment-confirmation"
+          }
+        },
+        {
+          "name": "Payment - Confirm Dashboard",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"Demo confirm\"\n}" },
+            "url": "{{baseUrl}}/api/v1/orders/{{orderId}}/confirm-payment"
+          }
+        },
+        {
+          "name": "Order - Cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"customer_request\",\n  \"note\": \"Demo cancel\"\n}" },
+            "url": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory + POS Flow",
+      "item": [
+        {
+          "name": "Inventory - Stocks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/inventory/stocks?limit=20"
+          }
+        },
+        {
+          "name": "Inventory - Adjust Stock In",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"adjustment_type\": \"in\",\n  \"quantity\": 5,\n  \"reason\": \"qa_demo\",\n  \"note\": \"Demo stock adjustment\"\n}" },
+            "url": "{{baseUrl}}/api/v1/inventory/products/{{productId}}/adjust"
+          }
+        },
+        {
+          "name": "POS - Open Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"opening_cash_amount\": 200000,\n  \"note\": \"Demo POS open\"\n}" },
+            "url": "{{baseUrl}}/api/v1/pos/sessions/open"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.id) pm.collectionVariables.set('sessionId', body.data.id);"] }
+            }
+          ]
+        },
+        {
+          "name": "POS - Product Search",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/pos/products?q=bouquet"
+          }
+        },
+        {
+          "name": "POS - Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Idempotency-Key", "value": "qa-pos-{{$guid}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"{{sessionId}}\",\n  \"items\": [{ \"product_id\": \"{{productId}}\", \"quantity\": 1 }],\n  \"payment_method\": \"cash\",\n  \"amount_paid\": 200000,\n  \"note\": \"Demo POS transaction\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/pos/transactions"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.id) pm.collectionVariables.set('transactionId', body.data.id);"] }
+            }
+          ]
+        },
+        {
+          "name": "POS - Close Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"closing_cash_amount\": 400000,\n  \"note\": \"Demo POS close\"\n}" },
+            "url": "{{baseUrl}}/api/v1/pos/sessions/{{sessionId}}/close"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Finance Flow",
+      "item": [
+        {
+          "name": "Finance - Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/finance/summary"
+          }
+        },
+        {
+          "name": "Finance - Create Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Bensin kurir demo\",\n  \"amount\": 50000,\n  \"expense_date\": \"2026-05-24\",\n  \"payment_method\": \"cash\",\n  \"note\": \"Demo expense\"\n}" },
+            "url": "{{baseUrl}}/api/v1/finance/expenses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courier + Shipment Flow",
+      "item": [
+        {
+          "name": "Courier - Create Zone",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Makassar Kota\",\n  \"description\": \"Demo courier zone\",\n  \"rate\": 15000,\n  \"is_active\": true,\n  \"sort_order\": 1\n}" },
+            "url": "{{baseUrl}}/api/v1/courier/zones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.id) pm.collectionVariables.set('zoneId', body.data.id);"] }
+            }
+          ]
+        },
+        {
+          "name": "Courier - Public Active Zones",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}/courier/zones" }
+        },
+        {
+          "name": "Shipment - Create From Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"courier_type\": \"internal\",\n  \"courier_name\": \"Kurir Demo\",\n  \"shipping_cost\": 15000,\n  \"assigned_to_name\": \"Driver Demo\",\n  \"assigned_to_phone\": \"081200000000\",\n  \"note\": \"Demo shipment\"\n}" },
+            "url": "{{baseUrl}}/api/v1/orders/{{orderId}}/shipments"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.id) pm.collectionVariables.set('shipmentId', body.data.id);"] }
+            }
+          ]
+        },
+        {
+          "name": "Tracking - Public",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/public/stores/{{storeSlug}}/orders/{{orderNumber}}/tracking?phone={{customerPhone}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Discovery Flow",
+      "item": [
+        { "name": "Discovery - Home", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/discovery/home" } },
+        { "name": "Discovery - Stores", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/discovery/stores?city=Makassar&limit=20" } },
+        { "name": "Discovery - Products", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/discovery/products?search=bouquet&limit=20" } },
+        { "name": "Discovery - Search", "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/public/discovery/search?q=bouquet&type=all" } }
+      ]
+    },
+    {
+      "name": "Admin Flow",
+      "item": [
+        {
+          "name": "Admin Auth - Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["const body = pm.response.json();", "if (body?.data?.access_token) pm.collectionVariables.set('adminAccessToken', body.data.access_token);"] }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/me"
+          }
+        },
+        {
+          "name": "Admin - List Tenants",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/tenants?limit=20"
+          }
+        },
+        {
+          "name": "Admin - List Plans",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/plans"
+          }
+        },
+        {
+          "name": "Admin - Suspend Tenant",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"suspended\",\n  \"reason\": \"QA demo suspend\"\n}" },
+            "url": "{{baseUrl}}/api/v1/admin/tenants/{{tenantId}}/status"
+          }
+        },
+        {
+          "name": "Admin - Activate Tenant",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminAccessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\",\n  \"reason\": \"QA demo activate\"\n}" },
+            "url": "{{baseUrl}}/api/v1/admin/tenants/{{tenantId}}/status"
+          }
+        },
+        {
+          "name": "Admin - Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminAccessToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/audit-logs?limit=20"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Sprint 11E Frontend Hardening + UX Audit.
+Sprint 11F QA Scripts + API Test Collection.
 
 ## Current Goal
 
-Harden frontend UX states, submit guards, permission-aware navigation, public/admin request separation, mobile storefront flows, and POS usability without adding new business features.
+Prepare pilot QA scripts, security/race test scripts, and a local API smoke collection so MVP flows can be verified consistently without adding new business features.
 
 ## Sprint 0 Tasks
 
