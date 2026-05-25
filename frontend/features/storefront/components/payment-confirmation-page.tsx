@@ -13,12 +13,16 @@ import { submitPublicPaymentConfirmation } from "@/features/storefront/api/payme
 import { ApiError } from "@/lib/api/errors";
 import { createIdempotencyKey } from "@/lib/api/idempotency";
 import { formatRupiah } from "@/lib/format/money";
+import { useToastStore } from "@/lib/stores/toast.store";
 
 const paymentConfirmationSchema = z.object({
   customerPhone: z.string().trim().min(8, "Nomor HP wajib diisi.").max(32, "Nomor HP terlalu panjang."),
   payerName: z.string().trim().min(2, "Nama pengirim wajib diisi.").max(120, "Nama pengirim terlalu panjang."),
   bankName: z.string().trim().min(2, "Nama bank wajib diisi.").max(120, "Nama bank terlalu panjang."),
-  transferAmount: z.number().int("Nominal harus angka bulat.").positive("Nominal transfer wajib lebih dari Rp0."),
+  transferAmount: z
+    .number({ error: "Nominal transfer wajib diisi." })
+    .int("Nominal harus angka bulat.")
+    .positive("Nominal transfer wajib lebih dari Rp0."),
   transferDate: z
     .string()
     .trim()
@@ -36,6 +40,7 @@ type PaymentConfirmationPageProps = {
 };
 
 export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfirmationPageProps) {
+  const pushToast = useToastStore((state) => state.pushToast);
   const form = useForm<PaymentConfirmationFormValues>({
     resolver: zodResolver(paymentConfirmationSchema),
     defaultValues: {
@@ -64,7 +69,21 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
           note: values.note?.trim() || ""
         },
         createIdempotencyKey("payment")
-      )
+      ),
+    onSuccess: () => {
+      pushToast({
+        tone: "success",
+        title: "Konfirmasi pembayaran terkirim",
+        description: "Penjual akan memeriksa pembayaran dari dashboard toko."
+      });
+    },
+    onError: (error) => {
+      pushToast({
+        tone: "error",
+        title: "Konfirmasi pembayaran gagal",
+        description: paymentConfirmationErrorMessage(error)
+      });
+    }
   });
   const submittedAmount = useWatch({ control: form.control, name: "transferAmount" });
 
@@ -187,7 +206,9 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
                   min={1}
                   placeholder="50000"
                   type="number"
-                  {...form.register("transferAmount", { valueAsNumber: true })}
+                  {...form.register("transferAmount", {
+                    setValueAs: (value) => (value === "" ? 0 : Number(value))
+                  })}
                 />
               </FormField>
               <FormField label="Tanggal transfer" error={form.formState.errors.transferDate?.message}>
