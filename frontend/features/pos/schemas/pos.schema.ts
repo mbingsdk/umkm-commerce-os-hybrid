@@ -1,14 +1,20 @@
 import { z } from "zod";
 
 export const openSessionSchema = z.object({
-  openingCashAmount: z.number().int("Kas awal harus berupa angka bulat.").min(0, "Kas awal tidak boleh negatif."),
+  openingCashAmount: z
+    .number({ error: "Kas awal wajib diisi." })
+    .int("Kas awal harus berupa angka bulat.")
+    .min(0, "Kas awal tidak boleh negatif."),
   note: z.string().trim().max(500, "Catatan maksimal 500 karakter.").optional()
 });
 
 export type OpenSessionFormValues = z.infer<typeof openSessionSchema>;
 
 export const closeSessionSchema = z.object({
-  closingCashAmount: z.number().int("Kas aktual harus berupa angka bulat.").min(0, "Kas aktual tidak boleh negatif."),
+  closingCashAmount: z
+    .number({ error: "Kas aktual wajib diisi." })
+    .int("Kas aktual harus berupa angka bulat.")
+    .min(0, "Kas aktual tidak boleh negatif."),
   note: z.string().trim().max(500, "Catatan maksimal 500 karakter.").optional()
 });
 
@@ -18,7 +24,10 @@ export const posPaymentSubmitSchema = z
   .object({
     itemCount: z.number().int().positive("Cart POS masih kosong."),
     paymentMethod: z.enum(["cash", "qris_manual"]),
-    amountPaid: z.number().int("Jumlah dibayar harus berupa angka bulat.").min(0, "Jumlah dibayar tidak boleh negatif."),
+    amountPaid: z
+      .number({ error: "Jumlah dibayar wajib diisi." })
+      .int("Jumlah dibayar harus berupa angka bulat.")
+      .min(0, "Jumlah dibayar tidak boleh negatif."),
     subtotalEstimate: z.number().int().min(0)
   })
   .superRefine((value, context) => {
