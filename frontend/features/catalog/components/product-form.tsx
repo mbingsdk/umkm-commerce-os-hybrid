@@ -185,7 +185,7 @@ export function ProductForm({
           <CardDescription>
             {mode === "create"
               ? "Stok awal akan membuat snapshot dan movement awal di backend."
-              : "Perubahan stok lanjutan akan dikelola dari modul inventori pada sprint berikutnya."}
+              : "Perubahan stok lanjutan dikelola dari modul inventori."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -222,7 +222,7 @@ export function ProductForm({
       <Card>
         <CardHeader>
           <CardTitle>Visibilitas</CardTitle>
-          <CardDescription>Atur status produk sebelum toko publik dibangun pada sprint berikutnya.</CardDescription>
+          <CardDescription>Atur status produk yang akan tampil di toko publik.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 lg:grid-cols-2">
           <Field label="Status" error={form.formState.errors.status?.message}>

@@ -8,7 +8,7 @@ export default function CreateStoreOnboardingPage() {
         <Badge tone="primary">Onboarding</Badge>
         <h1 className="mt-3 text-2xl font-bold text-neutral-950">Buat toko pertama</h1>
         <p className="mt-3 text-sm leading-6 text-neutral-500">
-          Siapkan identitas toko dulu. Produk dan fitur operasional akan masuk pada sprint berikutnya.
+          Siapkan identitas toko dulu. Setelah toko dibuat, kamu bisa mulai mengelola produk dan operasional.
         </p>
       </div>
 

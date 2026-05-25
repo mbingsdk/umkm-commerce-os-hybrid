@@ -67,7 +67,7 @@ export function DashboardHome() {
             Ringkasan cepat untuk penjualan hari ini, pesanan terbaru, dan stok yang perlu diperhatikan.
           </p>
         </div>
-        <Badge tone="primary">Sprint 8E</Badge>
+        <Badge tone="primary">Ringkasan operasional</Badge>
       </div>
 
       <SummaryCards summary={summary} canReadFinance={canReadFinance} />
