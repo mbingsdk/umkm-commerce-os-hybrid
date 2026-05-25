@@ -20,7 +20,7 @@ import { useAdminFeaturedItems, useAdminFeaturedMutations } from "@/features/adm
 import {
   adminFeaturedSchema,
   type AdminFeaturedFormValues
-} from "@/features/admin/schemas/admin.schema";
+} from "@/features/admin/schemas/admin-featured.schema";
 import type { AdminFeaturedItem, FeaturedFormInput } from "@/features/admin/types";
 import { useToastStore } from "@/lib/stores/toast.store";
 
@@ -384,6 +384,9 @@ function FeaturedDialog({
         </div>
         {form.formState.errors.sortOrder ? (
           <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.sortOrder.message}</p>
+        ) : null}
+        {form.formState.errors.startsAt ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.startsAt.message}</p>
         ) : null}
         {form.formState.errors.endsAt ? (
           <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.endsAt.message}</p>

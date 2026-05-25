@@ -24,7 +24,7 @@ import {
   adminTenantStatusSchema,
   type AdminTenantPlanFormValues,
   type AdminTenantStatusFormValues
-} from "@/features/admin/schemas/admin.schema";
+} from "@/features/admin/schemas/admin-tenant.schema";
 import type { AdminPlan } from "@/features/admin/types";
 import { formatDateTime } from "@/lib/format/date";
 import { useToastStore } from "@/lib/stores/toast.store";

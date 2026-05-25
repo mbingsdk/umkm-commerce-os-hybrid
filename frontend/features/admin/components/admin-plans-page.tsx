@@ -12,7 +12,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { AdminPageHeader, Field, StatusBadge, formatNumber } from "@/features/admin/components/admin-shared";
 import { useAdminPlanMutations, useAdminPlans } from "@/features/admin/hooks/use-admin";
-import { adminPlanSchema, type AdminPlanFormValues } from "@/features/admin/schemas/admin.schema";
+import { adminPlanSchema, type AdminPlanFormValues } from "@/features/admin/schemas/admin-plan.schema";
 import type { AdminPlan, PlanFormInput } from "@/features/admin/types";
 import { formatRupiah } from "@/lib/format/money";
 import { useToastStore } from "@/lib/stores/toast.store";
