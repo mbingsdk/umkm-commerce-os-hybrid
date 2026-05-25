@@ -29,6 +29,7 @@ export type PublicCategory = {
   id: string;
   name: string;
   slug: string;
+  description?: string;
   imageUrl?: string;
 };
 

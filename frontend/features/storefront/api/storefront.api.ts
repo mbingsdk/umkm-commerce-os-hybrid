@@ -55,6 +55,7 @@ type ApiPublicCategory = {
   id: string;
   name: string;
   slug: string;
+  description?: string;
   image_url?: string;
 };
 
@@ -240,6 +241,7 @@ function normalizeCategory(category: ApiPublicCategory): PublicCategory {
     id: category.id,
     name: category.name,
     slug: category.slug,
+    description: category.description,
     imageUrl: category.image_url
   };
 }

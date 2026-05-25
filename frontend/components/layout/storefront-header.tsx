@@ -35,6 +35,12 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
         <div className="flex items-center gap-2">
           <Link
             className="hidden h-9 items-center justify-center rounded-xl border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 sm:inline-flex"
+            href={`/s/${storeSlug}/products`}
+          >
+            Produk
+          </Link>
+          <Link
+            className="hidden h-9 items-center justify-center rounded-xl border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 sm:inline-flex"
             href={`/s/${storeSlug}/track-order`}
           >
             Lacak order

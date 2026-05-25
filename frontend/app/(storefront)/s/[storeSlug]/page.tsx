@@ -183,12 +183,16 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
               />
             ) : (
               <div className="flex flex-wrap gap-2">
-                <CategoryLink active={!selectedCategory} href={buildStoreHref(store.slug, { q: query })} label="Semua" />
+                <CategoryLink
+                  active={!selectedCategory}
+                  href={buildProductListingHref(store.slug, { q: query })}
+                  label="Semua"
+                />
                 {categories.map((category) => (
                   <CategoryLink
                     key={category.id}
                     active={category.slug === selectedCategory?.slug}
-                    href={buildStoreHref(store.slug, { q: query, category: category.slug })}
+                    href={buildCategoryHref(store.slug, category.slug, { q: query })}
                     label={category.name}
                   />
                 ))}
@@ -270,18 +274,26 @@ function firstParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function buildStoreHref(storeSlug: string, params: { q?: string; category?: string }) {
+function buildProductListingHref(storeSlug: string, params: { q?: string }) {
   const searchParams = new URLSearchParams();
 
   if (params.q) {
     searchParams.set("q", params.q);
   }
-  if (params.category) {
-    searchParams.set("category", params.category);
+
+  const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
+  return `/s/${storeSlug}/products${suffix}`;
+}
+
+function buildCategoryHref(storeSlug: string, categorySlug: string, params: { q?: string }) {
+  const searchParams = new URLSearchParams();
+
+  if (params.q) {
+    searchParams.set("q", params.q);
   }
 
   const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
-  return `/s/${storeSlug}${suffix}`;
+  return `/s/${storeSlug}/categories/${categorySlug}${suffix}`;
 }
 
 function buildWhatsappHref(value?: string) {

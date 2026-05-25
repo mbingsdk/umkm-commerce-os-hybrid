@@ -1,0 +1,175 @@
+import Link from "next/link";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { Input } from "@/components/ui/input";
+import { ProductCard } from "@/features/storefront/components/product-card";
+import type {
+  PublicCategory,
+  PublicProductListResult,
+  PublicStore
+} from "@/features/storefront/types";
+
+type StorefrontProductListingViewProps = {
+  store: PublicStore;
+  categories: PublicCategory[];
+  products: PublicProductListResult;
+  title: string;
+  description: string;
+  query?: string;
+  currentPath: string;
+  activeCategory?: PublicCategory;
+};
+
+export function StorefrontProductListingView({
+  store,
+  categories,
+  products,
+  title,
+  description,
+  query,
+  currentPath,
+  activeCategory
+}: StorefrontProductListingViewProps) {
+  const hasProducts = products.items.length > 0;
+
+  return (
+    <main>
+      <section className="border-b border-neutral-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="space-y-4 rounded-3xl border border-neutral-200 bg-neutral-50 p-5 sm:p-7">
+            <Link className="text-sm font-semibold text-primary-700 hover:text-primary-800" href={`/s/${store.slug}`}>
+              Kembali ke toko
+            </Link>
+            <div className="max-w-3xl space-y-2">
+              <p className="text-sm text-neutral-500">
+                {store.name}
+                {store.city ? ` • ${store.city}` : ""}
+              </p>
+              <h1 className="text-2xl font-bold tracking-tight text-neutral-950 sm:text-4xl">{title}</h1>
+              <p className="text-sm leading-7 text-neutral-600 sm:text-base">{description}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
+          <div>
+            <h2 className="text-lg font-semibold text-neutral-950">Cari produk</h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              Cari produk aktif dari toko ini berdasarkan nama produk.
+            </p>
+          </div>
+
+          <form action={currentPath} className="flex flex-col gap-3 sm:flex-row" method="get">
+            <Input defaultValue={query} name="q" placeholder="Cari nama produk..." />
+            <button className="h-10 rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700">
+              Cari
+            </button>
+          </form>
+        </div>
+
+        <div className="space-y-4">
+          {categories.length === 0 ? (
+            <EmptyState
+              title="Kategori belum tersedia"
+              description="Toko ini belum menambahkan kategori publik. Semua produk tetap bisa dilihat dari daftar produk."
+            />
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+              <CategoryLink
+                active={!activeCategory}
+                href={buildListingHref(`/s/${store.slug}/products`, { q: query })}
+                label="Semua produk"
+              />
+              {categories.map((category) => (
+                <CategoryLink
+                  key={category.id}
+                  active={category.slug === activeCategory?.slug}
+                  href={buildListingHref(`/s/${store.slug}/categories/${category.slug}`, { q: query })}
+                  label={category.name}
+                />
+              ))}
+            </div>
+          )}
+
+          {hasProducts ? (
+            <>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+                {products.items.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    categoryName={activeCategory?.name}
+                    product={product}
+                    storeSlug={store.slug}
+                  />
+                ))}
+              </div>
+
+              {products.pagination?.hasMore && products.pagination.nextCursor ? (
+                <div className="flex justify-center pt-2">
+                  <Link
+                    className="inline-flex h-10 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
+                    href={buildListingHref(currentPath, {
+                      q: query,
+                      cursor: products.pagination.nextCursor
+                    })}
+                  >
+                    Lihat produk berikutnya
+                  </Link>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <EmptyState
+              title="Produk belum ditemukan"
+              description={
+                query || activeCategory
+                  ? "Coba ubah kata kunci atau pilih kategori lain."
+                  : "Toko ini belum menampilkan produk. Hubungi toko melalui WhatsApp untuk info terbaru."
+              }
+              action={
+                query || activeCategory ? (
+                  <Link
+                    className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+                    href={`/s/${store.slug}/products`}
+                  >
+                    Lihat semua produk
+                  </Link>
+                ) : null
+              }
+            />
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function CategoryLink({ active, href, label }: { active: boolean; href: string; label: string }) {
+  return (
+    <Link
+      className={
+        active
+          ? "shrink-0 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white"
+          : "shrink-0 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-primary-300 hover:text-primary-700"
+      }
+      href={href}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function buildListingHref(path: string, params: { q?: string; cursor?: string }) {
+  const searchParams = new URLSearchParams();
+
+  if (params.q) {
+    searchParams.set("q", params.q);
+  }
+  if (params.cursor) {
+    searchParams.set("cursor", params.cursor);
+  }
+
+  const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
+  return `${path}${suffix}`;
+}
