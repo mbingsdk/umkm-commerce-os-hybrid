@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { DataTable, type DataTableColumn } from "@/components/data-display/data-table";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorState } from "@/components/feedback/error-state";
@@ -15,6 +17,10 @@ import {
   formatMaybeDate
 } from "@/features/admin/components/admin-shared";
 import { useAdminFeaturedItems, useAdminFeaturedMutations } from "@/features/admin/hooks/use-admin";
+import {
+  adminFeaturedSchema,
+  type AdminFeaturedFormValues
+} from "@/features/admin/schemas/admin.schema";
 import type { AdminFeaturedItem, FeaturedFormInput } from "@/features/admin/types";
 import { useToastStore } from "@/lib/stores/toast.store";
 
@@ -257,23 +263,37 @@ function FeaturedDialog({
   onClose: () => void;
   onSubmit: (values: FeaturedFormInput) => void;
 }) {
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const form = useForm<AdminFeaturedFormValues>({
+    resolver: zodResolver(adminFeaturedSchema),
+    defaultValues: toFeaturedFormValues(item)
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset(toFeaturedFormValues(item));
+    }
+  }, [form, item, open]);
+
+  function handleClose() {
+    form.reset(toFeaturedFormValues(item));
+    onClose();
+  }
+
+  function handleSubmit(values: AdminFeaturedFormValues) {
     if (isSubmitting) {
       return;
     }
 
-    const form = new FormData(event.currentTarget);
     onSubmit({
-      itemType: String(form.get("item_type") ?? "store") as FeaturedFormInput["itemType"],
-      tenantId: String(form.get("tenant_id") ?? "").trim(),
-      storeId: String(form.get("store_id") ?? "").trim(),
-      productId: String(form.get("product_id") ?? "").trim(),
-      placement: String(form.get("placement") ?? "home") as FeaturedFormInput["placement"],
-      sortOrder: Number(form.get("sort_order") ?? 0),
-      startsAt: String(form.get("starts_at") ?? ""),
-      endsAt: String(form.get("ends_at") ?? ""),
-      isActive: form.get("is_active") === "on"
+      itemType: values.itemType,
+      tenantId: values.tenantId.trim(),
+      storeId: values.storeId?.trim() || "",
+      productId: values.productId?.trim() || "",
+      placement: values.placement,
+      sortOrder: values.sortOrder,
+      startsAt: values.startsAt?.trim() || "",
+      endsAt: values.endsAt?.trim() || "",
+      isActive: values.isActive
     });
   }
 
@@ -282,10 +302,10 @@ function FeaturedDialog({
       open={open}
       title={item ? "Edit featured item" : "Tambah featured item"}
       description="Masukkan UUID target. Untuk product, product_id wajib dan store_id boleh membantu validasi."
-      onClose={onClose}
+      onClose={handleClose}
       footer={
         <>
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleClose}>
             Batal
           </Button>
           <Button type="submit" form="admin-featured-form" isLoading={isSubmitting} disabled={isSubmitting}>
@@ -294,16 +314,22 @@ function FeaturedDialog({
         </>
       }
     >
-      <form key={item?.id ?? "new"} id="admin-featured-form" className="space-y-4" onSubmit={handleSubmit}>
+      <form key={item?.id ?? "new"} id="admin-featured-form" className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Tipe">
-            <select name="item_type" defaultValue={item?.itemType ?? "store"} className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm">
+            <select
+              className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm"
+              {...form.register("itemType")}
+            >
               <option value="store">Store</option>
               <option value="product">Product</option>
             </select>
           </Field>
           <Field label="Placement">
-            <select name="placement" defaultValue={item?.placement ?? "home"} className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm">
+            <select
+              className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm"
+              {...form.register("placement")}
+            >
               {placements.map((placement) => (
                 <option key={placement} value={placement}>
                   {placement}
@@ -312,33 +338,77 @@ function FeaturedDialog({
             </select>
           </Field>
         </div>
+        {form.formState.errors.itemType ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.itemType.message}</p>
+        ) : null}
+        {form.formState.errors.placement ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.placement.message}</p>
+        ) : null}
         <Field label="Tenant ID">
-          <Input name="tenant_id" defaultValue={item?.tenantId ?? ""} required />
+          <Input hasError={!!form.formState.errors.tenantId} {...form.register("tenantId")} />
         </Field>
+        {form.formState.errors.tenantId ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.tenantId.message}</p>
+        ) : null}
         <Field label="Store ID">
-          <Input name="store_id" defaultValue={item?.storeId ?? ""} placeholder="Wajib untuk store, opsional untuk product" />
+          <Input
+            hasError={!!form.formState.errors.storeId}
+            placeholder="Wajib untuk store, opsional untuk product"
+            {...form.register("storeId")}
+          />
         </Field>
+        {form.formState.errors.storeId ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.storeId.message}</p>
+        ) : null}
         <Field label="Product ID">
-          <Input name="product_id" defaultValue={item?.productId ?? ""} placeholder="Wajib untuk product" />
+          <Input hasError={!!form.formState.errors.productId} placeholder="Wajib untuk product" {...form.register("productId")} />
         </Field>
+        {form.formState.errors.productId ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.productId.message}</p>
+        ) : null}
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Urutan">
-            <Input name="sort_order" type="number" defaultValue={item?.sortOrder ?? 0} />
+            <Input
+              hasError={!!form.formState.errors.sortOrder}
+              type="number"
+              min={0}
+              {...form.register("sortOrder", { valueAsNumber: true })}
+            />
           </Field>
           <Field label="Mulai">
-            <Input name="starts_at" type="datetime-local" defaultValue={toDatetimeLocal(item?.startsAt)} />
+            <Input hasError={!!form.formState.errors.startsAt} type="datetime-local" {...form.register("startsAt")} />
           </Field>
           <Field label="Selesai">
-            <Input name="ends_at" type="datetime-local" defaultValue={toDatetimeLocal(item?.endsAt)} />
+            <Input hasError={!!form.formState.errors.endsAt} type="datetime-local" {...form.register("endsAt")} />
           </Field>
         </div>
+        {form.formState.errors.sortOrder ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.sortOrder.message}</p>
+        ) : null}
+        {form.formState.errors.endsAt ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.endsAt.message}</p>
+        ) : null}
         <label className="flex items-center gap-2 rounded-xl border border-neutral-200 p-3 text-sm text-neutral-700">
-          <input name="is_active" type="checkbox" defaultChecked={item?.isActive ?? true} />
+          <input type="checkbox" {...form.register("isActive")} />
           Featured aktif
         </label>
       </form>
     </Dialog>
   );
+}
+
+function toFeaturedFormValues(item: AdminFeaturedItem | null): AdminFeaturedFormValues {
+  return {
+    itemType: item?.itemType ?? "store",
+    tenantId: item?.tenantId ?? "",
+    storeId: item?.storeId ?? "",
+    productId: item?.productId ?? "",
+    placement: item?.placement ?? "home",
+    sortOrder: item?.sortOrder ?? 0,
+    startsAt: toDatetimeLocal(item?.startsAt),
+    endsAt: toDatetimeLocal(item?.endsAt),
+    isActive: item?.isActive ?? true
+  };
 }
 
 function toDatetimeLocal(value?: string | null) {

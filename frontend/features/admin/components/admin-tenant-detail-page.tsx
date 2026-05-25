@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorState } from "@/components/feedback/error-state";
 import { LoadingState } from "@/components/feedback/loading-state";
@@ -17,6 +19,13 @@ import {
   formatNumber
 } from "@/features/admin/components/admin-shared";
 import { useAdminPlans, useAdminTenantDetail, useAdminTenantMutations } from "@/features/admin/hooks/use-admin";
+import {
+  adminTenantPlanSchema,
+  adminTenantStatusSchema,
+  type AdminTenantPlanFormValues,
+  type AdminTenantStatusFormValues
+} from "@/features/admin/schemas/admin.schema";
+import type { AdminPlan } from "@/features/admin/types";
 import { formatDateTime } from "@/lib/format/date";
 import { useToastStore } from "@/lib/stores/toast.store";
 
@@ -45,18 +54,16 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
 
   const detail = detailQuery.data;
 
-  function submitStatus(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function submitStatus(values: AdminTenantStatusFormValues) {
     if (updateStatus.isPending) {
       return;
     }
 
-    const form = new FormData(event.currentTarget);
     updateStatus.mutate(
       {
         tenantId,
-        status: String(form.get("status") ?? ""),
-        reason: String(form.get("reason") ?? "")
+        status: values.status,
+        reason: values.reason?.trim() || ""
       },
       {
         onSuccess: () => {
@@ -68,18 +75,16 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
     );
   }
 
-  function submitPlan(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function submitPlan(values: AdminTenantPlanFormValues) {
     if (updatePlan.isPending) {
       return;
     }
 
-    const form = new FormData(event.currentTarget);
     updatePlan.mutate(
       {
         tenantId,
-        planId: String(form.get("plan_id") ?? ""),
-        reason: String(form.get("reason") ?? "")
+        planId: values.planId,
+        reason: values.reason?.trim() || ""
       },
       {
         onSuccess: () => {
@@ -101,7 +106,11 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
             <Button type="button" variant="outline" onClick={() => setDialogMode("plan")}>
               Ubah paket
             </Button>
-            <Button type="button" variant={detail.tenant.status === "suspended" ? "primary" : "danger"} onClick={() => setDialogMode("status")}>
+            <Button
+              type="button"
+              variant={detail.tenant.status === "suspended" ? "primary" : "danger"}
+              onClick={() => setDialogMode("status")}
+            >
               {detail.tenant.status === "suspended" ? "Aktifkan" : "Ubah status"}
             </Button>
           </div>
@@ -172,71 +181,193 @@ export function AdminTenantDetailPage({ tenantId }: { tenantId: string }) {
         </CardContent>
       </Card>
 
-      <Dialog
+      <TenantStatusDialog
         open={dialogMode === "status"}
-        title="Ubah status tenant"
-        description="Suspended tenant tidak bisa akses dashboard dan tidak tampil publik."
+        currentStatus={detail.tenant.status}
+        isSubmitting={updateStatus.isPending}
         onClose={() => setDialogMode(null)}
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={() => setDialogMode(null)}>
-              Batal
-            </Button>
-            <Button type="submit" form="tenant-status-form" isLoading={updateStatus.isPending} disabled={updateStatus.isPending}>
-              Simpan status
-            </Button>
-          </>
-        }
-      >
-        <form id="tenant-status-form" className="space-y-4" onSubmit={submitStatus}>
-          <Field label="Status">
-            <select name="status" defaultValue={detail.tenant.status} className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm">
-              <option value="trialing">Trialing</option>
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </Field>
-          <Field label="Reason">
-            <Input name="reason" placeholder="Contoh: pelanggaran kebijakan platform" />
-          </Field>
-        </form>
-      </Dialog>
+        onSubmit={submitStatus}
+      />
 
-      <Dialog
+      <TenantPlanDialog
         open={dialogMode === "plan"}
-        title="Ubah paket tenant"
-        description="Plan mutation akan diaudit oleh backend."
+        plans={plansQuery.data ?? []}
+        currentPlanId={detail.plan?.id ?? ""}
+        isSubmitting={updatePlan.isPending}
         onClose={() => setDialogMode(null)}
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={() => setDialogMode(null)}>
-              Batal
-            </Button>
-            <Button type="submit" form="tenant-plan-form" isLoading={updatePlan.isPending} disabled={updatePlan.isPending}>
-              Simpan paket
-            </Button>
-          </>
-        }
-      >
-        <form id="tenant-plan-form" className="space-y-4" onSubmit={submitPlan}>
-          <Field label="Paket">
-            <select name="plan_id" defaultValue={detail.plan?.id ?? ""} className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm">
-              <option value="">Pilih paket</option>
-              {(plansQuery.data ?? []).map((plan) => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.name} ({plan.code})
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Reason">
-            <Input name="reason" placeholder="Contoh: upgrade manual pilot" />
-          </Field>
-        </form>
-      </Dialog>
+        onSubmit={submitPlan}
+      />
     </div>
   );
+}
+
+function TenantStatusDialog({
+  open,
+  currentStatus,
+  isSubmitting,
+  onClose,
+  onSubmit
+}: {
+  open: boolean;
+  currentStatus: string;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (values: AdminTenantStatusFormValues) => void;
+}) {
+  const form = useForm<AdminTenantStatusFormValues>({
+    resolver: zodResolver(adminTenantStatusSchema),
+    defaultValues: {
+      status: toTenantStatus(currentStatus),
+      reason: ""
+    }
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({ status: toTenantStatus(currentStatus), reason: "" });
+    }
+  }, [currentStatus, form, open]);
+
+  function handleClose() {
+    form.reset({ status: toTenantStatus(currentStatus), reason: "" });
+    onClose();
+  }
+
+  return (
+    <Dialog
+      open={open}
+      title="Ubah status tenant"
+      description="Suspended tenant tidak bisa akses dashboard dan tidak tampil publik."
+      onClose={handleClose}
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={handleClose}>
+            Batal
+          </Button>
+          <Button type="submit" form="tenant-status-form" isLoading={isSubmitting} disabled={isSubmitting}>
+            Simpan status
+          </Button>
+        </>
+      }
+    >
+      <form id="tenant-status-form" className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <Field label="Status">
+          <select
+            className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm"
+            {...form.register("status")}
+          >
+            <option value="trialing">Trialing</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </Field>
+        {form.formState.errors.status ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.status.message}</p>
+        ) : null}
+        <Field label="Reason">
+          <Input
+            hasError={!!form.formState.errors.reason}
+            placeholder="Contoh: pelanggaran kebijakan platform"
+            {...form.register("reason")}
+          />
+          {form.formState.errors.reason ? (
+            <span className="block text-xs font-medium text-red-600">{form.formState.errors.reason.message}</span>
+          ) : null}
+        </Field>
+      </form>
+    </Dialog>
+  );
+}
+
+function TenantPlanDialog({
+  open,
+  plans,
+  currentPlanId,
+  isSubmitting,
+  onClose,
+  onSubmit
+}: {
+  open: boolean;
+  plans: AdminPlan[];
+  currentPlanId: string;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (values: AdminTenantPlanFormValues) => void;
+}) {
+  const form = useForm<AdminTenantPlanFormValues>({
+    resolver: zodResolver(adminTenantPlanSchema),
+    defaultValues: {
+      planId: currentPlanId,
+      reason: ""
+    }
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({ planId: currentPlanId, reason: "" });
+    }
+  }, [currentPlanId, form, open]);
+
+  function handleClose() {
+    form.reset({ planId: currentPlanId, reason: "" });
+    onClose();
+  }
+
+  return (
+    <Dialog
+      open={open}
+      title="Ubah paket tenant"
+      description="Plan mutation akan diaudit oleh backend."
+      onClose={handleClose}
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={handleClose}>
+            Batal
+          </Button>
+          <Button type="submit" form="tenant-plan-form" isLoading={isSubmitting} disabled={isSubmitting}>
+            Simpan paket
+          </Button>
+        </>
+      }
+    >
+      <form id="tenant-plan-form" className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <Field label="Paket">
+          <select
+            className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm"
+            {...form.register("planId")}
+          >
+            <option value="">Pilih paket</option>
+            {plans.map((plan) => (
+              <option key={plan.id} value={plan.id}>
+                {plan.name} ({plan.code})
+              </option>
+            ))}
+          </select>
+        </Field>
+        {form.formState.errors.planId ? (
+          <p className="-mt-2 text-xs font-medium text-red-600">{form.formState.errors.planId.message}</p>
+        ) : null}
+        <Field label="Reason">
+          <Input
+            hasError={!!form.formState.errors.reason}
+            placeholder="Contoh: upgrade manual pilot"
+            {...form.register("reason")}
+          />
+          {form.formState.errors.reason ? (
+            <span className="block text-xs font-medium text-red-600">{form.formState.errors.reason.message}</span>
+          ) : null}
+        </Field>
+      </form>
+    </Dialog>
+  );
+}
+
+function toTenantStatus(status: string): AdminTenantStatusFormValues["status"] {
+  if (status === "trialing" || status === "active" || status === "suspended" || status === "cancelled") {
+    return status;
+  }
+  return "active";
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

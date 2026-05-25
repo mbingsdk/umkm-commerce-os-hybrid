@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { useForm, type UseFormRegisterReturn } from "react-hook-form";
 import { DataTable, type DataTableColumn } from "@/components/data-display/data-table";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorState } from "@/components/feedback/error-state";
@@ -10,6 +12,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { AdminPageHeader, Field, StatusBadge, formatNumber } from "@/features/admin/components/admin-shared";
 import { useAdminPlanMutations, useAdminPlans } from "@/features/admin/hooks/use-admin";
+import { adminPlanSchema, type AdminPlanFormValues } from "@/features/admin/schemas/admin.schema";
 import type { AdminPlan, PlanFormInput } from "@/features/admin/types";
 import { formatRupiah } from "@/lib/format/money";
 import { useToastStore } from "@/lib/stores/toast.store";
@@ -159,24 +162,38 @@ function PlanDialog({
   onClose: () => void;
   onSubmit: (values: PlanFormInput) => void;
 }) {
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const form = useForm<AdminPlanFormValues>({
+    resolver: zodResolver(adminPlanSchema),
+    defaultValues: toPlanFormValues(plan)
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset(toPlanFormValues(plan));
+    }
+  }, [form, open, plan]);
+
+  function handleClose() {
+    form.reset(toPlanFormValues(plan));
+    onClose();
+  }
+
+  function handleSubmit(values: AdminPlanFormValues) {
     if (isSubmitting) {
       return;
     }
 
-    const form = new FormData(event.currentTarget);
     onSubmit({
-      code: String(form.get("code") ?? "").trim(),
-      name: String(form.get("name") ?? "").trim(),
-      description: String(form.get("description") ?? "").trim(),
-      priceMonthly: Number(form.get("price_monthly") ?? 0),
-      productLimit: nullableNumber(form.get("product_limit")),
-      staffLimit: nullableNumber(form.get("staff_limit")),
-      canUsePos: form.get("can_use_pos") === "on",
-      canUseDiscovery: form.get("can_use_discovery") === "on",
-      canUseCourier: form.get("can_use_courier") === "on",
-      isActive: form.get("is_active") === "on"
+      code: values.code.trim(),
+      name: values.name.trim(),
+      description: values.description?.trim() || "",
+      priceMonthly: values.priceMonthly,
+      productLimit: nullableNumber(values.productLimit),
+      staffLimit: nullableNumber(values.staffLimit),
+      canUsePos: values.canUsePos,
+      canUseDiscovery: values.canUseDiscovery,
+      canUseCourier: values.canUseCourier,
+      isActive: values.isActive
     });
   }
 
@@ -185,10 +202,10 @@ function PlanDialog({
       open={open}
       title={plan ? "Edit paket" : "Buat paket"}
       description="Limit kosong berarti unlimited untuk MVP."
-      onClose={onClose}
+      onClose={handleClose}
       footer={
         <>
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleClose}>
             Batal
           </Button>
           <Button type="submit" form="admin-plan-form" isLoading={isSubmitting} disabled={isSubmitting}>
@@ -197,56 +214,116 @@ function PlanDialog({
         </>
       }
     >
-      <form key={plan?.id ?? "new"} id="admin-plan-form" className="space-y-4" onSubmit={handleSubmit}>
+      <form key={plan?.id ?? "new"} id="admin-plan-form" className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Kode">
-            <Input name="code" defaultValue={plan?.code ?? ""} placeholder="starter" required />
+            <Input hasError={!!form.formState.errors.code} placeholder="starter" {...form.register("code")} />
+            {form.formState.errors.code ? (
+              <span className="block text-xs font-medium text-red-600">{form.formState.errors.code.message}</span>
+            ) : null}
           </Field>
           <Field label="Nama">
-            <Input name="name" defaultValue={plan?.name ?? ""} placeholder="Starter" required />
+            <Input hasError={!!form.formState.errors.name} placeholder="Starter" {...form.register("name")} />
+            {form.formState.errors.name ? (
+              <span className="block text-xs font-medium text-red-600">{form.formState.errors.name.message}</span>
+            ) : null}
           </Field>
         </div>
         <Field label="Deskripsi">
-          <Input name="description" defaultValue={plan?.description ?? ""} placeholder="Untuk UMKM awal" />
+          <Input
+            hasError={!!form.formState.errors.description}
+            placeholder="Untuk UMKM awal"
+            {...form.register("description")}
+          />
+          {form.formState.errors.description ? (
+            <span className="block text-xs font-medium text-red-600">{form.formState.errors.description.message}</span>
+          ) : null}
         </Field>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Harga bulanan">
-            <Input name="price_monthly" type="number" min={0} defaultValue={plan?.priceMonthly ?? 0} />
+            <Input
+              hasError={!!form.formState.errors.priceMonthly}
+              type="number"
+              min={0}
+              {...form.register("priceMonthly", { valueAsNumber: true })}
+            />
+            {form.formState.errors.priceMonthly ? (
+              <span className="block text-xs font-medium text-red-600">{form.formState.errors.priceMonthly.message}</span>
+            ) : null}
           </Field>
           <Field label="Limit produk">
-            <Input name="product_limit" type="number" min={0} defaultValue={plan?.productLimit ?? ""} placeholder="Unlimited" />
+            <Input
+              hasError={!!form.formState.errors.productLimit}
+              type="number"
+              min={0}
+              placeholder="Unlimited"
+              {...form.register("productLimit")}
+            />
+            {form.formState.errors.productLimit ? (
+              <span className="block text-xs font-medium text-red-600">{form.formState.errors.productLimit.message}</span>
+            ) : null}
           </Field>
           <Field label="Limit staff">
-            <Input name="staff_limit" type="number" min={0} defaultValue={plan?.staffLimit ?? ""} placeholder="Unlimited" />
+            <Input
+              hasError={!!form.formState.errors.staffLimit}
+              type="number"
+              min={0}
+              placeholder="Unlimited"
+              {...form.register("staffLimit")}
+            />
+            {form.formState.errors.staffLimit ? (
+              <span className="block text-xs font-medium text-red-600">{form.formState.errors.staffLimit.message}</span>
+            ) : null}
           </Field>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Check name="can_use_pos" label="Bisa pakai POS" defaultChecked={plan?.canUsePos ?? true} />
-          <Check name="can_use_discovery" label="Bisa discovery" defaultChecked={plan?.canUseDiscovery ?? true} />
-          <Check name="can_use_courier" label="Bisa courier" defaultChecked={plan?.canUseCourier ?? false} />
-          <Check name="is_active" label="Paket aktif" defaultChecked={plan?.isActive ?? true} />
+          <Check label="Bisa pakai POS" registration={form.register("canUsePos")} />
+          <Check label="Bisa discovery" registration={form.register("canUseDiscovery")} />
+          <Check label="Bisa courier" registration={form.register("canUseCourier")} />
+          <Check label="Paket aktif" registration={form.register("isActive")} />
         </div>
       </form>
     </Dialog>
   );
 }
 
-function Check({ name, label, defaultChecked }: { name: string; label: string; defaultChecked: boolean }) {
+function Check({
+  label,
+  registration
+}: {
+  label: string;
+  registration: UseFormRegisterReturn;
+}) {
   return (
     <label className="flex items-center gap-2 rounded-xl border border-neutral-200 p-3 text-sm text-neutral-700">
-      <input name={name} type="checkbox" defaultChecked={defaultChecked} />
+      <input type="checkbox" {...registration} />
       {label}
     </label>
   );
 }
 
-function nullableNumber(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
+function nullableNumber(value: string) {
+  const raw = value.trim();
   if (!raw) {
     return null;
   }
   const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toPlanFormValues(plan: AdminPlan | null): AdminPlanFormValues {
+  return {
+    code: plan?.code ?? "",
+    name: plan?.name ?? "",
+    description: plan?.description ?? "",
+    priceMonthly: plan?.priceMonthly ?? 0,
+    productLimit: plan?.productLimit == null ? "" : String(plan.productLimit),
+    staffLimit: plan?.staffLimit == null ? "" : String(plan.staffLimit),
+    canUsePos: plan?.canUsePos ?? true,
+    canUseDiscovery: plan?.canUseDiscovery ?? true,
+    canUseCourier: plan?.canUseCourier ?? false,
+    isActive: plan?.isActive ?? true
+  };
 }
 
 function limitLabel(value: number | null) {
