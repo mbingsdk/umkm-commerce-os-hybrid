@@ -133,7 +133,10 @@ export function AggregateChips({
             return null;
           }
 
-          const href = type === "city" ? `/stores?city=${encodeURIComponent(value)}` : `/products?category=${encodeURIComponent(value)}`;
+          const href =
+            type === "city"
+              ? `/city/${slugifyCity(value)}`
+              : `/category/${encodeURIComponent(value)}`;
           return (
             <Link
               key={`${type}-${value}`}
@@ -300,4 +303,12 @@ function buildHref(basePath: string, params: Record<string, string | undefined>)
 
   const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
   return `${basePath}${suffix}`;
+}
+
+function slugifyCity(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
