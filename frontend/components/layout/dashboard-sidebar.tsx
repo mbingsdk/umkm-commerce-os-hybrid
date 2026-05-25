@@ -10,7 +10,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-64 border-r border-neutral-200 bg-white p-5 lg:block">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 overflow-y-auto border-r border-neutral-200 bg-white p-5 lg:block">
       <p className="text-sm font-semibold text-primary-700">UMKM Commerce OS</p>
       <nav className="mt-8 space-y-2 text-sm text-neutral-600">
         {dashboardNavItems.map((item) => (

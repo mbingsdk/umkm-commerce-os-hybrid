@@ -160,12 +160,12 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <DashboardSidebar />
 
         <div className="flex min-w-0 flex-1 flex-col">
+          <DashboardMobileNav />
           <DashboardTopbar
             currentStore={currentStoreQuery.data}
             onLogout={() => logoutMutation.mutate()}
             isLoggingOut={logoutMutation.isPending}
           />
-          <DashboardMobileNav />
 
           <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</div>
         </div>
