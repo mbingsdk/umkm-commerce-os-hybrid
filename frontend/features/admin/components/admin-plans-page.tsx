@@ -107,7 +107,7 @@ export function AdminPlansPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Paket"
-        description="Kelola paket dasar, feature flag, dan limit produk/staff. Belum termasuk billing/payment gateway."
+        description="Kelola paket dasar, feature flag, dan limit produk/staff. Penagihan otomatis dan payment gateway belum aktif."
         action={
           <Button
             type="button"
@@ -201,7 +201,7 @@ function PlanDialog({
     <Dialog
       open={open}
       title={plan ? "Edit paket" : "Buat paket"}
-      description="Limit kosong berarti unlimited untuk MVP."
+      description="Limit kosong berarti unlimited."
       onClose={handleClose}
       footer={
         <>

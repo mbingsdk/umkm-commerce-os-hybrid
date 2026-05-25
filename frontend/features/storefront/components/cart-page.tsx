@@ -26,7 +26,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <EmptyState
           title="Keranjang berisi produk toko lain"
-          description="MVP checkout hanya mendukung satu toko per transaksi. Kosongkan keranjang jika ingin belanja dari toko ini."
+          description="Untuk saat ini, checkout hanya mendukung satu toko per transaksi. Kosongkan keranjang jika ingin belanja dari toko ini."
           action={
             <Button onClick={clearCart} type="button">
               Kosongkan Keranjang

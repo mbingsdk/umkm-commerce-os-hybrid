@@ -40,11 +40,11 @@ export function AdminDashboard() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Admin overview"
-        description="Ringkasan ringan untuk memantau tenant, paket, dan area operasional platform. Angka MVP dihitung dari data yang dimuat backend."
+        description="Ringkasan ringan untuk memantau tenant, paket, dan area operasional platform."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Tenant dimuat" value={formatNumber(tenants.length)} helper="Limit 100 untuk MVP dashboard." />
+        <StatCard label="Tenant dimuat" value={formatNumber(tenants.length)} helper="Mengikuti batas data dari API admin." />
         <StatCard label="Active / trialing" value={formatNumber(activeCount)} helper="Boleh akses dashboard tenant." />
         <StatCard label="Suspended" value={formatNumber(suspendedCount)} helper="Tidak tampil publik." />
         <StatCard label="Paket aktif" value={formatNumber(plansQuery.data.filter((plan) => plan.isActive).length)} helper="Dikelola super admin." />

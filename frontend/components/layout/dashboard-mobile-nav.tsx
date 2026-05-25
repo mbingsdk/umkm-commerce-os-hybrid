@@ -13,7 +13,7 @@ export function DashboardMobileNav() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const userPermissions = useTenantStore((state) => state.permissions);
-  const visibleItems = dashboardNavItems.filter((item) => userPermissions.includes(item.permission));
+  const visibleItems = dashboardNavItems.filter((item) => item.ready && item.href && userPermissions.includes(item.permission));
   const activeItem = visibleItems.find((item) => item.href && isDashboardNavItemActive(pathname, item.href));
 
   return (
@@ -45,7 +45,7 @@ export function DashboardMobileNav() {
       >
         <div className="grid gap-2">
           {visibleItems.map((item) =>
-            item.ready && item.href ? (
+            item.href ? (
               <Link
                 key={item.label}
                 href={item.href}
@@ -59,16 +59,7 @@ export function DashboardMobileNav() {
               >
                 {item.label}
               </Link>
-            ) : (
-              <div
-                key={item.label}
-                className="flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-400"
-                aria-disabled="true"
-              >
-                <span>{item.label}</span>
-                <span className="text-xs">Segera</span>
-              </div>
-            )
+            ) : null
           )}
         </div>
       </Dialog>

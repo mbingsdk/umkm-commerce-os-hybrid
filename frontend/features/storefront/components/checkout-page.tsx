@@ -60,7 +60,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <EmptyState
           title="Keranjang bukan dari toko ini"
-          description="Checkout publik MVP hanya mendukung satu toko dalam satu transaksi."
+          description="Untuk saat ini, checkout publik hanya mendukung satu toko dalam satu transaksi."
           action={
             <Link
               className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
@@ -282,7 +282,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
         <Card>
           <CardHeader>
             <CardTitle>Metode pembayaran</CardTitle>
-            <CardDescription>Pembayaran otomatis belum tersedia di MVP.</CardDescription>
+            <CardDescription>Pembayaran dilakukan manual oleh toko untuk rilis pilot ini.</CardDescription>
           </CardHeader>
           <CardContent>
             <label className="flex items-start gap-3 rounded-2xl border border-primary-200 bg-primary-50 p-4">
@@ -294,9 +294,9 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
                 defaultChecked
               />
               <span>
-                <span className="block text-sm font-semibold text-primary-950">Manual transfer</span>
+                <span className="block text-sm font-semibold text-primary-950">Transfer manual</span>
                 <span className="mt-1 block text-sm leading-6 text-primary-900">
-                  Toko akan mengirimkan instruksi pembayaran dan mengonfirmasi pesanan secara manual.
+                  Payment gateway belum terhubung. Toko akan mengirim instruksi pembayaran dan memeriksa pembayaran dari dashboard.
                 </span>
               </span>
             </label>

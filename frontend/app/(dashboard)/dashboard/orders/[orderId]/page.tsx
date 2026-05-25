@@ -254,7 +254,7 @@ export default function OrderDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <SummaryCard title="Total order" value={formatRupiah(order.grandTotal)} helper={formatDateTime(order.createdAt)} />
-        <SummaryCard title="Pembayaran" value={paymentLabel(order.paymentStatus)} helper={order.paidAt ? `Dibayar ${formatDateTime(order.paidAt)}` : "Manual transfer MVP"} />
+        <SummaryCard title="Pembayaran" value={paymentLabel(order.paymentStatus)} helper={order.paidAt ? `Dibayar ${formatDateTime(order.paidAt)}` : "Transfer manual"} />
         <SummaryCard title="Customer" value={detail.customer.name} helper={detail.customer.phone} />
       </div>
 
@@ -444,7 +444,7 @@ function PaymentConfirmationsCard({ confirmations }: { confirmations: PaymentCon
     <Card>
       <CardHeader>
         <CardTitle>Konfirmasi pembayaran</CardTitle>
-        <CardDescription>Data ini berasal dari bukti/manual confirmation customer.</CardDescription>
+        <CardDescription>Data ini berasal dari konfirmasi pembayaran manual customer.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {confirmations.length === 0 ? (

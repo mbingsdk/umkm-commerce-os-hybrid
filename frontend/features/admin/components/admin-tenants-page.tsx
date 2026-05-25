@@ -74,7 +74,7 @@ export function AdminTenantsPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Tenant"
-        description="Kelola tenant platform, status subscription, dan paket. Detail sensitif customer/order tidak ditampilkan di console MVP ini."
+        description="Kelola tenant platform, status subscription, dan paket. Detail sensitif customer/order tidak ditampilkan di console admin."
       />
 
       <Card>

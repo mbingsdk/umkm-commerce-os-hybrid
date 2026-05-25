@@ -36,8 +36,8 @@ export function DashboardHome() {
   if (!canReadSummary) {
     return (
       <EmptyState
-        title="Dashboard belum tersedia"
-        description="Role aktifmu belum memiliki izin untuk melihat ringkasan dashboard."
+        title="Kamu belum punya akses dashboard"
+        description="Role aktifmu belum memiliki izin untuk melihat ringkasan operasional toko."
       />
     );
   }

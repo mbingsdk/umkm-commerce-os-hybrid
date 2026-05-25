@@ -66,7 +66,7 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
         <Card>
           <CardHeader>
             <CardTitle>Cek status</CardTitle>
-            <CardDescription>Nomor HP dipakai sebagai verifikasi sederhana MVP.</CardDescription>
+            <CardDescription>Nomor HP dipakai sebagai verifikasi agar data pesanan tetap aman.</CardDescription>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>

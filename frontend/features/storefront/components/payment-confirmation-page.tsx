@@ -255,7 +255,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
                 value={submittedAmount && submittedAmount > 0 ? formatRupiah(submittedAmount) : "Belum diisi"}
               />
               <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 leading-6 text-primary-950">
-                Upload bukti transfer publik belum diaktifkan. Jika punya bukti berupa link/referensi, isi pada kolom opsional.
+                Upload bukti transfer belum tersedia di halaman publik. Jika punya bukti berupa link atau nomor referensi, isi pada kolom opsional.
               </div>
             </CardContent>
           </Card>

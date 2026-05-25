@@ -35,7 +35,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Badge tone="warning">Login diperlukan</Badge>
               <h1 className="text-2xl font-semibold text-neutral-950">Masuk sebagai super admin</h1>
               <p className="text-sm leading-6 text-neutral-500">
-                Console admin memakai token login yang sama, tetapi akses tetap divalidasi oleh backend super_admin guard.
+                Console admin memakai sesi login yang sama, tetapi akses tetap diverifikasi oleh backend.
               </p>
               <Link href="/login">
                 <Button>Ke halaman login</Button>
@@ -93,7 +93,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-5 text-neutral-300">
-            Admin endpoint tidak memakai <code>X-Tenant-ID</code>. Semua mutasi penting tetap diaudit oleh backend.
+            Admin API tidak memakai konteks tenant aktif. Semua mutasi penting tetap diaudit oleh backend.
           </div>
         </aside>
 

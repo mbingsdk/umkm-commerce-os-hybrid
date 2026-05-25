@@ -13,9 +13,13 @@ export function DashboardSidebar() {
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 overflow-y-auto border-r border-neutral-200 bg-white p-5 lg:block">
       <p className="text-sm font-semibold text-primary-700">UMKM Commerce OS</p>
       <nav className="mt-8 space-y-2 text-sm text-neutral-600">
-        {dashboardNavItems.map((item) => (
-          <PermissionGate key={item.label} permission={item.permission}>
-            {item.ready && item.href ? (
+        {dashboardNavItems.map((item) => {
+          if (!item.ready || !item.href) {
+            return null;
+          }
+
+          return (
+            <PermissionGate key={item.label} permission={item.permission}>
               <Link
                 className={cn(
                   "block rounded-xl px-3 py-2 font-medium transition hover:bg-neutral-100",
@@ -25,14 +29,9 @@ export function DashboardSidebar() {
               >
                 {item.label}
               </Link>
-            ) : (
-              <div className="flex items-center justify-between rounded-xl px-3 py-2 text-neutral-400" aria-disabled="true">
-                <span>{item.label}</span>
-                <span className="text-xs">Segera</span>
-              </div>
-            )}
-          </PermissionGate>
-        ))}
+            </PermissionGate>
+          );
+        })}
       </nav>
     </aside>
   );

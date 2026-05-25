@@ -45,7 +45,7 @@ export function PlatformHero({ query }: { query?: string }) {
           <CardContent className="space-y-3 text-sm leading-6 text-neutral-600">
             <p>• Toko punya halaman publik SEO-friendly.</p>
             <p>• Produk discovery mengarah ke storefront tenant.</p>
-            <p>• MVP tidak membuat marketplace checkout lintas toko.</p>
+            <p>• Checkout tetap diarahkan ke masing-masing toko, bukan lintas toko.</p>
           </CardContent>
         </Card>
       </div>

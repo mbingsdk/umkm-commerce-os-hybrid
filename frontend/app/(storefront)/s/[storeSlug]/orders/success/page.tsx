@@ -27,7 +27,7 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
           </Badge>
           <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">Pesanan berhasil dibuat</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-primary-50">
-            Simpan nomor order ini untuk komunikasi dengan toko. Pembayaran masih diproses manual oleh penjual.
+            Simpan nomor order ini untuk komunikasi dengan toko. Pembayaran dilakukan manual dan akan ditinjau oleh penjual.
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
 
           <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 text-sm leading-6 text-primary-950">
             {paymentMessage ??
-              "Silakan tunggu instruksi pembayaran manual dari toko. Jika perlu lebih cepat, hubungi toko melalui kontak yang tersedia."}
+              "Silakan ikuti instruksi pembayaran dari toko. Setelah transfer, kirim konfirmasi pembayaran agar penjual bisa meninjau pesananmu."}
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
