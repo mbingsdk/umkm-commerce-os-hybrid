@@ -36,7 +36,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/", now, "daily", 1),
     entry("/explore", now, "daily", 0.9),
     entry("/stores", now, "daily", 0.8),
-    entry("/products", now, "daily", 0.8)
+    entry("/products", now, "daily", 0.8),
+    entry("/pricing", now, "weekly", 0.7)
   ];
 
   const [stores, products] = await Promise.all([fetchPublicStores(), fetchPublicProducts()]);
