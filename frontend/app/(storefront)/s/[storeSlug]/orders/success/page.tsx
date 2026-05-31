@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PaymentNotice } from "@/components/public/public-ui";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format/money";
@@ -20,13 +21,13 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      <Card className="overflow-hidden border-[#eadfce] bg-white/90 shadow-[0_18px_55px_rgba(89,63,38,0.1)]">
-        <div className="bg-[#2f2923] p-6 text-[#fffaf2] sm:p-8">
-          <Badge className="bg-white/15 text-[#fffaf2]" tone="neutral">
+      <Card className="overflow-hidden border-[#E3D2BC] bg-white/90 shadow-[0_18px_55px_rgba(89,63,38,0.1)]">
+        <div className="bg-[#251F1A] p-6 text-[#FFFDF8] sm:p-8">
+          <Badge className="bg-white/15 text-[#FFFDF8]" tone="neutral">
             Pesanan dibuat
           </Badge>
           <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">Pesanan berhasil dibuat</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#eadfce]">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#E3D2BC]">
             Simpan nomor order ini untuk komunikasi dengan toko. Pembayaran dilakukan manual dan akan ditinjau oleh penjual.
           </p>
         </div>
@@ -36,40 +37,40 @@ export default async function OrderSuccessPage({ params, searchParams }: PagePro
           <CardDescription>Toko akan menghubungi kamu untuk instruksi pembayaran dan konfirmasi pesanan.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf2] p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#7b6a58]">Nomor order</p>
-            <p className="mt-1 text-xl font-bold text-[#241c16]">{orderNumber ?? "Belum tersedia"}</p>
+          <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#6F6256]">Nomor order</p>
+            <p className="mt-1 text-xl font-bold text-[#251F1A]">{orderNumber ?? "Belum tersedia"}</p>
           </div>
 
           {grandTotal > 0 ? (
-            <div className="flex items-center justify-between rounded-2xl border border-[#eadfce] p-4">
-              <span className="text-sm text-[#7b6a58]">Total final dari backend</span>
-              <span className="text-lg font-bold text-[#7a4f2f]">{formatRupiah(grandTotal)}</span>
+            <div className="flex items-center justify-between rounded-2xl border border-[#E3D2BC] p-4">
+              <span className="text-sm text-[#6F6256]">Total final dari backend</span>
+              <span className="text-lg font-bold text-[#B96E45]">{formatRupiah(grandTotal)}</span>
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-[#d8c7ad] bg-[#fff6df] p-4 text-sm leading-6 text-[#4b3a29]">
+          <PaymentNotice>
             {paymentMessage ??
               "Silakan ikuti instruksi pembayaran dari toko. Setelah transfer, kirim konfirmasi pembayaran agar penjual bisa meninjau pesananmu."}
-          </div>
+          </PaymentNotice>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
               href={`/s/${storeSlug}`}
             >
               Lanjut Belanja
             </Link>
             {orderNumber ? (
               <Link
-                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-[#d8c7ad] bg-[#fffaf2] px-4 text-sm font-semibold text-[#7a4f2f] transition hover:bg-[#f3eadc]"
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-[#E3D2BC] bg-[#FFFDF8] px-4 text-sm font-semibold text-[#B96E45] transition hover:bg-[#F1E7D8]"
                 href={`/s/${storeSlug}/orders/${encodeURIComponent(orderNumber)}/payment-confirmation`}
               >
                 Konfirmasi pembayaran
               </Link>
             ) : null}
             <Link
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-[#d8c7ad] bg-white px-4 text-sm font-semibold text-[#3b2f24] transition hover:bg-[#f7f1e8]"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-[#E3D2BC] bg-white px-4 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F8F1E7]"
               href={`/s/${storeSlug}/cart`}
             >
               Lihat Keranjang

@@ -8,6 +8,7 @@ import {
   PaginationLinks,
   ProductSection
 } from "@/features/discovery/components/discovery-sections";
+import { PublicPageIntro } from "@/components/public/public-ui";
 import { publicPageMetadata } from "@/lib/seo/metadata";
 
 type ProductsPageProps = {
@@ -43,16 +44,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   ]);
 
   return (
-    <main className="min-h-screen bg-[#f7f1e8]">
+    <main className="min-h-screen bg-[#F8F1E7]">
       <section className="mx-auto space-y-6 px-4 py-8 sm:px-6 lg:max-w-6xl lg:px-8">
-        <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:p-7">
-          <p className="text-sm font-semibold text-[#7a4f2f]">Etalase produk discovery</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#241c16] sm:text-5xl">Produk UMKM</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6d5e4e]">
-            Jelajahi produk aktif dari toko publik. Setiap produk mengarah ke storefront toko masing-masing, jadi customer
-            tetap tahu sedang berbelanja dari siapa.
-          </p>
-        </div>
+        <PublicPageIntro
+          compact
+          eyebrow="Etalase produk"
+          title="Produk UMKM"
+          description="Jelajahi produk aktif dari toko publik. Setiap produk mengarah ke storefront resmi toko masing-masing."
+        />
 
         <FilterBar
           action="/products"

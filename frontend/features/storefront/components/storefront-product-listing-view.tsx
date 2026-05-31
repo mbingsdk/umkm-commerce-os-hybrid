@@ -33,36 +33,36 @@ export function StorefrontProductListingView({
 
   return (
     <main>
-      <section className="bg-[#f7f1e8]">
+      <section className="bg-[#F8F1E7]">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="space-y-4 rounded-[32px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_18px_50px_rgba(89,63,38,0.08)] sm:p-7">
-            <Link className="text-sm font-semibold text-[#7a4f2f] hover:text-[#3b2f24]" href={`/s/${store.slug}`}>
+          <div className="space-y-4 rounded-[32px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_18px_50px_rgba(89,63,38,0.08)] sm:p-7">
+            <Link className="text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25]" href={`/s/${store.slug}`}>
               ? Kembali ke toko
             </Link>
             <div className="max-w-3xl space-y-2">
-              <p className="text-sm font-medium text-[#7b6a58]">
+              <p className="text-sm font-medium text-[#6F6256]">
                 {store.name}
                 {store.city ? ` ? ${store.city}` : ""}
               </p>
-              <h1 className="text-2xl font-bold tracking-tight text-[#241c16] sm:text-4xl">{title}</h1>
-              <p className="text-sm leading-7 text-[#665746] sm:text-base">{description}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[#251F1A] sm:text-4xl">{title}</h1>
+              <p className="text-sm leading-7 text-[#6F6256] sm:text-base">{description}</p>
             </div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="space-y-4 rounded-[28px] border border-[#eadfce] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+        <div className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
           <div>
-            <h2 className="text-lg font-semibold text-[#241c16]">Cari produk</h2>
-            <p className="mt-1 text-sm text-[#7b6a58]">
+            <h2 className="text-lg font-semibold text-[#251F1A]">Cari produk</h2>
+            <p className="mt-1 text-sm text-[#6F6256]">
               Cari produk aktif dari toko ini berdasarkan nama produk.
             </p>
           </div>
 
           <form action={currentPath} className="flex flex-col gap-3 sm:flex-row" method="get">
             <Input defaultValue={query} name="q" placeholder="Cari nama produk..." />
-            <button className="h-10 rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]">
+            <button className="h-10 rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]">
               Cari
             </button>
           </form>
@@ -108,7 +108,7 @@ export function StorefrontProductListingView({
               {products.pagination?.hasMore && products.pagination.nextCursor ? (
                 <div className="flex justify-center pt-2">
                   <Link
-                    className="inline-flex h-10 items-center justify-center rounded-xl border border-[#d8c7ad] bg-[#fffaf2] px-4 text-sm font-semibold text-[#3b2f24] transition hover:bg-[#f3eadc]"
+                    className="inline-flex h-10 items-center justify-center rounded-xl border border-[#E3D2BC] bg-[#FFFDF8] px-4 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F1E7D8]"
                     href={buildListingHref(currentPath, {
                       q: query,
                       cursor: products.pagination.nextCursor
@@ -130,7 +130,7 @@ export function StorefrontProductListingView({
               action={
                 query || activeCategory ? (
                   <Link
-                    className="inline-flex h-10 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
+                    className="inline-flex h-10 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
                     href={`/s/${store.slug}/products`}
                   >
                     Lihat semua produk
@@ -150,8 +150,8 @@ function CategoryLink({ active, href, label }: { active: boolean; href: string; 
     <Link
       className={
         active
-          ? "shrink-0 rounded-full bg-[#2f2923] px-4 py-2 text-sm font-semibold text-[#fffaf2]"
-          : "shrink-0 rounded-full border border-[#eadfce] bg-[#fffaf2] px-4 py-2 text-sm font-semibold text-[#665746] transition hover:border-[#caa36d] hover:text-[#3b2f24]"
+          ? "shrink-0 rounded-full bg-[#251F1A] px-4 py-2 text-sm font-semibold text-[#FFFDF8]"
+          : "shrink-0 rounded-full border border-[#E3D2BC] bg-[#FFFDF8] px-4 py-2 text-sm font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#7C3F25]"
       }
       href={href}
     >

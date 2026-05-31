@@ -101,9 +101,9 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
         type="application/ld+json"
       />
 
-      <section className="bg-[#f7f1e8]">
+      <section className="bg-[#F8F1E7]">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="overflow-hidden rounded-[32px] border border-[#d6b98e] bg-[#2f2923] text-[#fffaf2] shadow-[0_22px_70px_rgba(47,41,35,0.20)]">
+          <div className="overflow-hidden rounded-[32px] border border-[#E3D2BC] bg-[#251F1A] text-[#FFFDF8] shadow-[0_22px_70px_rgba(47,41,35,0.20)]">
             {store.bannerUrl ? (
               <SafeImage
                 alt=""
@@ -114,18 +114,18 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
             ) : null}
             <div className="grid gap-5 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
               <div className="space-y-3">
-                <p className="text-sm text-[#eadfce]">
+                <p className="text-sm text-[#E3D2BC]">
                   {store.city ?? "Toko lokal"}
                   {store.province ? `, ${store.province}` : ""}
                 </p>
                 <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">{store.name}</h1>
-                <p className="max-w-2xl text-sm leading-7 text-[#f4eadb]">
+                <p className="max-w-2xl text-sm leading-7 text-[#F1E7D8]">
                   {store.description ?? "Toko ini belum menambahkan deskripsi."}
                 </p>
               </div>
 
               <div className="space-y-3">
-                <p className="max-w-sm text-sm leading-6 text-[#f4eadb]">
+                <p className="max-w-sm text-sm leading-6 text-[#F1E7D8]">
                   {whatsappHref
                     ? "Hubungi toko via WhatsApp untuk tanya stok dan pemesanan."
                     : "Kontak WhatsApp belum tersedia. Lihat informasi toko untuk kontak lain."}
@@ -133,7 +133,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
                 <div className="flex flex-wrap gap-2">
                   {whatsappHref ? (
                     <a
-                      className="inline-flex h-9 items-center justify-center rounded-xl bg-[#fffaf2] px-4 text-sm font-semibold text-[#2f2923] transition hover:bg-[#f4eadb]"
+                      className="inline-flex h-9 items-center justify-center rounded-xl bg-[#FFFDF8] px-4 text-sm font-semibold text-[#251F1A] transition hover:bg-[#F1E7D8]"
                       href={whatsappHref}
                       rel="noopener noreferrer"
                       target="_blank"
@@ -141,7 +141,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
                       Chat WhatsApp
                     </a>
                   ) : null}
-                  <div className="[&_button]:border-white/30 [&_button]:bg-white/10 [&_button]:text-white [&_button:hover]:bg-white/20 [&_span]:text-[#f4eadb]">
+                  <div className="[&_button]:border-white/30 [&_button]:bg-white/10 [&_button]:text-white [&_button:hover]:bg-white/20 [&_span]:text-[#F1E7D8]">
                     <ShareLinkButton />
                   </div>
                 </div>
@@ -153,16 +153,16 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
 
       <section className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:px-8">
         <div className="space-y-6">
-          <div className="space-y-4 rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)]">
+          <div className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)]">
             <div>
-              <h2 className="text-lg font-bold text-[#241c16]">Cari produk</h2>
-              <p className="mt-1 text-sm text-[#7a6a58]">Temukan produk dari toko ini dengan cepat.</p>
+              <h2 className="text-lg font-bold text-[#251F1A]">Cari produk</h2>
+              <p className="mt-1 text-sm text-[#6F6256]">Temukan produk dari toko ini dengan cepat.</p>
             </div>
 
             <form className="flex flex-col gap-3 sm:flex-row" method="get">
               <Input defaultValue={query} name="q" placeholder="Cari nama produk..." />
               {categorySlug ? <input name="category" type="hidden" value={categorySlug} /> : null}
-              <button className="h-10 rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]">
+              <button className="h-10 rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]">
                 Cari
               </button>
             </form>
@@ -171,13 +171,13 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
           <div className="space-y-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-[#241c16]">Produk</h2>
-                <p className="text-sm text-[#7a6a58]">
+                <h2 className="text-2xl font-bold text-[#251F1A]">Produk</h2>
+                <p className="text-sm text-[#6F6256]">
                   {selectedCategory ? `Kategori ${selectedCategory.name}` : "Semua produk aktif dari toko ini."}
                 </p>
               </div>
               <Link
-                className="text-sm font-semibold text-[#7a4f2f] transition hover:text-[#4e321f]"
+                className="text-sm font-semibold text-[#B96E45] transition hover:text-[#7C3F25]"
                 href={`/s/${store.slug}/products`}
               >
                 Lihat semua produk
@@ -231,28 +231,28 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
           </div>
         </div>
 
-        <aside className="space-y-4 rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] lg:sticky lg:top-24">
+        <aside className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] lg:sticky lg:top-24">
           <div>
-            <h2 className="text-lg font-bold text-[#241c16]">Tentang toko</h2>
-            <p className="mt-2 text-sm leading-6 text-[#6d5e4e]">
+            <h2 className="text-lg font-bold text-[#251F1A]">Tentang toko</h2>
+            <p className="mt-2 text-sm leading-6 text-[#6F6256]">
               {store.description ?? "Deskripsi toko belum tersedia."}
             </p>
           </div>
 
-          <div className="space-y-2 text-sm text-[#6d5e4e]">
+          <div className="space-y-2 text-sm text-[#6F6256]">
             <p>
-              <span className="font-medium text-[#241c16]">Lokasi:</span>{" "}
+              <span className="font-medium text-[#251F1A]">Lokasi:</span>{" "}
               {[store.city, store.province].filter(Boolean).join(", ") || "Belum diisi"}
             </p>
             <p>
-              <span className="font-medium text-[#241c16]">WhatsApp:</span> {store.whatsapp ?? "Belum diisi"}
+              <span className="font-medium text-[#251F1A]">WhatsApp:</span> {store.whatsapp ?? "Belum diisi"}
             </p>
             <p>
-              <span className="font-medium text-[#241c16]">Telepon:</span> {store.phone ?? "Belum diisi"}
+              <span className="font-medium text-[#251F1A]">Telepon:</span> {store.phone ?? "Belum diisi"}
             </p>
           </div>
 
-          <p className="rounded-2xl border border-[#ead7bd] bg-[#fff4d8] p-4 text-sm leading-6 text-[#72512f]">
+          <p className="rounded-2xl border border-[#E8D2AA] bg-[#FFF5DE] p-4 text-sm leading-6 text-[#7A4D1D]">
             {whatsappHref
               ? "Gunakan WhatsApp untuk menanyakan ketersediaan, varian, atau cara pemesanan langsung ke toko."
               : "Kontak WhatsApp belum tersedia. Gunakan nomor telepon jika toko sudah mengisinya."}
@@ -269,8 +269,8 @@ function CategoryLink({ active, href, label }: { active: boolean; href: string; 
       href={href}
       className={
         active
-          ? "rounded-full bg-[#2f2923] px-4 py-2 text-sm font-semibold text-[#fffaf2]"
-          : "rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-semibold text-[#5f5042] transition hover:border-[#9a6a43] hover:text-[#7a4f2f]"
+          ? "rounded-full bg-[#251F1A] px-4 py-2 text-sm font-semibold text-[#FFFDF8]"
+          : "rounded-full border border-[#E3D2BC] bg-white px-4 py-2 text-sm font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#B96E45]"
       }
     >
       {label}

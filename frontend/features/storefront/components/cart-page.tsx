@@ -45,7 +45,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
           description="Yuk pilih produk dari toko ini sebelum lanjut checkout."
           action={
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
               href={`/s/${storeSlug}`}
             >
               Lihat Produk
@@ -60,13 +60,13 @@ export function CartPage({ storeSlug }: CartPageProps) {
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
       <section className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#241c16]">Keranjang</h1>
-          <p className="mt-1 text-sm text-[#7b6a58]">Atur jumlah produk sebelum checkout.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#251F1A]">Keranjang</h1>
+          <p className="mt-1 text-sm text-[#6F6256]">Atur jumlah produk sebelum checkout.</p>
         </div>
 
         <div className="space-y-3">
           {items.map((item) => (
-            <Card key={item.productId} className="border-[#eadfce] bg-[#fffaf2] shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+            <Card key={item.productId} className="border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
               <CardContent className="grid gap-4 p-4 sm:grid-cols-[96px_minmax(0,1fr)_auto] sm:items-center">
                 <Link href={`/s/${storeSlug}/products/${item.slug}`} className="block">
                   <SafeImage
@@ -81,21 +81,21 @@ export function CartPage({ storeSlug }: CartPageProps) {
                 <div className="min-w-0">
                   <Link
                     href={`/s/${storeSlug}/products/${item.slug}`}
-                    className="font-semibold text-[#241c16] hover:text-[#7a4f2f]"
+                    className="font-semibold text-[#251F1A] hover:text-[#B96E45]"
                   >
                     {item.name}
                   </Link>
-                  <p className="mt-1 text-sm text-[#7b6a58]">{formatRupiah(item.displayPrice)} / item</p>
-                  <p className="mt-2 text-sm font-semibold text-[#7a4f2f]">
+                  <p className="mt-1 text-sm text-[#6F6256]">{formatRupiah(item.displayPrice)} / item</p>
+                  <p className="mt-2 text-sm font-semibold text-[#B96E45]">
                     Estimasi: {formatRupiah(item.displayPrice * item.quantity)}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-                  <div className="inline-flex items-center rounded-xl border border-[#d8c7ad] bg-white">
+                  <div className="inline-flex items-center rounded-xl border border-[#E3D2BC] bg-white">
                     <button
                       aria-label={`Kurangi ${item.name}`}
-                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-[#665746] hover:text-[#7a4f2f]"
+                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-[#6F6256] hover:text-[#B96E45]"
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       type="button"
                     >
@@ -104,7 +104,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
                     <span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span>
                     <button
                       aria-label={`Tambah ${item.name}`}
-                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-[#665746] hover:text-[#7a4f2f]"
+                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-[#6F6256] hover:text-[#B96E45]"
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                       type="button"
                     >
@@ -127,27 +127,27 @@ export function CartPage({ storeSlug }: CartPageProps) {
       </section>
 
       <aside className="lg:sticky lg:top-6 lg:self-start">
-        <Card className="border-[#eadfce] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
+        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
           <CardHeader>
             <CardTitle>Ringkasan pesanan</CardTitle>
             <CardDescription>Total di halaman ini adalah estimasi. Backend akan menghitung ulang harga final.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[#7b6a58]">Subtotal estimasi</span>
-              <span className="font-bold text-[#241c16]">{formatRupiah(subtotal)}</span>
+              <span className="text-[#6F6256]">Subtotal estimasi</span>
+              <span className="font-bold text-[#251F1A]">{formatRupiah(subtotal)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[#7b6a58]">Ongkir</span>
-              <span className="font-semibold text-[#241c16]">Dihitung saat checkout</span>
+              <span className="text-[#6F6256]">Ongkir</span>
+              <span className="font-semibold text-[#251F1A]">Dihitung saat checkout</span>
             </div>
             <Link
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
+              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
               href={`/s/${storeSlug}/checkout`}
             >
               Lanjut Checkout
             </Link>
-            <Link className="block text-center text-sm font-semibold text-[#7a4f2f]" href={`/s/${storeSlug}`}>
+            <Link className="block text-center text-sm font-semibold text-[#B96E45]" href={`/s/${storeSlug}`}>
               Tambah produk lain
             </Link>
           </CardContent>

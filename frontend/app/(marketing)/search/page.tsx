@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/feedback/empty-state";
+import { PublicPageIntro } from "@/components/public/public-ui";
 import { Button } from "@/components/ui/button";
 import { searchDiscovery } from "@/features/discovery/api/discovery.api";
 import { DiscoveryProductCard, DiscoveryStoreCard } from "@/features/discovery/components/discovery-cards";
@@ -32,25 +33,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const showStores = type === "all" || type === "stores";
 
   return (
-    <main className="min-h-screen bg-[#f7f1e8]">
+    <main className="min-h-screen bg-[#F8F1E7]">
       <section className="mx-auto space-y-6 px-4 py-8 sm:px-6 lg:max-w-6xl lg:px-8">
-        <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:p-7">
-          <p className="text-sm font-semibold text-[#7a4f2f]">Cari toko dan produk</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#241c16] sm:text-5xl">Pencarian discovery</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6d5e4e]">
-            Cari produk atau toko dari UMKM publik. Hasil akan membawa customer ke storefront tenant, bukan ke checkout marketplace.
-          </p>
-        </div>
+        <PublicPageIntro
+          compact
+          eyebrow="Cari toko dan produk"
+          title="Pencarian discovery"
+          description="Cari produk atau toko dari UMKM publik. Hasil membawa customer ke storefront resmi tiap toko."
+        />
 
-        <form className="flex flex-col gap-3 rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-4 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:flex-row" action="/search">
+        <form className="flex flex-col gap-3 rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_10px_28px_rgba(80,57,34,0.06)] sm:flex-row" action="/search">
           <input
-            className="h-11 min-w-0 flex-1 rounded-xl border border-[#e2d4bf] bg-white px-3 text-sm text-[#241c16] outline-none placeholder:text-[#a0917f] focus:border-[#9a6a43] focus:ring-2 focus:ring-[#ead7bd]"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9b8d7b] focus:border-[#B96E45] focus:ring-2 focus:ring-[#F1E7D8]"
             defaultValue={query}
             name="q"
             placeholder="Cari produk atau toko..."
           />
           <input name="type" type="hidden" value={type} />
-          <Button className="h-11 bg-[#2f2923] hover:bg-[#1f1a16]" type="submit">Cari</Button>
+          <Button className="h-11 bg-[#251F1A] hover:bg-[#16110E]" type="submit">Cari</Button>
         </form>
 
         <div className="flex flex-wrap gap-2">
@@ -108,8 +108,8 @@ function TabLink({ active, href, label }: { active: boolean; href: string; label
       href={href}
       className={
         active
-          ? "inline-flex min-h-11 items-center rounded-full bg-[#2f2923] px-4 py-2 text-sm font-semibold text-[#fffaf2]"
-          : "inline-flex min-h-11 items-center rounded-full border border-[#eadfce] bg-[#fffaf2] px-4 py-2 text-sm font-semibold text-[#5f5042] transition hover:border-[#9a6a43] hover:text-[#7a4f2f]"
+          ? "inline-flex min-h-11 items-center rounded-full bg-[#251F1A] px-4 py-2 text-sm font-semibold text-[#FFFDF8]"
+          : "inline-flex min-h-11 items-center rounded-full border border-[#E3D2BC] bg-[#FFFDF8] px-4 py-2 text-sm font-semibold text-[#6F6256] transition hover:border-[#9a6a43] hover:text-[#B96E45]"
       }
     >
       {label}
@@ -120,7 +120,7 @@ function TabLink({ active, href, label }: { active: boolean; href: string; label
 function SectionTitle({ title, count }: { title: string; count: number }) {
   return (
     <div>
-      <h2 className="text-xl font-bold text-[#241c16]">{title}</h2>
+      <h2 className="text-xl font-bold text-[#251F1A]">{title}</h2>
       <p className="mt-1 text-sm text-[#7a6a58]">{count} hasil ditemukan.</p>
     </div>
   );

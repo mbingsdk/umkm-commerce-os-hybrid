@@ -20,7 +20,7 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#eadfce] bg-[#fffaf2]/92 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-[#E3D2BC] bg-[#FFFDF8]/92 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <Link className="flex min-w-0 items-center gap-3" href={`/s/${storeSlug}`}>
@@ -32,13 +32,13 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
                 src={logoUrl}
               />
             ) : (
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#6f4e37] text-sm font-bold text-[#fffaf2]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#6f4e37] text-sm font-bold text-[#FFFDF8]">
                 {(storeName ?? storeSlug).slice(0, 1).toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[#241c16]">{storeName ?? storeSlug}</p>
-              <p className="truncate text-xs text-[#7a6a58]">{city ?? "Storefront publik"}</p>
+              <p className="truncate text-sm font-bold text-[#251F1A]">{storeName ?? storeSlug}</p>
+              <p className="truncate text-xs text-[#6F6256]">{city ?? "Storefront publik"}</p>
             </div>
           </Link>
 
@@ -57,7 +57,7 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
           {navItems.map((item) => (
             <Link
               key={item.href}
-              className="shrink-0 rounded-full border border-[#eadfce] bg-white/75 px-3 py-2 font-semibold text-[#5f5042] transition hover:border-[#9a6a43] hover:text-[#7a4f2f]"
+              className="shrink-0 rounded-full border border-[#E3D2BC] bg-white/75 px-3 py-2 font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#B96E45]"
               href={item.href}
             >
               {item.label}

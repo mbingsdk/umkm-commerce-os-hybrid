@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   getDiscoveryHome,
   listDiscoveryProducts,
   listDiscoveryStores
 } from "@/features/discovery/api/discovery.api";
 import {
-  AggregateChips,
-  PlatformHero,
+  ProductDiscoveryPanel,
   ProductSection,
   StoreSection
 } from "@/features/discovery/components/discovery-sections";
@@ -19,57 +17,70 @@ export const metadata: Metadata = publicPageMetadata({
   path: "/"
 });
 
-export default async function PlatformHomePage() {
+type PlatformHomePageProps = {
+  searchParams: Promise<{
+    q?: string | string[];
+    category?: string | string[];
+    city?: string | string[];
+    price_min?: string | string[];
+    price_max?: string | string[];
+  }>;
+};
+
+export default async function PlatformHomePage({ searchParams }: PlatformHomePageProps) {
+  const rawSearchParams = await searchParams;
+  const query = firstParam(rawSearchParams.q);
+  const category = firstParam(rawSearchParams.category);
+  const city = firstParam(rawSearchParams.city);
+  const priceMin = firstParam(rawSearchParams.price_min);
+  const priceMax = firstParam(rawSearchParams.price_max);
+
   const [home, stores, products] = await Promise.all([
     getDiscoveryHome(),
-    listDiscoveryStores({ limit: 6 }),
-    listDiscoveryProducts({ limit: 8 })
+    listDiscoveryStores({ limit: 3 }),
+    listDiscoveryProducts({
+      query,
+      category,
+      city,
+      priceMin,
+      priceMax,
+      limit: 12
+    })
   ]);
 
   const featuredStores = home.featuredStores.length > 0 ? home.featuredStores : stores.items;
-  const featuredProducts = home.featuredProducts.length > 0 ? home.featuredProducts : products.items;
 
   return (
-    <main className="min-h-screen bg-[#f7f1e8]">
-      <PlatformHero />
+    <main className="min-h-screen bg-[#F8F1E7]">
+      <ProductDiscoveryPanel
+        categories={home.popularCategories}
+        category={category}
+        cities={home.popularCities}
+        city={city}
+        priceMax={priceMax}
+        priceMin={priceMin}
+        query={query}
+      />
 
-      <section className="mx-auto space-y-10 px-4 py-10 sm:px-6 lg:max-w-6xl lg:px-8">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <AggregateChips title="Kategori populer" items={home.popularCategories} type="category" />
-          <AggregateChips title="Kota populer" items={home.popularCities} type="city" />
-        </div>
-
-        <StoreSection
-          title="Toko pilihan"
-          description="Storefront tenant yang sudah published dan bisa ditemukan customer."
-          stores={featuredStores}
-          href="/stores"
-        />
-
+      <section className="mx-auto space-y-5 px-4 pb-8 pt-2 sm:px-6 sm:pb-10 lg:max-w-6xl lg:px-8">
         <ProductSection
-          title="Produk pilihan"
-          description="Produk aktif dan discoverable. Klik produk untuk masuk ke halaman toko tenant."
-          products={featuredProducts}
+          title="Produk UMKM terbaru"
+          description="Produk aktif dari UMKM lokal, langsung menuju halaman toko resminya."
+          products={products.items}
           href="/products"
         />
 
-        <div className="rounded-[28px] border border-[#d6b98e] bg-[#2f2923] p-6 text-[#fffaf2] shadow-[0_18px_50px_rgba(47,41,35,0.18)] sm:p-8">
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Punya toko UMKM?</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#eadfce]">
-                Buat storefront, kelola produk, pesanan, POS, inventori, finance dasar, dan mulai tampil di discovery.
-              </p>
-            </div>
-            <Link
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#fffaf2] px-5 text-sm font-semibold text-[#2f2923] transition hover:bg-[#f0e4d2]"
-              href="/register"
-            >
-              Daftar sebagai UMKM
-            </Link>
-          </div>
-        </div>
+        <StoreSection
+          title="Toko lokal pilihan"
+          description="Storefront publik sebagai konteks toko, setelah kamu melihat produk yang tersedia."
+          stores={featuredStores.slice(0, 3)}
+          href="/stores"
+        />
       </section>
     </main>
   );
+}
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
 }
