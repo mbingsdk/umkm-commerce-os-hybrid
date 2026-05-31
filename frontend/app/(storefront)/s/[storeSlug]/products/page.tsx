@@ -96,7 +96,7 @@ export default async function ProductListingPage({ params, searchParams }: Produ
       products={products}
       query={query}
       store={store}
-      title="Semua produk"
+      title="Semua Produk"
     />
   );
 }

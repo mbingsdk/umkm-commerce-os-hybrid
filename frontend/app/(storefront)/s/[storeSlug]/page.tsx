@@ -169,11 +169,19 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
           </div>
 
           <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold text-neutral-950">Produk</h2>
-              <p className="text-sm text-neutral-500">
-                {selectedCategory ? `Kategori ${selectedCategory.name}` : "Semua produk aktif dari toko ini."}
-              </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-neutral-950">Produk</h2>
+                <p className="text-sm text-neutral-500">
+                  {selectedCategory ? `Kategori ${selectedCategory.name}` : "Semua produk aktif dari toko ini."}
+                </p>
+              </div>
+              <Link
+                className="text-sm font-semibold text-primary-700 transition hover:text-primary-800"
+                href={`/s/${store.slug}/products`}
+              >
+                Lihat semua produk
+              </Link>
             </div>
 
             {categories.length === 0 ? (
