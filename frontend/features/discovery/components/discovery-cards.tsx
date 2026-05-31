@@ -39,7 +39,7 @@ export function DiscoveryStoreCard({ store }: { store: DiscoveryStore }) {
             {store.description || "Storefront aktif untuk melihat katalog dan kontak toko."}
           </p>
           <span className="inline-flex min-h-8 items-center rounded-full bg-[#251F1A] px-3 text-xs font-semibold text-[#FFFDF8] sm:text-sm">
-            Kunjungi toko ?
+            Kunjungi toko
           </span>
         </div>
       </Link>

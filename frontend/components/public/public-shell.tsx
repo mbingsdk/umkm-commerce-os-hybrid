@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { PublicBottomDock } from "@/components/public/public-bottom-dock";
 import { PublicAuthNav } from "@/components/public/public-auth-nav";
 import { PublicMobileMenu } from "@/components/public/public-mobile-menu";
 import { publicTheme } from "@/components/public/public-ui";
@@ -13,7 +14,7 @@ const navItems = [
 
 export function PublicMarketingShell({ children }: { children: ReactNode }) {
   return (
-    <div className={cn("min-h-screen", publicTheme.bg, publicTheme.text)}>
+    <div className={cn("min-h-screen pb-20 md:pb-0", publicTheme.bg, publicTheme.text)}>
       <header className="sticky top-0 z-40 border-b border-[#E3D2BC] bg-[#FFFDF8]/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
           <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2" aria-label="UMKM Commerce OS">
@@ -46,13 +47,14 @@ export function PublicMarketingShell({ children }: { children: ReactNode }) {
       </header>
 
       {children}
+      <PublicBottomDock />
 
       <footer className="border-t border-[#E3D2BC] bg-[#FFFDF8]">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm text-[#6F6256] sm:px-6 md:grid-cols-[minmax(0,1fr)_auto] lg:px-8">
           <div>
-            <p className="font-semibold text-[#251F1A]">UMKM Commerce OS Hybrid</p>
+            <p className="font-semibold text-[#251F1A]">UMKM Commerce OS</p>
             <p className="mt-2 max-w-2xl leading-6">
-              Platform ringan untuk storefront tenant, discovery toko dan produk, checkout manual, serta operasional UMKM.
+              Tempat menemukan toko dan produk UMKM lokal, lalu belanja langsung di storefront resmi masing-masing toko.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

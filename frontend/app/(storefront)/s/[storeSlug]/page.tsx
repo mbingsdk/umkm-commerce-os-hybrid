@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/feedback/empty-state";
-import { Input } from "@/components/ui/input";
 import {
   getPublicStoreBySlug,
   isPublicNotFoundError,
@@ -102,38 +101,74 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
       />
 
       <section className="bg-[#F8F1E7]">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="overflow-hidden rounded-[32px] border border-[#E3D2BC] bg-[#251F1A] text-[#FFFDF8] shadow-[0_22px_70px_rgba(47,41,35,0.20)]">
-            {store.bannerUrl ? (
-              <SafeImage
-                alt=""
-                className="h-40 w-full object-cover opacity-75 sm:h-52"
-                fallbackClassName="h-40 w-full bg-transparent sm:h-52"
-                src={store.bannerUrl}
-              />
-            ) : null}
-            <div className="grid gap-5 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-              <div className="space-y-3">
-                <p className="text-sm text-[#E3D2BC]">
-                  {store.city ?? "Toko lokal"}
-                  {store.province ? `, ${store.province}` : ""}
-                </p>
-                <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">{store.name}</h1>
-                <p className="max-w-2xl text-sm leading-7 text-[#F1E7D8]">
-                  {store.description ?? "Toko ini belum menambahkan deskripsi."}
-                </p>
+        <div className="mx-auto max-w-[1500px] px-4 py-3 sm:px-6 sm:py-5 lg:px-8">
+          <div className="overflow-hidden rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_14px_42px_rgba(89,63,38,0.09)]">
+            <div className="relative h-28 overflow-hidden bg-[radial-gradient(circle_at_20%_20%,#D99A3D_0,#D99A3D_18%,transparent_19%),linear-gradient(135deg,#6F7D55,#B96E45_48%,#251F1A)] sm:h-40 lg:h-44">
+              {store.bannerUrl ? (
+                <SafeImage
+                  alt=""
+                  className="h-full w-full object-cover"
+                  fallbackClassName="h-full w-full bg-transparent"
+                  src={store.bannerUrl}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,253,248,0.18),transparent_36%),radial-gradient(circle_at_82%_18%,rgba(255,245,222,0.28),transparent_28%)]" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#251F1A]/65 via-[#251F1A]/10 to-transparent" />
+              <Link
+                className="absolute left-3 top-3 inline-flex h-8 items-center rounded-full border border-white/30 bg-[#251F1A]/55 px-2.5 text-xs font-semibold text-[#FFFDF8] shadow-sm backdrop-blur transition hover:bg-[#251F1A]/75 sm:left-4 sm:top-4"
+                href="/"
+              >
+                &larr; Jelajah platform
+              </Link>
+            </div>
+
+            <div className="relative grid gap-4 px-4 pb-4 pt-10 sm:px-5 sm:pb-5 sm:pt-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-6">
+              <div className="absolute left-4 top-0 -translate-y-1/2 sm:left-5 lg:left-6">
+                {store.logoUrl ? (
+                  <SafeImage
+                    alt=""
+                    className="h-16 w-16 rounded-[22px] border-4 border-[#FFFDF8] bg-[#FFFDF8] object-cover shadow-[0_10px_24px_rgba(37,31,26,0.16)] sm:h-20 sm:w-20"
+                    fallbackClassName="h-16 w-16 rounded-[22px] border-4 border-[#FFFDF8] sm:h-20 sm:w-20"
+                    src={store.logoUrl}
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border-4 border-[#FFFDF8] bg-[#6f4e37] text-xl font-bold text-[#FFFDF8] shadow-[0_10px_24px_rgba(37,31,26,0.16)] sm:h-20 sm:w-20 sm:text-2xl">
+                    {store.name.slice(0, 1).toUpperCase()}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-3">
-                <p className="max-w-sm text-sm leading-6 text-[#F1E7D8]">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+                  <span className="rounded-full bg-[#F1E7D8] px-2.5 py-0.5 text-[#7C3F25]">Storefront aktif</span>
+                  <span className="rounded-full border border-[#E3D2BC] bg-white px-2.5 py-0.5 text-[#6F6256]">
+                    {[store.city, store.province].filter(Boolean).join(", ") || "Toko lokal"}
+                  </span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-[#251F1A] sm:text-3xl">{store.name}</h1>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[#6F6256]">
+                    {store.description ?? "Toko ini belum menambahkan deskripsi. Jelajahi katalog produk yang tersedia di bawah ini."}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5 text-xs font-semibold text-[#6F6256]">
+                  <span className="rounded-full bg-[#FFF5DE] px-2.5 py-0.5 text-[#7A4D1D]">Checkout ke toko</span>
+                  <span className="rounded-full bg-[#EEF4EA] px-2.5 py-0.5 text-[#52613C]">Katalog publik</span>
+                  <span className="rounded-full bg-[#EAF4F3] px-2.5 py-0.5 text-[#2F7C78]">Kontak jelas</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-[20px] border border-[#E3D2BC] bg-[#FFFDF8] p-3 shadow-[0_8px_24px_rgba(89,63,38,0.05)] lg:w-72">
+                <p className="text-sm leading-5 text-[#6F6256]">
                   {whatsappHref
-                    ? "Hubungi toko via WhatsApp untuk tanya stok dan pemesanan."
-                    : "Kontak WhatsApp belum tersedia. Lihat informasi toko untuk kontak lain."}
+                    ? "Butuh tanya stok atau varian? Hubungi toko langsung sebelum checkout."
+                    : "Kontak WhatsApp belum tersedia. Gunakan informasi kontak toko jika sudah diisi."}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {whatsappHref ? (
                     <a
-                      className="inline-flex h-9 items-center justify-center rounded-xl bg-[#FFFDF8] px-4 text-sm font-semibold text-[#251F1A] transition hover:bg-[#F1E7D8]"
+                      className="inline-flex h-9 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
                       href={whatsappHref}
                       rel="noopener noreferrer"
                       target="_blank"
@@ -141,9 +176,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
                       Chat WhatsApp
                     </a>
                   ) : null}
-                  <div className="[&_button]:border-white/30 [&_button]:bg-white/10 [&_button]:text-white [&_button:hover]:bg-white/20 [&_span]:text-[#F1E7D8]">
-                    <ShareLinkButton />
-                  </div>
+                  <ShareLinkButton />
                 </div>
               </div>
             </div>
@@ -151,27 +184,12 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:px-8">
-        <div className="space-y-6">
-          <div className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)]">
-            <div>
-              <h2 className="text-lg font-bold text-[#251F1A]">Cari produk</h2>
-              <p className="mt-1 text-sm text-[#6F6256]">Temukan produk dari toko ini dengan cepat.</p>
-            </div>
-
-            <form className="flex flex-col gap-3 sm:flex-row" method="get">
-              <Input defaultValue={query} name="q" placeholder="Cari nama produk..." />
-              {categorySlug ? <input name="category" type="hidden" value={categorySlug} /> : null}
-              <button className="h-10 rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]">
-                Cari
-              </button>
-            </form>
-          </div>
-
-          <div className="space-y-4">
+      <section className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:px-8">
+        <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-[#251F1A]">Produk</h2>
+                <h2 className="text-xl font-bold text-[#251F1A] sm:text-2xl">Produk</h2>
                 <p className="text-sm text-[#6F6256]">
                   {selectedCategory ? `Kategori ${selectedCategory.name}` : "Semua produk aktif dari toko ini."}
                 </p>
@@ -190,7 +208,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
                 description="Toko ini belum menambahkan kategori publik. Semua produk tetap ditampilkan."
               />
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
                 <CategoryLink
                   active={!selectedCategory}
                   href={buildProductListingHref(store.slug, { q: query })}
@@ -217,7 +235,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
                 }
               />
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {products.items.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -231,10 +249,10 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
           </div>
         </div>
 
-        <aside className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] lg:sticky lg:top-24">
+        <aside className="space-y-3 rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_10px_28px_rgba(89,63,38,0.06)] lg:sticky lg:top-20">
           <div>
             <h2 className="text-lg font-bold text-[#251F1A]">Tentang toko</h2>
-            <p className="mt-2 text-sm leading-6 text-[#6F6256]">
+            <p className="mt-1.5 text-sm leading-6 text-[#6F6256]">
               {store.description ?? "Deskripsi toko belum tersedia."}
             </p>
           </div>
@@ -252,7 +270,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
             </p>
           </div>
 
-          <p className="rounded-2xl border border-[#E8D2AA] bg-[#FFF5DE] p-4 text-sm leading-6 text-[#7A4D1D]">
+          <p className="rounded-2xl border border-[#E8D2AA] bg-[#FFF5DE] p-3 text-sm leading-6 text-[#7A4D1D]">
             {whatsappHref
               ? "Gunakan WhatsApp untuk menanyakan ketersediaan, varian, atau cara pemesanan langsung ke toko."
               : "Kontak WhatsApp belum tersedia. Gunakan nomor telepon jika toko sudah mengisinya."}
@@ -269,8 +287,8 @@ function CategoryLink({ active, href, label }: { active: boolean; href: string; 
       href={href}
       className={
         active
-          ? "rounded-full bg-[#251F1A] px-4 py-2 text-sm font-semibold text-[#FFFDF8]"
-          : "rounded-full border border-[#E3D2BC] bg-white px-4 py-2 text-sm font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#B96E45]"
+          ? "shrink-0 rounded-full bg-[#251F1A] px-3 py-1.5 text-xs font-semibold text-[#FFFDF8] sm:text-sm"
+          : "shrink-0 rounded-full border border-[#E3D2BC] bg-white px-3 py-1.5 text-xs font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#B96E45] sm:text-sm"
       }
     >
       {label}

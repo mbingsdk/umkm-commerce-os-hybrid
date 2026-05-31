@@ -59,18 +59,18 @@ export default async function StorefrontAboutPage({ params }: AboutPageProps) {
         type="application/ld+json"
       />
 
-      <section className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
-          <div className="space-y-5">
-            <p className="text-sm font-semibold text-primary-700">Tentang toko</p>
+      <section className="bg-[#F8F1E7]">
+        <div className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-8">
+          <div className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_12px_36px_rgba(89,63,38,0.07)]">
+            <p className="text-sm font-semibold text-[#B96E45]">Tentang toko</p>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-neutral-950 sm:text-5xl">{store.name}</h1>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base">
+              <h1 className="text-2xl font-bold tracking-tight text-[#251F1A] sm:text-3xl">{store.name}</h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6256]">
                 {store.description ??
                   "Toko ini belum menambahkan cerita singkat. Kamu tetap bisa melihat katalog produk atau menghubungi toko untuk informasi terbaru."}
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <LinkButton href={`/s/${store.slug}/products`}>Lihat produk</LinkButton>
               <LinkButton href={`/s/${store.slug}/contact`} variant="outline">
                 Hubungi toko
@@ -78,11 +78,11 @@ export default async function StorefrontAboutPage({ params }: AboutPageProps) {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100 shadow-soft">
+          <div className="overflow-hidden rounded-[28px] border border-[#E3D2BC] bg-[#F1E7D8] shadow-[0_12px_36px_rgba(89,63,38,0.07)]">
             <SafeImage
               alt=""
-              className="h-56 w-full object-cover"
-              fallbackClassName="h-56 w-full"
+              className="h-48 w-full object-cover lg:h-full"
+              fallbackClassName="h-48 w-full lg:h-full"
               fallbackLabel={store.name.slice(0, 1)}
               src={store.bannerUrl ?? store.logoUrl}
             />
@@ -90,24 +90,24 @@ export default async function StorefrontAboutPage({ params }: AboutPageProps) {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
-        <article className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
-          <h2 className="text-lg font-semibold text-neutral-950">Informasi dasar</h2>
-          <dl className="mt-4 space-y-3 text-sm text-neutral-600">
+      <section className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[1fr_1fr] lg:px-8">
+        <article className="rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <h2 className="text-lg font-semibold text-[#251F1A]">Informasi dasar</h2>
+          <dl className="mt-3 space-y-2.5 text-sm text-[#6F6256]">
             <InfoRow label="Lokasi" value={[store.city, store.province].filter(Boolean).join(", ") || "Belum diisi"} />
             <InfoRow label="WhatsApp" value={store.whatsapp ?? "Belum diisi"} />
             <InfoRow label="Telepon" value={store.phone ?? "Belum diisi"} />
           </dl>
         </article>
 
-        <article className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
-          <h2 className="text-lg font-semibold text-neutral-950">Jam operasional</h2>
+        <article className="rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <h2 className="text-lg font-semibold text-[#251F1A]">Jam operasional</h2>
           {hasBusinessHours ? (
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-2">
               {sortBusinessHours(store.businessHours).map((hour) => (
                 <div key={hour.dayOfWeek} className="flex items-center justify-between gap-4 text-sm">
-                  <span className="font-medium text-neutral-950">{dayLabel(hour.dayOfWeek)}</span>
-                  <span className="text-neutral-600">
+                  <span className="font-medium text-[#251F1A]">{dayLabel(hour.dayOfWeek)}</span>
+                  <span className="text-[#6F6256]">
                     {hour.isClosed ? "Tutup" : `${hour.openTime ?? "--:--"} - ${hour.closeTime ?? "--:--"}`}
                   </span>
                 </div>
@@ -139,7 +139,7 @@ async function loadStore(storeSlug: string): Promise<PublicStore> {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-      <dt className="font-medium text-neutral-950">{label}</dt>
+      <dt className="font-medium text-[#251F1A]">{label}</dt>
       <dd>{value}</dd>
     </div>
   );
@@ -176,8 +176,8 @@ function LinkButton({
       href={href}
       className={
         variant === "outline"
-          ? "inline-flex min-h-12 items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 text-base font-semibold text-neutral-900 transition hover:bg-neutral-50"
-          : "inline-flex min-h-12 items-center justify-center rounded-xl bg-primary-600 px-5 text-base font-semibold text-white transition hover:bg-primary-700"
+          ? "inline-flex h-10 items-center justify-center rounded-xl border border-[#E3D2BC] bg-white px-4 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F8F1E7]"
+          : "inline-flex h-10 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
       }
     >
       {children}

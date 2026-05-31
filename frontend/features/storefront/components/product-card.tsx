@@ -18,12 +18,12 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
   return (
     <article
       className={cn(
-        "group overflow-hidden rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_14px_40px_rgba(89,63,38,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(89,63,38,0.11)]",
+        "group overflow-hidden rounded-[20px] border border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_6px_20px_rgba(89,63,38,0.055)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(89,63,38,0.09)]",
         isUnavailable && "bg-[#F1E7D8]"
       )}
     >
       <Link className="block" href={`/s/${storeSlug}/products/${product.slug}`}>
-        <div className="relative aspect-square overflow-hidden bg-[#F1E7D8]">
+        <div className="relative aspect-[5/4] overflow-hidden bg-[#F1E7D8] sm:aspect-[4/3]">
           <SafeImage
             alt={product.name}
             className={cn(
@@ -35,8 +35,8 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
             src={product.primaryImageUrl}
           />
           {isUnavailable ? (
-            <div className="absolute inset-0 flex items-end bg-white/45 p-3">
-              <span className="rounded-full bg-[#251F1A]/85 px-3 py-1 text-xs font-semibold text-[#FFFDF8]">
+            <div className="absolute inset-0 flex items-end bg-white/45 p-1.5">
+              <span className="rounded-full bg-[#251F1A]/85 px-2.5 py-1 text-[11px] font-semibold text-[#FFFDF8]">
                 Stok habis
               </span>
             </div>
@@ -44,17 +44,17 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
         </div>
       </Link>
 
-      <div className="space-y-3 p-3 sm:p-4">
-        <Link className="block space-y-3" href={`/s/${storeSlug}/products/${product.slug}`}>
-          <div className="space-y-1">
-            {categoryName ? <p className="text-xs font-semibold text-[#B96E45]">{categoryName}</p> : null}
-            <h2 className="line-clamp-2 text-sm font-bold text-[#251F1A]">{product.name}</h2>
+      <div className="space-y-1.5 p-2 sm:p-2.5">
+        <Link className="block space-y-1.5" href={`/s/${storeSlug}/products/${product.slug}`}>
+          <div className="space-y-0.5">
+            {categoryName ? <p className="truncate text-[10px] font-semibold text-[#B96E45] sm:text-[11px]">{categoryName}</p> : null}
+            <h2 className="line-clamp-2 text-[13px] font-bold leading-5 text-[#251F1A] sm:text-sm">{product.name}</h2>
           </div>
 
           <div>
-            <p className="text-base font-bold text-[#B96E45]">{formatRupiah(product.price)}</p>
+            <p className="text-sm font-bold text-[#B96E45] sm:text-base">{formatRupiah(product.price)}</p>
             {product.compareAtPrice ? (
-              <p className="text-xs text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
+              <p className="text-[11px] text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
             ) : null}
           </div>
 
@@ -73,8 +73,8 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
             quantity: 1
           }}
           label="Tambah"
-          size="md"
-          className="w-full"
+          size="sm"
+          className="w-full bg-[#251F1A] text-[#FFFDF8] hover:bg-[#16110E]"
         />
       </div>
     </article>

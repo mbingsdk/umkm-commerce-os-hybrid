@@ -51,16 +51,16 @@ export default async function StorefrontContactPage({ params }: ContactPageProps
   const hasContact = Boolean(store.whatsapp || store.phone);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft sm:p-8">
-        <p className="text-sm font-semibold text-primary-700">Kontak toko</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-neutral-950 sm:text-5xl">{store.name}</h1>
-        <p className="mt-4 max-w-3xl text-sm leading-7 text-neutral-600 sm:text-base">
+    <main className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <section className="rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_12px_36px_rgba(89,63,38,0.07)]">
+        <p className="text-sm font-semibold text-[#B96E45]">Kontak toko</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#251F1A] sm:text-3xl">{store.name}</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6256]">
           Gunakan kontak resmi toko untuk menanyakan produk, stok, atau detail pemesanan. Pembayaran otomatis belum
           tersedia di MVP; konfirmasi pembayaran tetap ditinjau oleh pemilik toko.
         </p>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           {whatsappHref ? (
             <ExternalButton href={whatsappHref}>Chat WhatsApp</ExternalButton>
           ) : null}
@@ -70,7 +70,7 @@ export default async function StorefrontContactPage({ params }: ContactPageProps
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
+      <section className="mt-4 grid gap-3 md:grid-cols-3">
         <ContactCard title="WhatsApp" value={store.whatsapp ?? "Belum diisi"} helper="Kontak cepat untuk tanya produk." />
         <ContactCard title="Telepon" value={store.phone ?? "Belum diisi"} helper="Nomor telepon toko jika tersedia." />
         <ContactCard
@@ -81,7 +81,7 @@ export default async function StorefrontContactPage({ params }: ContactPageProps
       </section>
 
       {!hasContact ? (
-        <div className="mt-6">
+        <div className="mt-4">
           <EmptyState
             title="Kontak belum tersedia"
             description="Toko belum menambahkan nomor WhatsApp atau telepon publik. Coba cek lagi nanti atau lihat katalog produk lebih dulu."
@@ -110,10 +110,10 @@ async function loadStore(storeSlug: string): Promise<PublicStore> {
 
 function ContactCard({ title, value, helper }: { title: string; value: string; helper: string }) {
   return (
-    <article className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
-      <p className="text-sm font-medium text-neutral-500">{title}</p>
-      <p className="mt-2 break-words text-lg font-semibold text-neutral-950">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-neutral-500">{helper}</p>
+    <article className="rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+      <p className="text-sm font-medium text-[#6F6256]">{title}</p>
+      <p className="mt-1.5 break-words text-base font-semibold text-[#251F1A]">{value}</p>
+      <p className="mt-1.5 text-sm leading-6 text-[#6F6256]">{helper}</p>
     </article>
   );
 }
@@ -146,8 +146,8 @@ function LinkButton({
       href={href}
       className={
         variant === "outline"
-          ? "inline-flex min-h-12 items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 text-base font-semibold text-neutral-900 transition hover:bg-neutral-50"
-          : "inline-flex min-h-12 items-center justify-center rounded-xl bg-primary-600 px-5 text-base font-semibold text-white transition hover:bg-primary-700"
+          ? "inline-flex h-10 items-center justify-center rounded-xl border border-[#E3D2BC] bg-white px-4 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F8F1E7]"
+          : "inline-flex h-10 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
       }
     >
       {children}
@@ -161,7 +161,7 @@ function ExternalButton({ href, children }: { href: string; children: string }) 
       href={href}
       rel="noopener noreferrer"
       target="_blank"
-      className="inline-flex min-h-12 items-center justify-center rounded-xl bg-primary-600 px-5 text-base font-semibold text-white transition hover:bg-primary-700"
+      className="inline-flex h-10 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
     >
       {children}
     </a>

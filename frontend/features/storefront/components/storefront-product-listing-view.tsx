@@ -34,48 +34,41 @@ export function StorefrontProductListingView({
   return (
     <main>
       <section className="bg-[#F8F1E7]">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="space-y-4 rounded-[32px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_18px_50px_rgba(89,63,38,0.08)] sm:p-7">
+        <div className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+          <div className="space-y-3 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:p-5">
             <Link className="text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25]" href={`/s/${store.slug}`}>
-              ? Kembali ke toko
+              Kembali ke toko
             </Link>
             <div className="max-w-3xl space-y-2">
               <p className="text-sm font-medium text-[#6F6256]">
                 {store.name}
-                {store.city ? ` ? ${store.city}` : ""}
+                {store.city ? ` - ${store.city}` : ""}
               </p>
-              <h1 className="text-2xl font-bold tracking-tight text-[#251F1A] sm:text-4xl">{title}</h1>
-              <p className="text-sm leading-7 text-[#6F6256] sm:text-base">{description}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[#251F1A] sm:text-3xl">{title}</h1>
+              <p className="text-sm leading-6 text-[#6F6256]">{description}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="space-y-4 rounded-[28px] border border-[#E3D2BC] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-          <div>
-            <h2 className="text-lg font-semibold text-[#251F1A]">Cari produk</h2>
-            <p className="mt-1 text-sm text-[#6F6256]">
-              Cari produk aktif dari toko ini berdasarkan nama produk.
-            </p>
-          </div>
-
-          <form action={currentPath} className="flex flex-col gap-3 sm:flex-row" method="get">
+      <section className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <div className="rounded-[20px] border border-[#E3D2BC] bg-[#FFFDF8] p-1.5 shadow-[0_8px_24px_rgba(89,63,38,0.05)]">
+          <form action={currentPath} className="flex gap-2" method="get">
             <Input defaultValue={query} name="q" placeholder="Cari nama produk..." />
-            <button className="h-10 rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]">
+            <button className="h-10 shrink-0 rounded-xl bg-[#251F1A] px-3.5 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]">
               Cari
             </button>
           </form>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {categories.length === 0 ? (
             <EmptyState
               title="Kategori belum tersedia"
               description="Toko ini belum menambahkan kategori publik. Semua produk tetap bisa dilihat dari daftar produk."
             />
           ) : (
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
               <CategoryLink
                 active={!activeCategory}
                 href={buildListingHref(`/s/${store.slug}/products`, { q: query })}
@@ -94,7 +87,7 @@ export function StorefrontProductListingView({
 
           {hasProducts ? (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
                 {products.items.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -106,9 +99,9 @@ export function StorefrontProductListingView({
               </div>
 
               {products.pagination?.hasMore && products.pagination.nextCursor ? (
-                <div className="flex justify-center pt-2">
+                <div className="flex justify-center pt-1">
                   <Link
-                    className="inline-flex h-10 items-center justify-center rounded-xl border border-[#E3D2BC] bg-[#FFFDF8] px-4 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F1E7D8]"
+                    className="inline-flex h-9 items-center justify-center rounded-xl border border-[#E3D2BC] bg-[#FFFDF8] px-3.5 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F1E7D8]"
                     href={buildListingHref(currentPath, {
                       q: query,
                       cursor: products.pagination.nextCursor
@@ -150,8 +143,8 @@ function CategoryLink({ active, href, label }: { active: boolean; href: string; 
     <Link
       className={
         active
-          ? "shrink-0 rounded-full bg-[#251F1A] px-4 py-2 text-sm font-semibold text-[#FFFDF8]"
-          : "shrink-0 rounded-full border border-[#E3D2BC] bg-[#FFFDF8] px-4 py-2 text-sm font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#7C3F25]"
+          ? "shrink-0 rounded-full bg-[#251F1A] px-3 py-1.5 text-xs font-semibold text-[#FFFDF8] sm:text-sm"
+          : "shrink-0 rounded-full border border-[#E3D2BC] bg-[#FFFDF8] px-3 py-1.5 text-xs font-semibold text-[#6F6256] transition hover:border-[#B96E45] hover:text-[#7C3F25] sm:text-sm"
       }
       href={href}
     >

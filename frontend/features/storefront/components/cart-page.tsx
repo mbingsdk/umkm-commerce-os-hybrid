@@ -23,7 +23,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
 
   if (cartStoreSlug && cartStoreSlug !== storeSlug) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <EmptyState
           title="Keranjang berisi produk toko lain"
           description="Untuk saat ini, checkout hanya mendukung satu toko per transaksi. Kosongkan keranjang jika ingin belanja dari toko ini."
@@ -39,7 +39,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
 
   if (items.length === 0) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <EmptyState
           title="Keranjangmu masih kosong"
           description="Yuk pilih produk dari toko ini sebelum lanjut checkout."
@@ -57,22 +57,22 @@ export function CartPage({ storeSlug }: CartPageProps) {
   }
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
-      <section className="space-y-4">
+    <main className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
+      <section className="space-y-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#251F1A]">Keranjang</h1>
           <p className="mt-1 text-sm text-[#6F6256]">Atur jumlah produk sebelum checkout.</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {items.map((item) => (
-            <Card key={item.productId} className="border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-              <CardContent className="grid gap-4 p-4 sm:grid-cols-[96px_minmax(0,1fr)_auto] sm:items-center">
+            <Card key={item.productId} className="rounded-[22px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+              <CardContent className="grid gap-3 p-3 sm:grid-cols-[80px_minmax(0,1fr)_auto] sm:items-center">
                 <Link href={`/s/${storeSlug}/products/${item.slug}`} className="block">
                   <SafeImage
                     alt={item.name}
-                    className="aspect-square w-full rounded-2xl object-cover sm:h-24"
-                    fallbackClassName="aspect-square w-full rounded-2xl sm:h-24"
+                    className="aspect-[5/4] w-full rounded-2xl object-cover sm:h-20 sm:aspect-square"
+                    fallbackClassName="aspect-[5/4] w-full rounded-2xl sm:h-20 sm:aspect-square"
                     fallbackLabel="Foto"
                     src={item.imageUrl}
                   />
@@ -86,7 +86,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
                     {item.name}
                   </Link>
                   <p className="mt-1 text-sm text-[#6F6256]">{formatRupiah(item.displayPrice)} / item</p>
-                  <p className="mt-2 text-sm font-semibold text-[#B96E45]">
+                  <p className="mt-1.5 text-sm font-semibold text-[#B96E45]">
                     Estimasi: {formatRupiah(item.displayPrice * item.quantity)}
                   </p>
                 </div>
@@ -95,7 +95,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
                   <div className="inline-flex items-center rounded-xl border border-[#E3D2BC] bg-white">
                     <button
                       aria-label={`Kurangi ${item.name}`}
-                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-[#6F6256] hover:text-[#B96E45]"
+                      className="flex h-9 w-9 touch-manipulation items-center justify-center text-[#6F6256] hover:text-[#B96E45]"
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       type="button"
                     >
@@ -104,7 +104,7 @@ export function CartPage({ storeSlug }: CartPageProps) {
                     <span className="min-w-8 text-center text-sm font-semibold">{item.quantity}</span>
                     <button
                       aria-label={`Tambah ${item.name}`}
-                      className="flex h-11 w-11 touch-manipulation items-center justify-center text-[#6F6256] hover:text-[#B96E45]"
+                      className="flex h-9 w-9 touch-manipulation items-center justify-center text-[#6F6256] hover:text-[#B96E45]"
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                       type="button"
                     >
@@ -126,13 +126,13 @@ export function CartPage({ storeSlug }: CartPageProps) {
         </div>
       </section>
 
-      <aside className="lg:sticky lg:top-6 lg:self-start">
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
-          <CardHeader>
+      <aside className="lg:sticky lg:top-20 lg:self-start">
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_10px_30px_rgba(89,63,38,0.07)]">
+          <CardHeader className="p-4">
             <CardTitle>Ringkasan pesanan</CardTitle>
             <CardDescription>Total di halaman ini adalah estimasi. Backend akan menghitung ulang harga final.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#6F6256]">Subtotal estimasi</span>
               <span className="font-bold text-[#251F1A]">{formatRupiah(subtotal)}</span>

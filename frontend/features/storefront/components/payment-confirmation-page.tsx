@@ -100,19 +100,19 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
     const result = confirmationMutation.data;
 
     return (
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-        <Card className="overflow-hidden border-[#E3D2BC] bg-white/90 shadow-[0_18px_55px_rgba(89,63,38,0.1)]">
-          <div className="bg-[#251F1A] p-6 text-[#FFFDF8] sm:p-8">
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+        <Card className="overflow-hidden rounded-[28px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_14px_42px_rgba(89,63,38,0.09)]">
+          <div className="bg-[#251F1A] p-5 text-[#FFFDF8] sm:p-6">
             <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
               Menunggu review toko
             </p>
-            <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">Konfirmasi pembayaran terkirim</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#E3D2BC]">
+            <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Konfirmasi pembayaran terkirim</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#E3D2BC]">
               {result.message || "Bukti pembayaran sudah diterima dan akan dicek oleh penjual."}
             </p>
           </div>
-          <CardContent className="space-y-5">
-            <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-4">
+          <CardContent className="space-y-4 p-4">
+            <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-[#6F6256]">Nomor order</p>
               <p className="mt-1 text-xl font-bold text-[#251F1A]">{result.order_number}</p>
             </div>
@@ -131,7 +131,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
                 className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-[#E3D2BC] bg-white px-4 text-sm font-semibold text-[#7C3F25] transition hover:bg-[#F8F1E7]"
                 href={`/s/${storeSlug}`}
               >
-                Kembali ke toko
+                &larr; Kembali ke toko
               </Link>
             </div>
           </CardContent>
@@ -141,34 +141,34 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6">
+    <main className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mb-4">
         <Link className="text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25]" href={`/s/${storeSlug}`}>
-          ← Kembali ke toko
+          &larr; Kembali ke toko
         </Link>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#251F1A]">Konfirmasi pembayaran</h1>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#251F1A]">Konfirmasi pembayaran</h1>
         <p className="mt-1 text-sm leading-6 text-[#6F6256]">
           Isi data transfer untuk order <span className="font-semibold text-neutral-800">{orderNumber}</span>. Halaman ini
           publik dan tidak membutuhkan login.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)}>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
           {confirmationMutation.isError ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700">
               {paymentConfirmationErrorMessage(confirmationMutation.error)}
             </div>
           ) : null}
 
-          <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-            <CardHeader>
+          <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+            <CardHeader className="p-4">
               <CardTitle>Verifikasi pesanan</CardTitle>
               <CardDescription>
                 Nomor HP harus sama dengan nomor yang dipakai saat checkout agar toko bisa memverifikasi pesanan.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
               <FormField label="Nomor HP / WhatsApp checkout" error={form.formState.errors.customerPhone?.message}>
                 <Input
                   autoComplete="tel"
@@ -189,14 +189,14 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
             </CardContent>
           </Card>
 
-          <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-            <CardHeader>
+          <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+            <CardHeader className="p-4">
               <CardTitle>Detail transfer</CardTitle>
               <CardDescription>
                 Data ini hanya mengirim konfirmasi ke toko. Status lunas tetap diputuskan oleh penjual.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
               <FormField label="Nama bank / e-wallet" error={form.formState.errors.bankName?.message}>
                 <Input hasError={!!form.formState.errors.bankName} placeholder="BCA, BRI, Mandiri, DANA..." {...form.register("bankName")} />
               </FormField>
@@ -243,13 +243,13 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
           </Button>
         </form>
 
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
-            <CardHeader>
+        <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+          <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_10px_30px_rgba(89,63,38,0.07)]">
+            <CardHeader className="p-4">
               <CardTitle>Ringkasan</CardTitle>
               <CardDescription>Pastikan nominal sesuai transfer yang benar-benar dikirim.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+            <CardContent className="space-y-3 p-4 text-sm">
               <InfoRow label="Order" value={orderNumber} />
               <InfoRow
                 label="Nominal diisi"

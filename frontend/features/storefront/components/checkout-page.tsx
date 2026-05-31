@@ -165,25 +165,25 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
   const isCheckoutSubmitting = form.formState.isSubmitting || submitPending;
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
-      <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+    <main className="mx-auto grid max-w-[1500px] gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#251F1A]">Checkout</h1>
           <p className="mt-1 text-sm text-[#6F6256]">Isi data pembeli dan alamat pengiriman dengan tenang. Pesanan akan dicek ulang oleh toko.</p>
         </div>
 
         {submitError ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-700">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-700">
             {submitError}
           </div>
         ) : null}
 
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-          <CardHeader>
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <CardHeader className="p-4">
             <CardTitle>Data pembeli</CardTitle>
             <CardDescription>Nomor HP dipakai toko untuk menghubungi pembeli.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
             <FormField label="Nama pembeli" error={form.formState.errors.customerName?.message}>
               <Input hasError={!!form.formState.errors.customerName} {...form.register("customerName")} />
             </FormField>
@@ -205,12 +205,12 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-          <CardHeader>
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <CardHeader className="p-4">
             <CardTitle>Alamat pengiriman</CardTitle>
             <CardDescription>Alamat dipakai toko untuk mengirim dan menghubungi penerima.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
             <FormField label="Nama penerima opsional" error={form.formState.errors.recipientName?.message}>
               <Input placeholder="Sama dengan pembeli jika kosong" {...form.register("recipientName")} />
             </FormField>
@@ -235,16 +235,16 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-          <CardHeader>
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <CardHeader className="p-4">
             <CardTitle>Zona pengiriman</CardTitle>
             <CardDescription>
               Pilih zona kurir toko. Estimasi di frontend hanya bantuan; total final tetap dihitung backend.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 p-4">
             {courierZonesQuery.isPending ? (
-              <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-4 text-sm text-[#6F6256]">
+              <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-3 text-sm text-[#6F6256]">
                 Memuat pilihan zona pengiriman...
               </div>
             ) : courierZonesQuery.isError ? (
@@ -268,25 +268,25 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
             </FormField>
 
             {selectedCourierZone ? (
-              <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-4 text-sm leading-6 text-[#7A4D1D]">
+              <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-3 text-sm leading-6 text-[#7A4D1D]">
                 Ongkir estimasi untuk zona <strong>{selectedCourierZone.name}</strong>:{" "}
                 <strong>{formatRupiah(selectedCourierZone.rate)}</strong>.
               </div>
             ) : (
-              <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-4 text-sm leading-6 text-[#6F6256]">
+              <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-3 text-sm leading-6 text-[#6F6256]">
                 Jika zona belum dipilih, pesanan dibuat dengan ongkir Rp0 dan toko perlu mengonfirmasi biaya kirim manual.
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-          <CardHeader>
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <CardHeader className="p-4">
             <CardTitle>Metode pembayaran</CardTitle>
             <CardDescription>Pembayaran dilakukan manual oleh toko untuk rilis pilot ini.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <label className="flex items-start gap-3 rounded-2xl border border-[#E3D2BC] bg-[#FFF5DE] p-4">
+          <CardContent className="p-4">
+            <label className="flex items-start gap-3 rounded-2xl border border-[#E3D2BC] bg-[#FFF5DE] p-3">
               <input
                 className="mt-1"
                 type="radio"
@@ -317,7 +317,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
         </div>
       </form>
 
-      <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start">
+      <aside className="hidden lg:block lg:sticky lg:top-20 lg:self-start">
         <CheckoutSummary
           isLoading={isCheckoutSubmitting}
           items={items}
@@ -358,13 +358,13 @@ function CheckoutSummary({
   const estimatedTotal = subtotal + shippingEstimate;
 
   return (
-    <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
-      <CardHeader>
+    <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_10px_30px_rgba(89,63,38,0.07)]">
+      <CardHeader className="p-4">
         <CardTitle>Ringkasan checkout</CardTitle>
         <CardDescription>Harga final dihitung oleh backend saat pesanan dibuat.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
+      <CardContent className="space-y-3 p-4">
+        <div className="space-y-2.5">
           {items.map((item) => (
             <div key={item.productId} className="flex items-start justify-between gap-3 text-sm">
               <div>
@@ -378,7 +378,7 @@ function CheckoutSummary({
           ))}
         </div>
 
-        <div className="border-t border-neutral-100 pt-4">
+        <div className="border-t border-[#E3D2BC] pt-3">
           <div className="flex items-center justify-between text-sm">
             <span className="text-[#6F6256]">{itemCount} item</span>
             <span className="font-semibold text-[#251F1A]">{formatRupiah(subtotal)}</span>

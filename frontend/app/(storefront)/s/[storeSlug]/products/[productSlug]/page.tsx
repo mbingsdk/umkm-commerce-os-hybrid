@@ -71,30 +71,30 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const productJsonLd = buildProductJsonLd(product);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <script
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
         type="application/ld+json"
       />
 
-      <div className="mb-6">
+      <div className="mb-3">
         <Link href={`/s/${product.store.slug}`} className="text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25]">
-          ? Kembali ke toko
+          &larr; Kembali ke toko
         </Link>
       </div>
 
-      <section className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
-        <div className="rounded-[32px] border border-[#E3D2BC] bg-[#FFFDF8] p-3 shadow-[0_18px_50px_rgba(89,63,38,0.08)]">
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
+        <div className="rounded-[26px] border border-[#E3D2BC] bg-[#FFFDF8] p-2 shadow-[0_12px_34px_rgba(89,63,38,0.07)]">
           <ProductGallery product={product} />
         </div>
 
-        <div className="space-y-5">
-          <div className="rounded-[32px] border border-[#E3D2BC] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)] sm:p-6">
-            <div className="space-y-3">
-              {product.category ? <p className="text-sm font-semibold text-[#B96E45]">{product.category.name}</p> : null}
+        <div className="space-y-3">
+          <div className="rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_10px_28px_rgba(89,63,38,0.06)] sm:p-5">
+            <div className="space-y-2.5">
+              {product.category ? <p className="text-xs font-semibold text-[#B96E45] sm:text-sm">{product.category.name}</p> : null}
               <div>
                 <h1 className="text-2xl font-bold tracking-tight text-[#251F1A] sm:text-3xl">{product.name}</h1>
-                <p className="mt-3 text-2xl font-bold text-[#B96E45]">{formatRupiah(product.price)}</p>
+                <p className="mt-2 text-2xl font-bold text-[#B96E45]">{formatRupiah(product.price)}</p>
                 {product.compareAtPrice ? (
                   <p className="mt-1 text-sm text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
                 ) : null}
@@ -103,11 +103,11 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="rounded-[22px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_8px_24px_rgba(89,63,38,0.05)]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-[#251F1A]">Belanja produk ini</h2>
-                <p className="mt-1 text-sm leading-6 text-[#6F6256]">
+                <p className="mt-1 text-sm leading-5 text-[#6F6256]">
                   Harga akhir dan stok akan dicek ulang saat checkout agar pesanan tetap akurat.
                 </p>
               </div>
@@ -122,30 +122,30 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                   displayPrice: product.price,
                   quantity: 1
                 }}
-                size="lg"
+                size="md"
               />
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-[#E3D2BC] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+          <div className="rounded-[22px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_8px_24px_rgba(89,63,38,0.05)]">
             <h2 className="text-lg font-semibold text-[#251F1A]">Deskripsi produk</h2>
-            <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#6F6256]">
+            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#6F6256]">
               {product.description ?? "Deskripsi produk belum tersedia. Hubungi toko untuk menanyakan detail produk ini."}
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+          <div className="rounded-[22px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_8px_24px_rgba(89,63,38,0.05)]">
             <h2 className="text-lg font-semibold text-[#251F1A]">Informasi toko</h2>
-            <p className="mt-2 text-sm font-medium text-[#6F6256]">
+            <p className="mt-1.5 text-sm font-medium text-[#6F6256]">
               {product.store.name}
-              {product.store.city ? ` ? ${product.store.city}` : ""}
+              {product.store.city ? ` - ${product.store.city}` : ""}
             </p>
-            <p className="mt-4 text-sm leading-6 text-[#6F6256]">
+            <p className="mt-3 text-sm leading-6 text-[#6F6256]">
               {isOutOfStock
                 ? "Stok sedang habis. Kamu bisa menghubungi toko untuk menanyakan restok atau produk pengganti."
                 : "Produk tersedia. Jika perlu detail tambahan, hubungi toko sebelum checkout."}
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Link
                 className="inline-flex h-10 items-center justify-center rounded-xl bg-[#251F1A] px-4 text-sm font-semibold text-[#FFFDF8] transition hover:bg-[#16110E]"
                 href={`/s/${product.store.slug}`}

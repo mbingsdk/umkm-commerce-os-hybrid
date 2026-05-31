@@ -51,25 +51,25 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6">
+    <main className="mx-auto max-w-[1500px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mb-4">
         <Link className="text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25]" href={`/s/${storeSlug}`}>
-          ← Kembali ke toko
+          &larr; Kembali ke toko
         </Link>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#251F1A]">Lacak pesanan</h1>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#251F1A]">Lacak pesanan</h1>
         <p className="mt-1 text-sm leading-6 text-[#6F6256]">
           Masukkan nomor pesanan dan nomor HP yang dipakai saat checkout. Tracking publik tidak membutuhkan login.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
-          <CardHeader>
+      <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_10px_30px_rgba(89,63,38,0.07)]">
+          <CardHeader className="p-4">
             <CardTitle>Cek status</CardTitle>
             <CardDescription>Nomor HP dipakai sebagai verifikasi agar data pesanan tetap aman.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form className="space-y-4" onSubmit={handleSubmit}>
+          <CardContent className="p-4">
+            <form className="space-y-3" onSubmit={handleSubmit}>
               {localError ? (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{localError}</div>
               ) : null}
@@ -95,7 +95,7 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
           </CardContent>
         </Card>
 
-        <section className="space-y-6">
+        <section className="space-y-4">
           {!submitted ? (
             <EmptyState
               title="Masukkan data pesanan"
@@ -121,14 +121,14 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
 function TrackingResult({ data }: { data: PublicTrackingResult }) {
   return (
     <>
-      <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-        <CardHeader>
+      <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+        <CardHeader className="p-4">
           <CardTitle>{data.orderNumber}</CardTitle>
           <CardDescription>
             Halo {data.customerName}. Berikut ringkasan aman status pesananmu.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 p-4">
           <div className="flex flex-wrap gap-2">
             <OrderStatusBadge status={data.status} />
             <PaymentStatusBadge status={data.paymentStatus} />
@@ -144,12 +144,12 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
       </Card>
 
       {data.shipment ? (
-        <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-          <CardHeader>
+        <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+          <CardHeader className="p-4">
             <CardTitle>Info pengiriman</CardTitle>
             <CardDescription>Data publik yang aman untuk customer.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
+          <CardContent className="grid gap-3 p-4 text-sm sm:grid-cols-2">
             <InfoRow label="Kurir" value={data.shipment.courierName || data.shipment.courierType} />
             <InfoRow label="Nomor resi" value={data.shipment.trackingNumber || "Belum tersedia"} />
             <InfoRow label="Status" value={shipmentStatusLabel(data.shipment.status)} />
@@ -166,12 +166,12 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
         />
       )}
 
-      <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-        <CardHeader>
+      <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+        <CardHeader className="p-4">
           <CardTitle>Item pesanan</CardTitle>
           <CardDescription>Harga berasal dari snapshot saat checkout.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2.5 p-4">
           {data.items.map((item) => (
             <div key={`${item.productName}-${item.quantity}-${item.subtotal}`} className="flex items-start justify-between gap-4 text-sm">
               <div>
@@ -186,12 +186,12 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
         </CardContent>
       </Card>
 
-      <Card className="border-[#E3D2BC] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
-        <CardHeader>
+      <Card className="rounded-[24px] border-[#E3D2BC] bg-[#FFFDF8] shadow-[0_8px_24px_rgba(89,63,38,0.055)]">
+        <CardHeader className="p-4">
           <CardTitle>Timeline</CardTitle>
           <CardDescription>Status pengiriman yang sudah tercatat.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4">
           <PublicTimeline timeline={data.timeline} />
         </CardContent>
       </Card>
@@ -201,7 +201,7 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[#E3D2BC] bg-[#FFFDF8] p-4">
+    <div className="rounded-2xl border border-[#E3D2BC] bg-white p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-[#6F6256]">{label}</p>
       <p className="mt-2 font-semibold text-[#251F1A]">{value}</p>
     </div>
@@ -223,7 +223,7 @@ function PublicTimeline({ timeline }: { timeline: PublicTrackingTimelineItem[] }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {timeline.map((item) => (
         <div key={`${item.status}-${item.createdAt}`} className="border-l-2 border-[#B96E45] pl-4">
           <p className="text-sm font-semibold text-[#251F1A]">{shipmentStatusLabel(item.status)}</p>

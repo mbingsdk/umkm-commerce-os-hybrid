@@ -68,6 +68,7 @@ export function ProductDiscoveryPanel({
 }) {
   const visibleCategories = categories.filter((item) => item.slug && item.name).slice(0, 8);
   const visibleCities = cities.filter((item) => item.city).slice(0, 6);
+  const activeFilterCount = [category, city, priceMin, priceMax].filter(Boolean).length;
 
   return (
     <section className={publicTheme.bg}>
@@ -139,6 +140,11 @@ export function ProductDiscoveryPanel({
           <details className="group relative shrink-0">
             <summary className="inline-flex h-9 cursor-pointer list-none items-center rounded-full border border-[#E3D2BC] bg-[#FFFDF8] px-3 text-sm font-semibold text-[#6F6256] shadow-sm marker:hidden hover:text-[#251F1A]">
               Filter
+              {activeFilterCount > 0 ? (
+                <span className="ml-1 rounded-full bg-[#B96E45] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {activeFilterCount}
+                </span>
+              ) : null}
               <span className="ml-2 text-xs text-[#B96E45] group-open:hidden">Buka</span>
               <span className="ml-2 hidden text-xs text-[#B96E45] group-open:inline">Tutup</span>
             </summary>
@@ -358,69 +364,118 @@ export function FilterBar({
   categories?: DiscoveryAggregate[];
   cities?: DiscoveryAggregate[];
 }) {
+  const activeFilterCount = [city, category, showPrice ? priceMin : undefined, showPrice ? priceMax : undefined].filter(Boolean).length;
+  const hasAnyFilter = Boolean(query || city || category || priceMin || priceMax);
+
   return (
-    <form
-      className="grid gap-3 rounded-[28px] border border-[#E3D2BC] bg-[#FFFDF8] p-4 shadow-[0_14px_40px_rgba(89,63,38,0.07)] lg:grid-cols-[1.2fr_180px_180px_auto]"
-      action={action}
-    >
-      <input
-        className="h-11 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9B8D7B] focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
-        defaultValue={query}
-        name="q"
-        placeholder="Cari nama, produk, atau toko..."
-      />
-      <select
-        className="h-11 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
-        defaultValue={city}
-        name="city"
-      >
-        <option value="">Semua kota</option>
-        {cities.map((item) =>
-          item.city ? (
-            <option key={item.city} value={item.city}>
-              {item.city}
-            </option>
-          ) : null
-        )}
-      </select>
-      <select
-        className="h-11 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
-        defaultValue={category}
-        name="category"
-      >
-        <option value="">Semua kategori</option>
-        {categories.map((item) =>
-          item.slug ? (
-            <option key={item.slug} value={item.slug}>
-              {item.name ?? item.slug}
-            </option>
-          ) : null
-        )}
-      </select>
-      {showPrice ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:col-span-3">
+    <div className="relative rounded-[24px] border border-[#E3D2BC] bg-[#FFFDF8] p-2 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <form action={action} className="flex min-w-0 flex-1 gap-2">
+          <input type="hidden" name="city" value={city ?? ""} />
+          <input type="hidden" name="category" value={category ?? ""} />
+          {showPrice ? <input type="hidden" name="price_min" value={priceMin ?? ""} /> : null}
+          {showPrice ? <input type="hidden" name="price_max" value={priceMax ?? ""} /> : null}
           <input
-            className="h-11 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9B8D7B] focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
-            defaultValue={priceMin}
-            min={0}
-            name="price_min"
-            placeholder="Harga min"
-            type="number"
+            className="h-11 min-w-0 flex-1 rounded-2xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9B8D7B] focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
+            defaultValue={query}
+            name="q"
+            placeholder="Cari nama, produk, atau toko..."
           />
-          <input
-            className="h-11 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9B8D7B] focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
-            defaultValue={priceMax}
-            min={0}
-            name="price_max"
-            placeholder="Harga max"
-            type="number"
-          />
+          <Button className="h-11 shrink-0 rounded-2xl bg-[#251F1A] px-4 hover:bg-[#16110E]" type="submit">
+            Cari
+          </Button>
+        </form>
+
+        <div className="flex items-center gap-2">
+          <details className="group relative">
+            <summary className="inline-flex h-11 cursor-pointer list-none items-center rounded-2xl border border-[#E3D2BC] bg-white px-3 text-sm font-semibold text-[#6F6256] shadow-sm marker:hidden hover:text-[#251F1A]">
+              Filter
+              {activeFilterCount > 0 ? (
+                <span className="ml-1 rounded-full bg-[#B96E45] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {activeFilterCount}
+                </span>
+              ) : null}
+              <span className="ml-2 text-xs text-[#B96E45] group-open:hidden">Buka</span>
+              <span className="ml-2 hidden text-xs text-[#B96E45] group-open:inline">Tutup</span>
+            </summary>
+
+            <div className="absolute right-0 top-12 z-30 w-[min(92vw,680px)] rounded-3xl border border-[#E3D2BC] bg-[#FFFDF8] p-3 shadow-[0_18px_50px_rgba(80,57,34,0.16)]">
+              <form
+                action={action}
+                className={cn(
+                  "grid gap-2",
+                  showPrice ? "sm:grid-cols-2 lg:grid-cols-[1fr_1fr_130px_130px_auto]" : "sm:grid-cols-[1fr_1fr_auto]"
+                )}
+              >
+                <input type="hidden" name="q" value={query ?? ""} />
+                <select
+                  className="h-10 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
+                  defaultValue={city}
+                  name="city"
+                >
+                  <option value="">Semua kota</option>
+                  {cities.map((item) =>
+                    item.city ? (
+                      <option key={item.city} value={item.city}>
+                        {item.city}
+                      </option>
+                    ) : null
+                  )}
+                </select>
+                <select
+                  className="h-10 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
+                  defaultValue={category}
+                  name="category"
+                >
+                  <option value="">Semua kategori</option>
+                  {categories.map((item) =>
+                    item.slug ? (
+                      <option key={item.slug} value={item.slug}>
+                        {item.name ?? item.slug}
+                      </option>
+                    ) : null
+                  )}
+                </select>
+                {showPrice ? (
+                  <>
+                    <input
+                      className="h-10 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9B8D7B] focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
+                      defaultValue={priceMin}
+                      min={0}
+                      name="price_min"
+                      placeholder="Harga min"
+                      type="number"
+                    />
+                    <input
+                      className="h-10 rounded-xl border border-[#E3D2BC] bg-white px-3 text-sm text-[#251F1A] outline-none placeholder:text-[#9B8D7B] focus:border-[#B96E45] focus:ring-2 focus:ring-[#E8D2AA]"
+                      defaultValue={priceMax}
+                      min={0}
+                      name="price_max"
+                      placeholder="Harga max"
+                      type="number"
+                    />
+                  </>
+                ) : null}
+                <Button className="h-10 w-full bg-[#B96E45] hover:bg-[#7C3F25]" type="submit">
+                  Terapkan
+                </Button>
+              </form>
+              {hasAnyFilter ? (
+                <Link className="mt-2 inline-flex text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25]" href={action}>
+                  Reset filter
+                </Link>
+              ) : null}
+            </div>
+          </details>
+
+          {hasAnyFilter ? (
+            <Link className="hidden text-sm font-semibold text-[#B96E45] hover:text-[#7C3F25] sm:inline-flex" href={action}>
+              Reset
+            </Link>
+          ) : null}
         </div>
-      ) : null}
-      <Button className="h-11 w-full bg-[#251F1A] hover:bg-[#16110E] lg:w-auto" type="submit">
-        Terapkan
-      </Button>
-    </form>
+      </div>
+    </div>
   );
 }
 
