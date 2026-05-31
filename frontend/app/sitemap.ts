@@ -42,7 +42,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [stores, products] = await Promise.all([fetchPublicStores(), fetchPublicProducts()]);
 
-  const storePages = stores.map((store) => entry(normalizePublicPath(store.store_url ?? `/s/${store.slug}`), now, "daily", 0.7));
+  const storePages = stores.flatMap((store) => {
+    const basePath = normalizePublicPath(store.store_url ?? `/s/${store.slug}`);
+    return [
+      entry(basePath, now, "daily", 0.7),
+      entry(`${basePath}/about`, now, "monthly", 0.4),
+      entry(`${basePath}/contact`, now, "monthly", 0.4)
+    ];
+  });
   const productPages = products.map((product) =>
     entry(
       normalizePublicPath(product.product_url ?? `/s/${product.store.slug}/products/${product.slug}`),

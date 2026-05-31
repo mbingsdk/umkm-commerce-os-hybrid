@@ -11,45 +11,59 @@ type StorefrontHeaderProps = {
 };
 
 export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: StorefrontHeaderProps) {
+  const navItems = [
+    { label: "Beranda", href: `/s/${storeSlug}` },
+    { label: "Produk", href: `/s/${storeSlug}/products` },
+    { label: "Tentang", href: `/s/${storeSlug}/about` },
+    { label: "Kontak", href: `/s/${storeSlug}/contact` },
+    { label: "Lacak order", href: `/s/${storeSlug}/track-order` }
+  ];
+
   return (
     <header className="border-b border-neutral-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          {logoUrl ? (
-            <SafeImage
-              alt=""
-              className="h-10 w-10 rounded-2xl object-cover"
-              fallbackClassName="h-10 w-10 rounded-2xl"
-              src={logoUrl}
-            />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-100 text-sm font-bold text-primary-800">
-              {(storeName ?? storeSlug).slice(0, 1).toUpperCase()}
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-4">
+          <Link className="flex min-w-0 items-center gap-3" href={`/s/${storeSlug}`}>
+            {logoUrl ? (
+              <SafeImage
+                alt=""
+                className="h-10 w-10 rounded-2xl object-cover"
+                fallbackClassName="h-10 w-10 rounded-2xl"
+                src={logoUrl}
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-sm font-bold text-primary-800">
+                {(storeName ?? storeSlug).slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-neutral-950">{storeName ?? storeSlug}</p>
+              <p className="truncate text-xs text-neutral-500">{city ?? "Storefront publik"}</p>
             </div>
-          )}
-          <div>
-            <p className="text-sm font-semibold text-neutral-950">{storeName ?? storeSlug}</p>
-            <p className="text-xs text-neutral-500">{city ?? "Storefront publik"}</p>
+          </Link>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <StorefrontCartLink storeSlug={storeSlug} />
+            <Badge className="hidden sm:inline-flex" tone="neutral">
+              Publik
+            </Badge>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            className="hidden h-9 items-center justify-center rounded-xl border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 sm:inline-flex"
-            href={`/s/${storeSlug}/products`}
-          >
-            Produk
-          </Link>
-          <Link
-            className="hidden h-9 items-center justify-center rounded-xl border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 sm:inline-flex"
-            href={`/s/${storeSlug}/track-order`}
-          >
-            Lacak order
-          </Link>
-          <StorefrontCartLink storeSlug={storeSlug} />
-          <Badge className="hidden sm:inline-flex" tone="neutral">
-            Publik
-          </Badge>
-        </div>
+
+        <nav
+          aria-label="Navigasi toko"
+          className="mt-3 flex gap-2 overflow-x-auto pb-1 text-sm text-neutral-700"
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              className="shrink-0 rounded-full border border-neutral-200 bg-white px-3 py-2 font-semibold transition hover:border-primary-300 hover:text-primary-700"
+              href={item.href}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );

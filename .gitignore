@@ -26,6 +26,7 @@ Thumbs.db
 # AI
 AGENTS.md
 docs/*
+!docs/frontend-pilot-readiness-checklist.md
 !docs/qa/
 !docs/qa/**
 !docs/ops/
