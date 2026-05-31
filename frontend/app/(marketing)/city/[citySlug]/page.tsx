@@ -39,22 +39,22 @@ export default async function CityDiscoveryPage({ params }: CityDiscoveryPagePro
   const hasResults = stores.items.length > 0 || products.items.length > 0;
 
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <section className="border-b border-neutral-200 bg-gradient-to-br from-primary-50 via-white to-neutral-50">
+    <main className="min-h-screen bg-[#f7f1e8]">
+      <section>
         <div className="mx-auto space-y-5 px-4 py-10 sm:px-6 lg:max-w-6xl lg:px-8 lg:py-14">
-          <p className="text-sm font-semibold text-primary-700">Discovery kota</p>
-          <div className="max-w-3xl">
-            <h1 className="text-3xl font-bold tracking-tight text-neutral-950 sm:text-5xl">UMKM {cityName}</h1>
-            <p className="mt-4 text-sm leading-7 text-neutral-600 sm:text-base">
+          <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:p-7">
+            <p className="text-sm font-semibold text-[#7a4f2f]">Discovery kota</p>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#241c16] sm:text-5xl">UMKM {cityName}</h1>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-[#6d5e4e] sm:text-base">
               Lihat toko dan produk UMKM publik dari {cityName}. Customer tetap diarahkan ke storefront tenant
               untuk melihat detail produk atau menghubungi toko.
             </p>
-          </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <LinkButton href={`/stores?city=${encodeURIComponent(cityName)}`}>Lihat toko di {cityName}</LinkButton>
-            <LinkButton href={`/products?city=${encodeURIComponent(cityName)}`}>Lihat produk di {cityName}</LinkButton>
-            <LinkButton href={`/search?city=${encodeURIComponent(cityName)}`}>Cari di kota ini</LinkButton>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <LinkButton href={`/stores?city=${encodeURIComponent(cityName)}`}>Lihat toko di {cityName}</LinkButton>
+              <LinkButton href={`/products?city=${encodeURIComponent(cityName)}`}>Lihat produk di {cityName}</LinkButton>
+              <LinkButton href={`/search?city=${encodeURIComponent(cityName)}`}>Cari di kota ini</LinkButton>
+            </div>
           </div>
         </div>
       </section>
@@ -97,7 +97,7 @@ function cityFromSlug(value: string) {
 function LinkButton({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
-      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
+      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#d9c8af] bg-white px-4 py-2 text-sm font-semibold text-[#3d3128] transition hover:bg-[#f4eadb]"
       href={href}
     >
       {children}

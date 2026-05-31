@@ -78,33 +78,37 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       />
 
       <div className="mb-6">
-        <Link href={`/s/${product.store.slug}`} className="text-sm font-semibold text-primary-700 hover:text-primary-800">
-          Kembali ke toko
+        <Link href={`/s/${product.store.slug}`} className="text-sm font-semibold text-[#7a4f2f] hover:text-[#3b2f24]">
+          ? Kembali ke toko
         </Link>
       </div>
 
-      <section className="grid gap-8 lg:grid-cols-2">
-        <ProductGallery product={product} />
+      <section className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
+        <div className="rounded-[32px] border border-[#eadfce] bg-[#fffaf2] p-3 shadow-[0_18px_50px_rgba(89,63,38,0.08)]">
+          <ProductGallery product={product} />
+        </div>
 
-        <div className="space-y-6">
-          <div className="space-y-3">
-            {product.category ? <p className="text-sm font-medium text-primary-700">{product.category.name}</p> : null}
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-neutral-950 sm:text-3xl">{product.name}</h1>
-              <p className="mt-3 text-2xl font-bold text-primary-700">{formatRupiah(product.price)}</p>
-              {product.compareAtPrice ? (
-                <p className="mt-1 text-sm text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
-              ) : null}
+        <div className="space-y-5">
+          <div className="rounded-[32px] border border-[#eadfce] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)] sm:p-6">
+            <div className="space-y-3">
+              {product.category ? <p className="text-sm font-semibold text-[#7a4f2f]">{product.category.name}</p> : null}
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-[#241c16] sm:text-3xl">{product.name}</h1>
+                <p className="mt-3 text-2xl font-bold text-[#7a4f2f]">{formatRupiah(product.price)}</p>
+                {product.compareAtPrice ? (
+                  <p className="mt-1 text-sm text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
+                ) : null}
+              </div>
+              <StockBadge status={product.stock.stockStatus} />
             </div>
-            <StockBadge status={product.stock.stockStatus} />
           </div>
 
-          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-950">Belanja produk ini</h2>
-                <p className="mt-1 text-sm leading-6 text-neutral-600">
-                  Total akhir akan dihitung ulang oleh toko saat checkout.
+                <h2 className="text-lg font-semibold text-[#241c16]">Belanja produk ini</h2>
+                <p className="mt-1 text-sm leading-6 text-[#665746]">
+                  Harga akhir dan stok akan dicek ulang saat checkout agar pesanan tetap akurat.
                 </p>
               </div>
               <AddToCartButton
@@ -123,27 +127,27 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
           </div>
 
-          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
-            <h2 className="text-lg font-semibold text-neutral-950">Deskripsi produk</h2>
-            <p className="mt-3 whitespace-pre-line text-sm leading-7 text-neutral-600">
-              {product.description ?? "Deskripsi produk belum tersedia."}
+          <div className="rounded-[28px] border border-[#eadfce] bg-white/85 p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+            <h2 className="text-lg font-semibold text-[#241c16]">Deskripsi produk</h2>
+            <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#665746]">
+              {product.description ?? "Deskripsi produk belum tersedia. Hubungi toko untuk menanyakan detail produk ini."}
             </p>
           </div>
 
-          <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-soft">
-            <h2 className="text-lg font-semibold text-neutral-950">Informasi toko</h2>
-            <p className="mt-2 text-sm text-neutral-600">
+          <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
+            <h2 className="text-lg font-semibold text-[#241c16]">Informasi toko</h2>
+            <p className="mt-2 text-sm font-medium text-[#665746]">
               {product.store.name}
-              {product.store.city ? ` - ${product.store.city}` : ""}
+              {product.store.city ? ` ? ${product.store.city}` : ""}
             </p>
-            <p className="mt-4 text-sm leading-6 text-neutral-600">
+            <p className="mt-4 text-sm leading-6 text-[#665746]">
               {isOutOfStock
-                ? "Stok sedang habis. Lihat kontak toko untuk menanyakan restok via WhatsApp bila tersedia."
-                : "Produk tersedia. Lihat kontak toko untuk tanya detail dan pemesanan via WhatsApp bila tersedia."}
+                ? "Stok sedang habis. Kamu bisa menghubungi toko untuk menanyakan restok atau produk pengganti."
+                : "Produk tersedia. Jika perlu detail tambahan, hubungi toko sebelum checkout."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
-                className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
                 href={`/s/${product.store.slug}`}
               >
                 Lihat kontak toko

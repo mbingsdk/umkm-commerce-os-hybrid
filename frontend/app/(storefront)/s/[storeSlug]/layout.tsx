@@ -22,7 +22,7 @@ export default async function StorefrontLayout({ children, params }: StorefrontL
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[#f7f1e8]">
       <StorefrontHeader
         city={store.city}
         logoUrl={store.logoUrl}

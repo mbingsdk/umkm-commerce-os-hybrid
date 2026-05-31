@@ -18,12 +18,12 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
   return (
     <article
       className={cn(
-        "group overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-md",
-        isUnavailable && "bg-neutral-50"
+        "group overflow-hidden rounded-[28px] border border-[#eadfce] bg-[#fffaf2] shadow-[0_14px_40px_rgba(89,63,38,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(89,63,38,0.11)]",
+        isUnavailable && "bg-[#f3eadc]"
       )}
     >
       <Link className="block" href={`/s/${storeSlug}/products/${product.slug}`}>
-        <div className="relative aspect-square overflow-hidden bg-neutral-100">
+        <div className="relative aspect-square overflow-hidden bg-[#efe2cf]">
           <SafeImage
             alt={product.name}
             className={cn(
@@ -36,7 +36,7 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
           />
           {isUnavailable ? (
             <div className="absolute inset-0 flex items-end bg-white/45 p-3">
-              <span className="rounded-full bg-neutral-950/80 px-3 py-1 text-xs font-semibold text-white">
+              <span className="rounded-full bg-[#2f2923]/85 px-3 py-1 text-xs font-semibold text-[#fffaf2]">
                 Stok habis
               </span>
             </div>
@@ -47,12 +47,12 @@ export function ProductCard({ storeSlug, product, categoryName }: ProductCardPro
       <div className="space-y-3 p-3 sm:p-4">
         <Link className="block space-y-3" href={`/s/${storeSlug}/products/${product.slug}`}>
           <div className="space-y-1">
-            {categoryName ? <p className="text-xs font-medium text-primary-700">{categoryName}</p> : null}
-            <h2 className="line-clamp-2 text-sm font-semibold text-neutral-950">{product.name}</h2>
+            {categoryName ? <p className="text-xs font-semibold text-[#7a4f2f]">{categoryName}</p> : null}
+            <h2 className="line-clamp-2 text-sm font-bold text-[#241c16]">{product.name}</h2>
           </div>
 
           <div>
-            <p className="text-base font-bold text-primary-700">{formatRupiah(product.price)}</p>
+            <p className="text-base font-bold text-[#7a4f2f]">{formatRupiah(product.price)}</p>
             {product.compareAtPrice ? (
               <p className="text-xs text-neutral-400 line-through">{formatRupiah(product.compareAtPrice)}</p>
             ) : null}

@@ -20,7 +20,7 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
   ];
 
   return (
-    <header className="border-b border-neutral-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-[#eadfce] bg-[#fffaf2]/92 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <Link className="flex min-w-0 items-center gap-3" href={`/s/${storeSlug}`}>
@@ -32,13 +32,13 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
                 src={logoUrl}
               />
             ) : (
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-sm font-bold text-primary-800">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#6f4e37] text-sm font-bold text-[#fffaf2]">
                 {(storeName ?? storeSlug).slice(0, 1).toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-neutral-950">{storeName ?? storeSlug}</p>
-              <p className="truncate text-xs text-neutral-500">{city ?? "Storefront publik"}</p>
+              <p className="truncate text-sm font-bold text-[#241c16]">{storeName ?? storeSlug}</p>
+              <p className="truncate text-xs text-[#7a6a58]">{city ?? "Storefront publik"}</p>
             </div>
           </Link>
 
@@ -57,7 +57,7 @@ export function StorefrontHeader({ storeSlug, storeName, logoUrl, city }: Storef
           {navItems.map((item) => (
             <Link
               key={item.href}
-              className="shrink-0 rounded-full border border-neutral-200 bg-white px-3 py-2 font-semibold transition hover:border-primary-300 hover:text-primary-700"
+              className="shrink-0 rounded-full border border-[#eadfce] bg-white/75 px-3 py-2 font-semibold text-[#5f5042] transition hover:border-[#9a6a43] hover:text-[#7a4f2f]"
               href={item.href}
             >
               {item.label}

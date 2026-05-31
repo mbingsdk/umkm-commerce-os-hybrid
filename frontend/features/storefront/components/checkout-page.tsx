@@ -63,7 +63,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           description="Untuk saat ini, checkout publik hanya mendukung satu toko dalam satu transaksi."
           action={
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
               href={`/s/${cartStoreSlug}/cart`}
             >
               Lihat Keranjang Aktif
@@ -82,7 +82,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           description="Tambahkan produk ke keranjang terlebih dahulu."
           action={
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
               href={`/s/${storeSlug}`}
             >
               Pilih Produk
@@ -167,8 +167,8 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
       <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-950">Checkout</h1>
-          <p className="mt-1 text-sm text-neutral-500">Isi data pembeli dan alamat pengiriman.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#241c16]">Checkout</h1>
+          <p className="mt-1 text-sm text-[#7b6a58]">Isi data pembeli dan alamat pengiriman dengan tenang. Pesanan akan dicek ulang oleh toko.</p>
         </div>
 
         {submitError ? (
@@ -177,7 +177,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           </div>
         ) : null}
 
-        <Card>
+        <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
           <CardHeader>
             <CardTitle>Data pembeli</CardTitle>
             <CardDescription>Nomor HP dipakai toko untuk menghubungi pembeli.</CardDescription>
@@ -204,7 +204,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
           <CardHeader>
             <CardTitle>Alamat pengiriman</CardTitle>
             <CardDescription>Alamat dipakai toko untuk mengirim dan menghubungi penerima.</CardDescription>
@@ -234,7 +234,7 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
           <CardHeader>
             <CardTitle>Zona pengiriman</CardTitle>
             <CardDescription>
@@ -243,18 +243,18 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
           </CardHeader>
           <CardContent className="space-y-3">
             {courierZonesQuery.isPending ? (
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
+              <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf2] p-4 text-sm text-[#665746]">
                 Memuat pilihan zona pengiriman...
               </div>
             ) : courierZonesQuery.isError ? (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+              <div className="rounded-2xl border border-[#d8c7ad] bg-[#fff6df] p-4 text-sm leading-6 text-[#6b4a1f]">
                 Zona pengiriman belum bisa dimuat. Kamu tetap bisa checkout dan toko akan mengonfirmasi ongkir manual.
               </div>
             ) : null}
 
             <FormField label="Pilih zona pengiriman" error={form.formState.errors.courierZoneId?.message}>
               <select
-                className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 text-sm outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                className="h-10 w-full rounded-xl border border-[#d8c7ad] bg-white px-3 text-sm outline-none transition focus:border-[#caa36d] focus:ring-4 focus:ring-[#eadfce]"
                 {...form.register("courierZoneId")}
               >
                 <option value="">Konfirmasi ongkir manual oleh toko</option>
@@ -267,25 +267,25 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
             </FormField>
 
             {selectedCourierZone ? (
-              <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 text-sm leading-6 text-primary-900">
+              <div className="rounded-2xl border border-[#d8c7ad] bg-[#fffaf2] p-4 text-sm leading-6 text-[#4b3a29]">
                 Ongkir estimasi untuk zona <strong>{selectedCourierZone.name}</strong>:{" "}
                 <strong>{formatRupiah(selectedCourierZone.rate)}</strong>.
               </div>
             ) : (
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
+              <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf2] p-4 text-sm leading-6 text-[#665746]">
                 Jika zona belum dipilih, pesanan dibuat dengan ongkir Rp0 dan toko perlu mengonfirmasi biaya kirim manual.
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
           <CardHeader>
             <CardTitle>Metode pembayaran</CardTitle>
             <CardDescription>Pembayaran dilakukan manual oleh toko untuk rilis pilot ini.</CardDescription>
           </CardHeader>
           <CardContent>
-            <label className="flex items-start gap-3 rounded-2xl border border-primary-200 bg-primary-50 p-4">
+            <label className="flex items-start gap-3 rounded-2xl border border-[#d8c7ad] bg-[#fff6df] p-4">
               <input
                 className="mt-1"
                 type="radio"
@@ -294,8 +294,8 @@ export function CheckoutPage({ storeSlug }: CheckoutPageProps) {
                 defaultChecked
               />
               <span>
-                <span className="block text-sm font-semibold text-primary-950">Transfer manual</span>
-                <span className="mt-1 block text-sm leading-6 text-primary-900">
+                <span className="block text-sm font-semibold text-[#241c16]">Transfer manual</span>
+                <span className="mt-1 block text-sm leading-6 text-[#665746]">
                   Payment gateway belum terhubung. Toko akan mengirim instruksi pembayaran dan memeriksa pembayaran dari dashboard.
                 </span>
               </span>
@@ -357,7 +357,7 @@ function CheckoutSummary({
   const estimatedTotal = subtotal + shippingEstimate;
 
   return (
-    <Card>
+    <Card className="border-[#eadfce] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
       <CardHeader>
         <CardTitle>Ringkasan checkout</CardTitle>
         <CardDescription>Harga final dihitung oleh backend saat pesanan dibuat.</CardDescription>
@@ -367,37 +367,37 @@ function CheckoutSummary({
           {items.map((item) => (
             <div key={item.productId} className="flex items-start justify-between gap-3 text-sm">
               <div>
-                <p className="font-medium text-neutral-950">{item.name}</p>
-                <p className="text-neutral-500">
+                <p className="font-medium text-[#241c16]">{item.name}</p>
+                <p className="text-[#7b6a58]">
                   {item.quantity} × {formatRupiah(item.displayPrice)}
                 </p>
               </div>
-              <p className="font-semibold text-neutral-950">{formatRupiah(item.quantity * item.displayPrice)}</p>
+              <p className="font-semibold text-[#241c16]">{formatRupiah(item.quantity * item.displayPrice)}</p>
             </div>
           ))}
         </div>
 
         <div className="border-t border-neutral-100 pt-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-neutral-500">{itemCount} item</span>
-            <span className="font-semibold text-neutral-950">{formatRupiah(subtotal)}</span>
+            <span className="text-[#7b6a58]">{itemCount} item</span>
+            <span className="font-semibold text-[#241c16]">{formatRupiah(subtotal)}</span>
           </div>
           <div className="mt-2 flex items-center justify-between text-sm">
-            <span className="text-neutral-500">
+            <span className="text-[#7b6a58]">
               Ongkir{selectedCourierZoneName ? ` (${selectedCourierZoneName})` : " manual"}
             </span>
-            <span className="font-semibold text-neutral-950">{formatRupiah(shippingEstimate)}</span>
+            <span className="font-semibold text-[#241c16]">{formatRupiah(shippingEstimate)}</span>
           </div>
           <div className="mt-4 flex items-center justify-between text-base">
-            <span className="font-semibold text-neutral-950">Estimasi total</span>
-            <span className="text-xl font-bold text-primary-700">{formatRupiah(estimatedTotal)}</span>
+            <span className="font-semibold text-[#241c16]">Estimasi total</span>
+            <span className="text-xl font-bold text-[#7a4f2f]">{formatRupiah(estimatedTotal)}</span>
           </div>
         </div>
 
-        <Button className="w-full" isLoading={isLoading} disabled={isLoading || items.length === 0} onClick={onSubmit} size="lg" type="button">
+        <Button className="w-full bg-[#2f2923] hover:bg-[#1f1a16]" isLoading={isLoading} disabled={isLoading || items.length === 0} onClick={onSubmit} size="lg" type="button">
           Buat Pesanan
         </Button>
-        <Link className="block text-center text-sm font-semibold text-primary-700" href={`/s/${storeSlug}/cart`}>
+        <Link className="block text-center text-sm font-semibold text-[#7a4f2f]" href={`/s/${storeSlug}/cart`}>
           Kembali ke keranjang
         </Link>
       </CardContent>

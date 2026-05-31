@@ -39,12 +39,14 @@ export default async function StoresPage({ searchParams }: StoresPageProps) {
   ]);
 
   return (
-    <main className="min-h-screen bg-neutral-50">
+    <main className="min-h-screen bg-[#f7f1e8]">
       <section className="mx-auto space-y-6 px-4 py-8 sm:px-6 lg:max-w-6xl lg:px-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-950">Toko UMKM</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
-            Temukan toko published dari tenant aktif/trialing. Klik kartu toko untuk masuk ke storefront tenant.
+        <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:p-7">
+          <p className="text-sm font-semibold text-[#7a4f2f]">Direktori toko publik</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#241c16] sm:text-5xl">Toko UMKM</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#6d5e4e]">
+            Temukan storefront UMKM yang sudah published. Klik kartu toko untuk melihat produk, kontak, dan cara belanja
+            langsung dari toko tersebut.
           </p>
         </div>
 

@@ -53,17 +53,17 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <Link className="text-sm font-semibold text-primary-700 hover:text-primary-800" href={`/s/${storeSlug}`}>
+        <Link className="text-sm font-semibold text-[#7a4f2f] hover:text-[#3b2f24]" href={`/s/${storeSlug}`}>
           ← Kembali ke toko
         </Link>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-neutral-950">Lacak pesanan</h1>
-        <p className="mt-1 text-sm leading-6 text-neutral-500">
+        <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#241c16]">Lacak pesanan</h1>
+        <p className="mt-1 text-sm leading-6 text-[#7b6a58]">
           Masukkan nomor pesanan dan nomor HP yang dipakai saat checkout. Tracking publik tidak membutuhkan login.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <Card>
+        <Card className="border-[#eadfce] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
           <CardHeader>
             <CardTitle>Cek status</CardTitle>
             <CardDescription>Nomor HP dipakai sebagai verifikasi agar data pesanan tetap aman.</CardDescription>
@@ -75,7 +75,7 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
               ) : null}
 
               <label className="space-y-1">
-                <span className="text-sm font-medium text-neutral-700">Nomor pesanan</span>
+                <span className="text-sm font-medium text-[#665746]">Nomor pesanan</span>
                 <Input
                   value={orderNumber}
                   onChange={(event) => setOrderNumber(event.target.value)}
@@ -84,11 +84,11 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
               </label>
 
               <label className="space-y-1">
-                <span className="text-sm font-medium text-neutral-700">Nomor HP / WhatsApp</span>
+                <span className="text-sm font-medium text-[#665746]">Nomor HP / WhatsApp</span>
                 <Input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="08123456789" />
               </label>
 
-              <Button className="w-full" type="submit" isLoading={trackingQuery.isFetching} disabled={trackingQuery.isFetching}>
+              <Button className="w-full bg-[#2f2923] hover:bg-[#1f1a16]" type="submit" isLoading={trackingQuery.isFetching} disabled={trackingQuery.isFetching}>
                 Lacak pesanan
               </Button>
             </form>
@@ -121,7 +121,7 @@ export function TrackOrderPage({ storeSlug }: TrackOrderPageProps) {
 function TrackingResult({ data }: { data: PublicTrackingResult }) {
   return (
     <>
-      <Card>
+      <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
         <CardHeader>
           <CardTitle>{data.orderNumber}</CardTitle>
           <CardDescription>
@@ -144,7 +144,7 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
       </Card>
 
       {data.shipment ? (
-        <Card>
+        <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
           <CardHeader>
             <CardTitle>Info pengiriman</CardTitle>
             <CardDescription>Data publik yang aman untuk customer.</CardDescription>
@@ -166,7 +166,7 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
         />
       )}
 
-      <Card>
+      <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
         <CardHeader>
           <CardTitle>Item pesanan</CardTitle>
           <CardDescription>Harga berasal dari snapshot saat checkout.</CardDescription>
@@ -175,18 +175,18 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
           {data.items.map((item) => (
             <div key={`${item.productName}-${item.quantity}-${item.subtotal}`} className="flex items-start justify-between gap-4 text-sm">
               <div>
-                <p className="font-semibold text-neutral-950">{item.productName}</p>
-                <p className="mt-1 text-neutral-500">
+                <p className="font-semibold text-[#241c16]">{item.productName}</p>
+                <p className="mt-1 text-[#7b6a58]">
                   {item.quantity} × {formatRupiah(item.unitPrice)}
                 </p>
               </div>
-              <p className="font-semibold text-neutral-950">{formatRupiah(item.subtotal)}</p>
+              <p className="font-semibold text-[#241c16]">{formatRupiah(item.subtotal)}</p>
             </div>
           ))}
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
         <CardHeader>
           <CardTitle>Timeline</CardTitle>
           <CardDescription>Status pengiriman yang sudah tercatat.</CardDescription>
@@ -201,9 +201,9 @@ function TrackingResult({ data }: { data: PublicTrackingResult }) {
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-neutral-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{label}</p>
-      <p className="mt-2 font-semibold text-neutral-950">{value}</p>
+    <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf2] p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#7b6a58]">{label}</p>
+      <p className="mt-2 font-semibold text-[#241c16]">{value}</p>
     </div>
   );
 }
@@ -211,23 +211,23 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{label}</p>
-      <p className="mt-1 text-neutral-700">{value}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#7b6a58]">{label}</p>
+      <p className="mt-1 text-[#665746]">{value}</p>
     </div>
   );
 }
 
 function PublicTimeline({ timeline }: { timeline: PublicTrackingTimelineItem[] }) {
   if (timeline.length === 0) {
-    return <p className="text-sm text-neutral-500">Belum ada update pengiriman.</p>;
+    return <p className="text-sm text-[#7b6a58]">Belum ada update pengiriman.</p>;
   }
 
   return (
     <div className="space-y-4">
       {timeline.map((item) => (
-        <div key={`${item.status}-${item.createdAt}`} className="border-l-2 border-primary-200 pl-4">
-          <p className="text-sm font-semibold text-neutral-950">{shipmentStatusLabel(item.status)}</p>
-          <p className="mt-1 text-xs text-neutral-500">{formatDateTime(item.createdAt)}</p>
+        <div key={`${item.status}-${item.createdAt}`} className="border-l-2 border-[#caa36d] pl-4">
+          <p className="text-sm font-semibold text-[#241c16]">{shipmentStatusLabel(item.status)}</p>
+          <p className="mt-1 text-xs text-[#7b6a58]">{formatDateTime(item.createdAt)}</p>
           {item.note ? <p className="mt-2 text-sm leading-6 text-neutral-600">{item.note}</p> : null}
         </div>
       ))}

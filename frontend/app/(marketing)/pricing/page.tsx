@@ -122,27 +122,27 @@ const faqs = [
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <section className="border-b border-neutral-200 bg-gradient-to-br from-primary-50 via-white to-neutral-50">
+    <main className="min-h-screen bg-[#f7f1e8]">
+      <section>
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8 lg:py-16">
-          <div>
-            <p className="text-sm font-semibold text-primary-700">Pricing pilot UMKM</p>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-neutral-950 sm:text-5xl">
+          <div className="rounded-[28px] border border-[#eadfce] bg-[#fffaf2] p-5 shadow-[0_14px_40px_rgba(89,63,38,0.07)] sm:p-7">
+            <p className="text-sm font-semibold text-[#7a4f2f]">Pricing pilot UMKM</p>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-[#241c16] sm:text-5xl">
               Paket sederhana untuk mulai jualan, mengelola stok, dan menjalankan kasir.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-600">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-[#6d5e4e]">
               Mulai dari storefront publik, katalog produk, checkout manual, inventory, POS online-first,
               finance dasar, sampai courier dan discovery untuk toko yang mulai tumbuh.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-primary-600 px-5 text-base font-semibold text-white transition hover:bg-primary-700"
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-[#2f2923] px-5 text-base font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
                 href="/register"
               >
                 Mulai buat toko
               </Link>
               <Link
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 text-base font-semibold text-neutral-900 transition hover:bg-neutral-50"
+                className="inline-flex h-12 items-center justify-center rounded-xl border border-[#d9c8af] bg-white px-5 text-base font-semibold text-[#3d3128] transition hover:bg-[#f4eadb]"
                 href="/stores"
               >
                 Lihat toko publik
@@ -150,7 +150,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <Card className="self-start border-primary-100 bg-white/90">
+          <Card className="self-start border-[#eadfce] bg-[#fffaf2]/90 shadow-[0_18px_50px_rgba(89,63,38,0.08)]">
             <CardHeader>
               <CardTitle>Pilot Partner</CardTitle>
             </CardHeader>
@@ -159,7 +159,7 @@ export default function PricingPage() {
                 Untuk pilot awal, tenant terpilih bisa memakai paket Pilot Partner selama 30-90 hari atau
                 Rp0 sampai produk stabil, dengan feedback aktif sebagai bagian dari program.
               </p>
-              <p className="rounded-2xl bg-amber-50 p-3 text-amber-800">
+              <p className="rounded-2xl border border-[#ead7bd] bg-[#fff4d8] p-3 text-[#72512f]">
                 Paket pilot diaktifkan manual oleh tim platform. Billing berlangganan dan payment gateway
                 subscription belum tersedia di MVP.
               </p>
@@ -170,8 +170,8 @@ export default function PricingPage() {
 
       <section className="mx-auto space-y-8 px-4 py-10 sm:px-6 lg:max-w-6xl lg:px-8">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-neutral-950">Pilih paket sesuai tahap toko</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+          <h2 className="text-2xl font-bold tracking-tight text-[#241c16]">Pilih paket sesuai tahap toko</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6d5e4e]">
             Tiga paket publik ini mengikuti strategi MVP: sederhana, mudah dijelaskan, dan limit berdasarkan
             kebutuhan operasional nyata.
           </p>
@@ -186,16 +186,16 @@ export default function PricingPage() {
 
       <section className="mx-auto space-y-6 px-4 pb-10 sm:px-6 lg:max-w-6xl lg:px-8">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-neutral-950">Perbandingan fitur</h2>
-          <p className="mt-2 text-sm leading-6 text-neutral-500">
+          <h2 className="text-2xl font-bold tracking-tight text-[#241c16]">Perbandingan fitur</h2>
+          <p className="mt-2 text-sm leading-6 text-[#6d5e4e]">
             Fitur yang belum tersedia di MVP ditulis apa adanya supaya ekspektasi tetap jernih.
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-soft">
+        <div className="overflow-hidden rounded-[28px] border border-[#eadfce] bg-[#fffaf2] shadow-[0_14px_40px_rgba(89,63,38,0.07)]">
           <div className="overflow-x-auto">
             <table className="min-w-[760px] w-full text-left text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
+              <thead className="bg-[#f4eadb] text-[#5f5042]">
                 <tr>
                   <th className="px-5 py-4 font-semibold">Fitur</th>
                   <th className="px-5 py-4 font-semibold">Starter</th>
@@ -203,10 +203,10 @@ export default function PricingPage() {
                   <th className="px-5 py-4 font-semibold">Business</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 text-neutral-700">
+              <tbody className="divide-y divide-[#eadfce] text-[#5f5042]">
                 {featureRows.map(([feature, starter, growth, business]) => (
                   <tr key={feature}>
-                    <td className="px-5 py-4 font-medium text-neutral-950">{feature}</td>
+                    <td className="px-5 py-4 font-medium text-[#241c16]">{feature}</td>
                     <td className="px-5 py-4">{starter}</td>
                     <td className="px-5 py-4">{growth}</td>
                     <td className="px-5 py-4">{business}</td>
@@ -220,7 +220,7 @@ export default function PricingPage() {
 
       <section className="mx-auto grid gap-6 px-4 pb-10 sm:px-6 lg:max-w-6xl lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold tracking-tight text-neutral-950">FAQ</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-[#241c16]">FAQ</h2>
           <div className="space-y-3">
             {faqs.map((faq) => (
               <Card key={faq.question} className="shadow-none">
@@ -233,18 +233,18 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <Card className="self-start border-primary-100 bg-primary-700 text-white">
+        <Card className="self-start border-[#d6b98e] bg-[#2f2923] text-[#fffaf2]">
           <CardContent className="space-y-4">
             <Badge className="bg-white/15 text-white" tone="neutral">
               Siap pilot?
             </Badge>
             <h2 className="text-2xl font-bold tracking-tight">Buat toko pertamamu hari ini.</h2>
-            <p className="text-sm leading-6 text-primary-50">
+            <p className="text-sm leading-6 text-[#eadfce]">
               Daftar, buat store, tambah produk, lalu publish storefront. Untuk pilot, proses billing dan aktivasi
               paket masih dibantu secara manual.
             </p>
             <Link
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-primary-800 transition hover:bg-primary-50"
+              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#fffaf2] px-5 text-sm font-semibold text-[#2f2923] transition hover:bg-[#f4eadb]"
               href="/register"
             >
               Daftar dan buat toko
@@ -258,21 +258,21 @@ export default function PricingPage() {
 
 function PlanCard({ plan }: { plan: Plan }) {
   return (
-    <Card className={plan.badge ? "relative border-primary-300 shadow-md" : ""}>
+    <Card className={plan.badge ? "relative border-[#b98955] bg-[#fffaf2] shadow-[0_18px_50px_rgba(89,63,38,0.12)]" : "border-[#eadfce] bg-[#fffaf2] shadow-none"}>
       {plan.badge ? (
         <div className="absolute right-5 top-5">
           <Badge tone="primary">{plan.badge}</Badge>
         </div>
       ) : null}
       <CardHeader className="pr-28">
-        <p className="text-sm font-semibold text-primary-700">{plan.name}</p>
+        <p className="text-sm font-semibold text-[#7a4f2f]">{plan.name}</p>
         <CardTitle className="text-2xl">{formatRupiah(plan.priceMonthly)}</CardTitle>
         <p className="text-sm text-neutral-500">per bulan</p>
       </CardHeader>
       <CardContent className="space-y-5">
         <p className="text-sm leading-6 text-neutral-600">{plan.audience}</p>
         {plan.highlight ? (
-          <p className="rounded-2xl bg-primary-50 p-3 text-sm font-medium text-primary-900">{plan.highlight}</p>
+          <p className="rounded-2xl border border-[#ead7bd] bg-[#fff4d8] p-3 text-sm font-medium text-[#72512f]">{plan.highlight}</p>
         ) : null}
 
         <div>
@@ -280,7 +280,7 @@ function PlanCard({ plan }: { plan: Plan }) {
           <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-600">
             {plan.benefits.map((item) => (
               <li key={item} className="flex gap-2">
-                <span aria-hidden="true" className="text-primary-700">
+                <span aria-hidden="true" className="text-[#7a4f2f]">
                   &#10003;
                 </span>
                 <span>{item}</span>
@@ -304,8 +304,8 @@ function PlanCard({ plan }: { plan: Plan }) {
         <Link
           className={
             plan.badge
-              ? "inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
-              : "inline-flex h-11 w-full items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
+              ? "inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
+              : "inline-flex h-11 w-full items-center justify-center rounded-xl border border-[#d9c8af] bg-white px-4 text-sm font-semibold text-[#3d3128] transition hover:bg-[#f4eadb]"
           }
           href={plan.ctaHref}
         >

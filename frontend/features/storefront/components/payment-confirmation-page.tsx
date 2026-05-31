@@ -100,34 +100,34 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
 
     return (
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-        <Card className="overflow-hidden">
-          <div className="bg-gradient-to-br from-emerald-600 to-primary-900 p-6 text-white sm:p-8">
+        <Card className="overflow-hidden border-[#eadfce] bg-white/90 shadow-[0_18px_55px_rgba(89,63,38,0.1)]">
+          <div className="bg-[#2f2923] p-6 text-[#fffaf2] sm:p-8">
             <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
               Menunggu review toko
             </p>
             <h1 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">Konfirmasi pembayaran terkirim</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-emerald-50">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#eadfce]">
               {result.message || "Bukti pembayaran sudah diterima dan akan dicek oleh penjual."}
             </p>
           </div>
           <CardContent className="space-y-5">
-            <div className="rounded-2xl bg-neutral-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Nomor order</p>
-              <p className="mt-1 text-xl font-bold text-neutral-950">{result.order_number}</p>
+            <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf2] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#7b6a58]">Nomor order</p>
+              <p className="mt-1 text-xl font-bold text-[#241c16]">{result.order_number}</p>
             </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+            <div className="rounded-2xl border border-[#d8c7ad] bg-[#fff6df] p-4 text-sm leading-6 text-[#4b3a29]">
               Pembayaran belum otomatis berstatus lunas. Penjual tetap perlu memeriksa dan menyetujui konfirmasi ini dari
               dashboard toko.
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-700"
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl bg-[#2f2923] px-4 text-sm font-semibold text-[#fffaf2] transition hover:bg-[#1f1a16]"
                 href={`/s/${storeSlug}/track-order`}
               >
                 Lacak pesanan
               </Link>
               <Link
-                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50"
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-[#d8c7ad] bg-white px-4 text-sm font-semibold text-[#3b2f24] transition hover:bg-[#f7f1e8]"
                 href={`/s/${storeSlug}`}
               >
                 Kembali ke toko
@@ -142,11 +142,11 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <Link className="text-sm font-semibold text-primary-700 hover:text-primary-800" href={`/s/${storeSlug}`}>
+        <Link className="text-sm font-semibold text-[#7a4f2f] hover:text-[#3b2f24]" href={`/s/${storeSlug}`}>
           ← Kembali ke toko
         </Link>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-neutral-950">Konfirmasi pembayaran</h1>
-        <p className="mt-1 text-sm leading-6 text-neutral-500">
+        <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#241c16]">Konfirmasi pembayaran</h1>
+        <p className="mt-1 text-sm leading-6 text-[#7b6a58]">
           Isi data transfer untuk order <span className="font-semibold text-neutral-800">{orderNumber}</span>. Halaman ini
           publik dan tidak membutuhkan login.
         </p>
@@ -160,7 +160,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
             </div>
           ) : null}
 
-          <Card>
+          <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
             <CardHeader>
               <CardTitle>Verifikasi pesanan</CardTitle>
               <CardDescription>
@@ -188,7 +188,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-[#eadfce] bg-white/90 shadow-[0_12px_35px_rgba(89,63,38,0.06)]">
             <CardHeader>
               <CardTitle>Detail transfer</CardTitle>
               <CardDescription>
@@ -232,7 +232,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
           </Card>
 
           <Button
-            className="w-full sm:w-auto"
+            className="w-full bg-[#2f2923] hover:bg-[#1f1a16] sm:w-auto"
             disabled={confirmationMutation.isPending}
             isLoading={confirmationMutation.isPending}
             size="lg"
@@ -243,7 +243,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
         </form>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <Card>
+          <Card className="border-[#eadfce] bg-white/90 shadow-[0_16px_45px_rgba(89,63,38,0.08)]">
             <CardHeader>
               <CardTitle>Ringkasan</CardTitle>
               <CardDescription>Pastikan nominal sesuai transfer yang benar-benar dikirim.</CardDescription>
@@ -254,7 +254,7 @@ export function PaymentConfirmationPage({ storeSlug, orderNumber }: PaymentConfi
                 label="Nominal diisi"
                 value={submittedAmount && submittedAmount > 0 ? formatRupiah(submittedAmount) : "Belum diisi"}
               />
-              <div className="rounded-2xl border border-primary-100 bg-primary-50 p-4 leading-6 text-primary-950">
+              <div className="rounded-2xl border border-[#d8c7ad] bg-[#fff6df] p-4 leading-6 text-[#4b3a29]">
                 Upload bukti transfer belum tersedia di halaman publik. Jika punya bukti berupa link atau nomor referensi, isi pada kolom opsional.
               </div>
             </CardContent>
@@ -310,7 +310,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{label}</p>
-      <p className="mt-1 break-words font-semibold text-neutral-950">{value}</p>
+      <p className="mt-1 break-words font-semibold text-[#241c16]">{value}</p>
     </div>
   );
 }

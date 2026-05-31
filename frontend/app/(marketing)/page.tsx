@@ -30,7 +30,7 @@ export default async function PlatformHomePage() {
   const featuredProducts = home.featuredProducts.length > 0 ? home.featuredProducts : products.items;
 
   return (
-    <main className="min-h-screen bg-neutral-50">
+    <main className="min-h-screen bg-[#f7f1e8]">
       <PlatformHero />
 
       <section className="mx-auto space-y-10 px-4 py-10 sm:px-6 lg:max-w-6xl lg:px-8">
@@ -53,16 +53,16 @@ export default async function PlatformHomePage() {
           href="/products"
         />
 
-        <div className="rounded-3xl border border-primary-100 bg-primary-700 p-6 text-white shadow-soft sm:p-8">
+        <div className="rounded-[28px] border border-[#d6b98e] bg-[#2f2923] p-6 text-[#fffaf2] shadow-[0_18px_50px_rgba(47,41,35,0.18)] sm:p-8">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Punya toko UMKM?</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-primary-50">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#eadfce]">
                 Buat storefront, kelola produk, pesanan, POS, inventori, finance dasar, dan mulai tampil di discovery.
               </p>
             </div>
             <Link
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-primary-800 transition hover:bg-primary-50"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#fffaf2] px-5 text-sm font-semibold text-[#2f2923] transition hover:bg-[#f0e4d2]"
               href="/register"
             >
               Daftar sebagai UMKM
