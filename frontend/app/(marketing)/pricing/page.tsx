@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format/money";
 import { publicPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = publicPageMetadata({
-  title: "Harga UMKM Commerce OS",
-  description:
-    "Paket harga UMKM Commerce OS untuk storefront, katalog, inventory, POS online-first, order, finance dasar, courier lokal, dan discovery.",
-  path: "/pricing"
-});
+export function generateMetadata(): Metadata {
+  return publicPageMetadata({
+    title: "Paket Harga UMKM Commerce OS",
+    description:
+      "Pilihan paket UMKM Commerce OS untuk storefront, katalog, inventory, POS online-first, order, finance dasar, courier lokal, dan discovery.",
+    path: "/pricing"
+  });
+}
 
 type Plan = {
   name: string;
@@ -36,7 +38,7 @@ const plans: Plan[] = [
       "Inventory dan riwayat stok dasar",
       "POS online-first"
     ],
-    limits: ["Maks. 100 produk", "Maks. 2 staff", "Courier lokal belum termasuk"],
+    limits: ["Maks. 100 produk", "Maks. 2 staff", "Courier lokal tidak termasuk di MVP"],
     ctaLabel: "Mulai dari Starter",
     ctaHref: "/register"
   },
@@ -84,7 +86,7 @@ const featureRows = [
   ["POS", "Online-first", "Online-first", "Online-first"],
   ["Finance summary", "Basic", "Ya", "Ya"],
   ["Expense tracking", "Ya", "Ya", "Ya"],
-  ["Courier zone lokal", "Belum", "Ya", "Ya"],
+  ["Courier zone lokal", "Tidak termasuk", "Ya", "Ya"],
   ["Discovery platform", "Ya", "Ya", "Priority eligible"],
   ["Payment gateway", "Belum tersedia", "Belum tersedia", "Belum tersedia"],
   ["Offline POS", "Belum tersedia", "Belum tersedia", "Belum tersedia"]
@@ -154,11 +156,12 @@ export default function PricingPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm leading-6 text-neutral-600">
               <p>
-                Untuk pilot awal, tenant terpilih bisa memakai paket pilot internal dengan masa gratis terbatas
-                sambil memberi feedback aktif.
+                Untuk pilot awal, tenant terpilih bisa memakai paket Pilot Partner selama 30-90 hari atau
+                Rp0 sampai produk stabil, dengan feedback aktif sebagai bagian dari program.
               </p>
               <p className="rounded-2xl bg-amber-50 p-3 text-amber-800">
-                Billing berlangganan masih manual selama MVP. Payment gateway subscription belum tersedia.
+                Paket pilot diaktifkan manual oleh tim platform. Billing berlangganan dan payment gateway
+                subscription belum tersedia di MVP.
               </p>
             </CardContent>
           </Card>
@@ -277,7 +280,9 @@ function PlanCard({ plan }: { plan: Plan }) {
           <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-600">
             {plan.benefits.map((item) => (
               <li key={item} className="flex gap-2">
-                <span className="text-primary-700">✓</span>
+                <span aria-hidden="true" className="text-primary-700">
+                  &#10003;
+                </span>
                 <span>{item}</span>
               </li>
             ))}
